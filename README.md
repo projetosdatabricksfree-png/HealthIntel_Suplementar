@@ -1,67 +1,62 @@
 # HealthIntel Suplementar
 
-Plataforma de engenharia de dados e API SaaS/DaaS para consumo de dados publicos da ANS com arquitetura medalhao, governanca de layout manual em MongoDB e exposicao via FastAPI.
+Plataforma SaaS/DaaS de engenharia de dados para consumo e análise de dados públicos da ANS (Agência Nacional de Saúde Suplementar). Utiliza arquitetura medalhão (Bronze, Silver, Gold), governança de layouts em MongoDB e exposição via FastAPI.
 
-## Estado atual do repositorio
+## 🏗️ Arquitetura do Projeto
 
-- `docs/healthintel_suplementar_prd_final.md`: documento mestre do produto, arquitetura e backlog executavel.
-- `api/`: scaffold da API publica e endpoints administrativos.
-- `mongo_layout_service/`: scaffold do servico de governanca de layouts.
-- `ingestao/`: base para DAGs Airflow e scripts de ingestao.
-- `healthintel_dbt/`: projeto dbt para staging, intermediate, marts e camada `api_ans`.
-- `infra/`: bootstrap local com Docker Compose, PostgreSQL, MongoDB, Redis, Airflow e Nginx.
-- `mcp_server/`: legado orientado a Databricks/MCP, preservado fora da trilha principal do bootstrap atual.
+O repositório está organizado como um monorepo contendo todos os componentes da plataforma:
 
-## Como subir o scaffold local
+-   **`api/`**: API principal desenvolvida em FastAPI. Contém endpoints públicos para consulta de operadoras, scores e dados regulatórios, além de endpoints administrativos para billing e gerenciamento.
+-   **`mongo_layout_service/`**: Microserviço dedicado à governança de layouts de arquivos da ANS, utilizando MongoDB para armazenamento flexível de metadados.
+-   **`ingestao/`**: Camada de ingestão contendo DAGs do Airflow e scripts Python para extração de dados (IGR, NIP, RN623) e carga na camada Bronze.
+-   **`healthintel_dbt/`**: Coração da transformação de dados. Implementa a arquitetura medalhão, testes de qualidade de dados e geração de marts para consumo da API.
+-   **`infra/`**: Configuração de infraestrutura local via Docker Compose (PostgreSQL, MongoDB, Redis, Airflow, Nginx).
+-   **`docs/`**: Documentação completa do projeto, incluindo PRD mestre, runbooks operacionais e detalhamento de todas as 12 sprints de desenvolvimento.
+-   **`scripts/`**: Utilitários para seeding de banco de dados, testes de carga e inicialização de ambiente.
 
-1. Copie `.env.exemplo` para `.env` ou `.env.local` para definir as variaveis locais da stack.
-2. Se houver conflito de porta local, ajuste `*_EXTERNAL_PORT` no arquivo de ambiente antes do `make up`.
-3. Rode `make up`.
-4. A API ficara disponivel em `http://localhost:8080`.
-5. O servico de layout ficara disponivel em `http://localhost:8081`.
-6. O Airflow ficara disponivel em `http://localhost:8088`.
-7. Para evitar falha de bootstrap do Airflow, mantenha `AIRFLOW_FERNET_KEY` com um valor base64 valido; o template ja vem com uma chave local funcional.
-8. Para preparar layouts regulatorios no MongoDB, rode `python scripts/bootstrap_layout_registry_regulatorio.py`.
-9. Para popular dados locais de demonstracao, rode `make demo-data`.
-10. Para publicar os modelos dbt ate a Sprint 07, rode `docker compose -f infra/docker-compose.yml run --rm --entrypoint sh dbt -lc "dbt deps && dbt build"`.
-11. Para fechar billing local do ciclo, rode `make billing-close REF=2026-04`.
-12. Para validar o pipeline local da Sprint 06/07, rode `make ci-local`.
-13. Para smoke fim a fim, rode `python scripts/smoke_piloto.py`.
-14. Para carga Locust local, rode `bash scripts/run_load_test.sh`.
+## 🚀 Como Subir o Ambiente Local
 
-## Credenciais locais de desenvolvimento
+Como o projeto lida com dados sensíveis e configurações de infraestrutura, siga os passos abaixo:
 
-- Header: `X-API-Key`
-- Valor local bootstrap: `hi_local_dev_2026_api_key`
-- Valor administrativo local: `hi_local_admin_2026_api_key`
+1.  **Configuração de Ambiente**: Crie um arquivo `.env` na raiz do projeto seguindo as definições necessárias (PostgreSQL, MongoDB, tokens de serviço).
+2.  **Inicialização da Stack**: Execute o comando para subir todos os containers:
+    ```bash
+    make up
+    ```
+3.  **Bootstrap de Layouts**: Inicialize o registro de layouts no MongoDB:
+    ```bash
+    python scripts/bootstrap_layout_registry_regulatorio.py
+    ```
+4.  **Carga de Dados Demo**: Popule o banco de dados com dados de demonstração:
+    ```bash
+    make demo-data
+    ```
+5.  **Build do dbt**: Compile e execute as transformações do dbt:
+    ```bash
+    make dbt-build
+    ```
 
-Essas chaves existem apenas para o ambiente local de desenvolvimento e sao armazenadas em hash em `plataforma.chave_api`.
+### Serviços Disponíveis:
+-   **API Pública**: `http://localhost:8080`
+-   **Layout Service**: `http://localhost:8081`
+-   **Airflow UI**: `http://localhost:8088`
 
-## Endpoints principais
+## 🛠️ Desenvolvimento e Qualidade
 
-- `GET /saude`
-- `GET /v1/operadoras`
-- `GET /v1/operadoras/{registro_ans}`
-- `GET /v1/operadoras/{registro_ans}/score`
-- `GET /v1/operadoras/{registro_ans}/regulatorio`
-- `GET /v1/regulatorio/rn623`
-- `GET /v1/meta/dataset`
-- `GET /v1/meta/versao`
-- `GET /v1/meta/pipeline`
-- `GET /admin/billing/resumo`
-- `POST /admin/billing/fechar-ciclo`
-- `POST /admin/billing/upgrade`
-- `GET /admin/layouts`
-- `POST /admin/layouts`
-- `GET /prontidao`
+O projeto utiliza ferramentas modernas para garantir a qualidade do código e dos dados:
 
-## Objetivo desta entrega
+-   **Linting**: `make lint` (Ruff)
+-   **SQL Linting**: `make sql-lint` (SQLFluff)
+-   **Testes**: `make test` (Pytest)
+-   **Smoke Test**: `make smoke` (Validação fim-a-fim do piloto)
+-   **Carga**: `make load-test` (Testes de performance via Locust)
 
-Esta entrega nao implementa a plataforma completa. Ela cria a base do monorepo, os contratos iniciais e o PRD final para iniciar as 12 sprints sem reabrir decisoes estruturais.
+## 📄 Documentação Operacional
 
-## Operacao da Sprint 06
+Para detalhes sobre a operação da plataforma e runbooks, consulte:
+-   `docs/runbooks/`: Procedimentos de aprovação de layout e reprocessamento.
+-   `docs/operacao/slo_sla.md`: Metas operacionais e indicadores de performance.
+-   `docs/operacao/baseline_capacidade.md`: Limites de carga e escalabilidade.
 
-- `docs/runbooks/`: runbooks de subida, aprovacao de layout e reprocessamento.
-- `docs/operacao/slo_sla.md`: metas operacionais e SLA por plano.
-- `docs/operacao/baseline_capacidade.md`: baseline de carga e envelope por plano.
-- `docs/operacao/piloto_controlado.md`: checklist de readiness do piloto.
+---
+*Este projeto está em desenvolvimento ativo (atualmente na Sprint 08).*
