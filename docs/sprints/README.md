@@ -34,7 +34,7 @@ Convencoes:
 
 ## Observacao de progresso atual
 
-Itens ja concluidos e refletidos nas sprints:
+Itens ja concluidos e refletidos nas sprints (01–07):
 
 - scaffold do monorepo e documento mestre;
 - infraestrutura local com `Docker Compose`;
@@ -51,3 +51,32 @@ Itens ja concluidos e refletidos nas sprints:
 - hardening minimo de runtime com `TrustedHost`, limite de payload, headers de seguranca e `X-Service-Token`.
 - smoke fim a fim, baseline de carga e runbooks operacionais da Sprint 06.
 - stack regulatoria inicial com `IGR`, `NIP`, `RN 623`, layouts bootstrapados em `MongoDB`, bronze no `PostgreSQL`, `dbt` regulatorio e endpoints basicos.
+
+## Entregas esperadas nas sprints planejadas (08–12)
+
+### Sprint 08 — Score Regulatório, Prudencial e Portabilidade
+DDL bronze: `regime_especial_operadora_trimestral`, `prudencial_operadora_trimestral`, `portabilidade_operadora_mensal`, `taxa_resolutividade_operadora_trimestral`. dbt: `stg_regime_especial`, `stg_prudencial`, `stg_portabilidade`, `stg_taxa_resolutividade`, `fat_regime_especial_historico`, `fat_score_regulatorio_operadora_mensal`, `api_score_regulatorio_operadora_mensal`, `api_regime_especial_operadora`. DAGs: `dag_ingest_regime_especial`, `dag_ingest_prudencial`, `dag_ingest_portabilidade`, `dag_ingest_taxa_resolutividade`. Endpoints: `GET /v1/operadoras/{id}/score-regulatorio`, `GET /v1/operadoras/{id}/regime-especial`, `GET /v1/operadoras/{id}/portabilidade`.
+
+### Sprint 09 — DIOPS, FIP e Harmonização Financeira
+DDL bronze: `diops_operadora_trimestral`, `fip_operadora_trimestral`. DDL plataforma: `publicacao_financeira`. dbt: `stg_diops`, `stg_fip`, `int_financeiro_operadora_periodo`, `fat_financeiro_operadora_trimestral`. DAGs: `dag_ingest_diops`, `dag_ingest_fip`. Seed: `ref_indicador_financeiro.csv`.
+
+### Sprint 10 — VDA, Glosa e Score v2
+DDL bronze: `vda_operadora_mensal`, `glosa_operadora_mensal`. dbt: `stg_vda`, `stg_glosa`, `fat_vda_operadora_mensal`, `fat_glosa_operadora_mensal`, `fat_score_v2_operadora_mensal`, `api_score_v2_operadora_mensal`, `api_financeiro_operadora_mensal`. DAGs: `dag_ingest_vda`, `dag_ingest_glosa`. Endpoints: `GET /v1/operadoras/{id}/financeiro`, `GET /v1/operadoras/{id}/score-v2`. Suite regressao fase 1.
+
+### Sprint 11 — Rede Assistencial
+DDL bronze: `rede_prestador_municipio`. dbt: `stg_rede_assistencial`, `int_rede_assistencial_municipio`, `fat_cobertura_rede_municipio`, `fat_densidade_rede_operadora`, `api_rede_assistencial`. DAG: `dag_ingest_rede_assistencial`. Seeds: `ref_populacao_municipio.csv`, `ref_parametro_rede.csv`. Endpoints: `GET /v1/operadoras/{id}/rede`, `GET /v1/rede/municipio/{cd_municipio}`.
+
+### Sprint 12 — Vazios, Oportunidade v2 e Rollout
+dbt: `fat_vazio_assistencial_municipio`, `fat_oportunidade_v2_municipio_mensal`, `api_vazio_assistencial`, `api_oportunidade_v2_municipio_mensal`. Endpoints: `GET /v1/mercado/vazio-assistencial`, `GET /v1/rankings/municipio/oportunidade-v2`, `GET /v1/meta/endpoints`. Suite regressao fase 2. Runbooks (4). Catalogos finais. Tag `v1.0.0-baseline`.
+
+## Datasets fora do MVP — Decisao documentada
+
+| Dataset | Decisao |
+| --- | --- |
+| `taxa_resolutividade` | Sprint 08 — componente do score regulatorio |
+| `parto_cesareo` | Sprint 09 — componente qualitativo em `fat_financeiro_operadora_trimestral` |
+| `SIP` | Sprint 12 — enriquece `fat_oportunidade_v2`; sem endpoint proprio |
+| `valores_comerciais` | Placeholder — macrofase futura (fase 5) |
+| `reajustes_coletivos` | Macrofase futura — requer parser PDF/tabela ANS |
+| `IEPRS` | Placeholder — sem publicacao ANS regular mapeada |
+| `QUALISS` | Macrofase futura (fase 5) — requer camada de rede assistencial completa |

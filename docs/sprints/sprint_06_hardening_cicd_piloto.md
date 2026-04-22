@@ -49,3 +49,10 @@
 - [x] Criar `scripts/smoke_piloto.py`.
 - [x] Publicar runbooks em `docs/runbooks/`.
 - [x] Publicar baseline e readiness em `docs/operacao/`.
+
+### HIS-06.6 — Completar hardening de autenticacao e contrato de seguranca
+
+- [ ] Verificar que `api/app/middleware/autenticacao.py` implementa cache Redis com TTL 60s para hash de chave antes de consultar `plataforma.chave_api` — evitar query PostgreSQL por request (PRD secao 9.2).
+- [ ] Verificar que `dependencia.py` implementa `verificar_plano()` validando `endpoint_permitido` do plano do cliente em cada request autenticado (PRD secao 9.2).
+- [ ] Documentar SLO dos endpoints MVP em `docs/operacao/slo_mvp.md`: latencia p95 < 200ms, disponibilidade 99,5%/mes por endpoint (PRD secao 9.3).
+- [ ] Garantir que CI em `.github/workflows/ci.yml` inclui passo `dbt compile` e validacao de `sqlfluff` nos modelos alterados (PRD secao 14.1 criterios de pronto).

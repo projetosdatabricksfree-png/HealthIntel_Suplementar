@@ -47,3 +47,9 @@
 - [x] Implementar `POST /admin/billing/upgrade`.
 - [x] Implementar script operacional `scripts/fechar_ciclo_billing.py`.
 - [x] Registrar `job` operacional de fechamento de billing.
+
+### HIS-05.6 — Contratos de meta endpoints e padronizacao de erros
+
+- [ ] Implementar endpoint `GET /v1/meta/pipeline` retornando status dos jobs recentes de `plataforma.job` com campos `dag_id`, `status`, `iniciado_em`, `finalizado_em`, `dataset` (PRD secao 9.3 Grupo Meta).
+- [ ] Padronizar respostas de erro 401, 403 e 429 com corpo JSON `{codigo, mensagem, detalhe}` em todos os middlewares — garantir que `autenticacao.py` e `rate_limit.py` retornam este envelope (PRD secao 9.3 Respostas de Erro).
+- [ ] Garantir que `plataforma.versao_dataset` registra campo `hash_sha256` para cada dataset com hash do arquivo de origem, permitindo auditoria de integridade.
