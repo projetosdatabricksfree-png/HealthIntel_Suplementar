@@ -10,6 +10,7 @@ test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
+packages-install-path: ".dbt_packages"
 
 models:
   healthintel_dbt:
@@ -36,7 +37,20 @@ vars:
     qualidade: 0.30
     estabilidade: 0.20
     presenca: 0.10
+  score_regulatorio_pesos:
+    igr_peso: 0.30
+    nip_peso: 0.25
+    rn623_peso: 0.15
+    prudencial_peso: 0.20
+    taxa_resolutividade_peso: 0.10
+  score_v2_pesos:
+    score_core_peso: 0.40
+    score_regulatorio_peso: 0.30
+    score_financeiro_peso: 0.20
+    penalizacoes_peso: 0.10
+  taxa_glosa_limite: 0.15
 
 seeds:
   healthintel_dbt:
     +schema: ref_ans
+    +tags: ["financeiro", "financeiro_v2"]

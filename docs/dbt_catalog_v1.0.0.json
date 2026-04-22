@@ -1,0 +1,37 @@
+{
+  "versao": "v1.0.0-baseline",
+  "gerado_em": "2026-04-22",
+  "schemas": {
+    "stg_ans": [
+      "stg_cadop",
+      "stg_sib_operadora",
+      "stg_sib_municipio",
+      "stg_rede_assistencial",
+      "stg_vda",
+      "stg_glosa"
+    ],
+    "int_ans": [
+      "int_operadora_canonica",
+      "int_operadora_competencia",
+      "int_score_insumo",
+      "int_rede_assistencial_municipio",
+      "int_oportunidade_v2_municipio"
+    ],
+    "nucleo_ans": [
+      "fat_score_operadora_mensal",
+      "fat_oportunidade_municipio_mensal",
+      "fat_vazio_assistencial_municipio",
+      "fat_oportunidade_v2_municipio_mensal",
+      "fat_cobertura_rede_municipio",
+      "fat_densidade_rede_operadora"
+    ],
+    "api_ans": [
+      "api_operadora",
+      "api_oportunidade_municipio_mensal",
+      "api_vazio_assistencial",
+      "api_oportunidade_v2_municipio_mensal",
+      "api_rede_assistencial"
+    ]
+  }
+}
+

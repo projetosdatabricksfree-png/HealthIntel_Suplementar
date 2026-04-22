@@ -82,11 +82,18 @@ jobs:
           psql -h localhost -U healthintel -d healthintel -f infra/postgres/init/003_api_comercial.sql
           psql -h localhost -U healthintel -d healthintel -f infra/postgres/init/004_billing_governanca.sql
           psql -h localhost -U healthintel -d healthintel -f infra/postgres/init/005_regulatorio.sql
+          psql -h localhost -U healthintel -d healthintel -f infra/postgres/init/006_idss.sql
 
       - name: Popular dados demo
         run: |
           python scripts/seed_demo_core.py
           python scripts/seed_demo_regulatorio.py
+          python scripts/seed_demo_idss.py
+
+      - name: dbt compile
+        run: |
+          cd healthintel_dbt
+          DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target dbt compile
 
       - name: Ruff
         run: ruff check .

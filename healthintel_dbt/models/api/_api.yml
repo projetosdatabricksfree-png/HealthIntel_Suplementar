@@ -38,3 +38,91 @@ models:
       - name: tipo_lista
         data_tests:
           - not_null
+  - name: api_regime_especial_operadora
+    description: Historico de regime especial por operadora para a API.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null
+  - name: api_portabilidade_operadora_mensal
+    description: Movimentacao mensal de portabilidade por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_score_regulatorio_operadora_mensal
+    description: Score regulatorio composto e detalhado por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_financeiro_operadora_mensal
+    description: Serie financeira mensal consolidada de DIOPS, FIP, VDA e glosa.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_score_v2_operadora_mensal
+    description: Score composto v2 mensal por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_rede_assistencial
+    description: Rede assistencial desnormalizada para endpoints por operadora e municipio.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+  - name: api_market_share_mensal
+    description: Camada de leitura do market share mensal.
+  - name: api_oportunidade_municipio_mensal
+    description: Camada de leitura do score de oportunidade mensal por municipio.
+  - name: api_oportunidade_v2_municipio_mensal
+    description: Camada de leitura da oportunidade v2 mensal por municipio.
+    columns:
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_ranking_crescimento
+    description: Ranking de crescimento por operadora.
+  - name: api_ranking_score
+    description: Ranking de score por operadora.
+  - name: api_ranking_oportunidade
+    description: Ranking de oportunidade por municipio.
+  - name: api_vazio_assistencial
+    description: Vazios assistenciais por municipio e segmento.
+    columns:
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: segmento
+        data_tests:
+          - not_null

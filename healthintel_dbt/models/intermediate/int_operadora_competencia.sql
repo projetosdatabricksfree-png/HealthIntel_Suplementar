@@ -6,14 +6,15 @@ with sib as (
 )
 
 select
+    operadora.operadora_id,
     sib.registro_ans,
     sib.competencia,
-    cadop.nome,
-    cadop.nome_fantasia,
-    cadop.modalidade,
-    cadop.uf_sede,
-    cadop.municipio_sede,
-    cadop.cnpj
+    operadora.nome,
+    operadora.nome_fantasia,
+    operadora.modalidade,
+    operadora.uf_sede,
+    operadora.municipio_sede,
+    operadora.cnpj
 from sib
-inner join {{ ref('int_operadora_canonica') }} as cadop
-    on sib.registro_ans = cadop.registro_ans
+inner join {{ ref('dim_operadora_atual') }} as operadora
+    on sib.registro_ans = operadora.registro_ans

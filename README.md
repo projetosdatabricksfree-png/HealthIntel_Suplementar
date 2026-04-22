@@ -23,6 +23,7 @@ Como o projeto lida com dados sensíveis e configurações de infraestrutura, si
     ```bash
     make up
     ```
+    Se a porta `27017` já estiver ocupada no seu ambiente, o Mongo expõe `27018` por padrão no host.
 3.  **Bootstrap de Layouts**: Inicialize o registro de layouts no MongoDB:
     ```bash
     python scripts/bootstrap_layout_registry_regulatorio.py
@@ -59,4 +60,4 @@ Para detalhes sobre a operação da plataforma e runbooks, consulte:
 -   `docs/operacao/baseline_capacidade.md`: Limites de carga e escalabilidade.
 
 ---
-*Este projeto está em desenvolvimento ativo (atualmente na Sprint 08).*
+*Este projeto está em baseline funcional (Sprint 12 concluída).*

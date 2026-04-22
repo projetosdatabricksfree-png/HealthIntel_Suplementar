@@ -58,3 +58,105 @@ models:
       - name: tipo_lista
         data_tests:
           - not_null
+  - name: stg_idss
+    description: IDSS anual padronizado por operadora.
+    columns:
+      - name: ano_base
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: idss_total
+        data_tests:
+          - not_null
+  - name: stg_regime_especial
+    description: Regime especial trimestral padronizado por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: tipo_regime
+        data_tests:
+          - not_null
+  - name: stg_prudencial
+    description: Indicadores prudenciais trimestrais padronizados por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_portabilidade
+    description: Movimentacao mensal de portabilidade por operadora.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_taxa_resolutividade
+    description: Taxa de resolutividade trimestral padronizada por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_diops
+    description: DIOPS financeiro trimestral padronizado por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_fip
+    description: FIP historico financeiro padronizado por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_vda
+    description: VDA mensal padronizado por operadora.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_glosa
+    description: Glosa mensal padronizada por operadora e tipo.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: tipo_glosa
+        data_tests:
+          - not_null
+  - name: stg_rede_assistencial
+    description: Rede assistencial padronizada por operadora, municipio e segmento.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null

@@ -107,6 +107,141 @@ DATASET_CONFIG = {
             "fonte_publicacao",
         ],
     },
+    "idss": {
+        "tabela_destino": "bruto_ans.idss",
+        "colunas": [
+            "ano_base",
+            "registro_ans",
+            "idss_total",
+            "idqs",
+            "idga",
+            "idsm",
+            "idgr",
+            "faixa_idss",
+            "fonte_publicacao",
+        ],
+    },
+    "regime_especial": {
+        "tabela_destino": "bruto_ans.regime_especial_operadora_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "tipo_regime",
+            "data_inicio",
+            "data_fim",
+            "descricao",
+            "fonte_publicacao",
+        ],
+    },
+    "prudencial": {
+        "tabela_destino": "bruto_ans.prudencial_operadora_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "margem_solvencia",
+            "capital_minimo_requerido",
+            "capital_disponivel",
+            "indice_liquidez",
+            "situacao_prudencial",
+            "fonte_publicacao",
+        ],
+    },
+    "portabilidade": {
+        "tabela_destino": "bruto_ans.portabilidade_operadora_mensal",
+        "colunas": [
+            "competencia",
+            "registro_ans",
+            "modalidade",
+            "tipo_contratacao",
+            "qt_portabilidade_entrada",
+            "qt_portabilidade_saida",
+            "fonte_publicacao",
+        ],
+    },
+    "taxa_resolutividade": {
+        "tabela_destino": "bruto_ans.taxa_resolutividade_operadora_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "modalidade",
+            "taxa_resolutividade",
+            "n_reclamacao_resolvida",
+            "n_reclamacao_total",
+            "fonte_publicacao",
+        ],
+    },
+    "diops": {
+        "tabela_destino": "bruto_ans.diops_operadora_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "cnpj",
+            "ativo_total",
+            "passivo_total",
+            "patrimonio_liquido",
+            "receita_total",
+            "despesa_total",
+            "resultado_periodo",
+            "provisao_tecnica",
+            "margem_solvencia_calculada",
+            "fonte_publicacao",
+        ],
+    },
+    "fip": {
+        "tabela_destino": "bruto_ans.fip_operadora_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "modalidade",
+            "tipo_contratacao",
+            "sinistro_total",
+            "contraprestacao_total",
+            "sinistralidade_bruta",
+            "ressarcimento_sus",
+            "evento_indenizavel",
+            "fonte_publicacao",
+        ],
+    },
+    "vda": {
+        "tabela_destino": "bruto_ans.vda_operadora_mensal",
+        "colunas": [
+            "competencia",
+            "registro_ans",
+            "valor_devido",
+            "valor_pago",
+            "saldo_devedor",
+            "situacao_cobranca",
+            "data_vencimento",
+            "fonte_publicacao",
+        ],
+    },
+    "glosa": {
+        "tabela_destino": "bruto_ans.glosa_operadora_mensal",
+        "colunas": [
+            "competencia",
+            "registro_ans",
+            "tipo_glosa",
+            "qt_glosa",
+            "valor_glosa",
+            "valor_faturado",
+            "fonte_publicacao",
+        ],
+    },
+    "rede_assistencial": {
+        "tabela_destino": "bruto_ans.rede_prestador_municipio",
+        "colunas": [
+            "competencia",
+            "registro_ans",
+            "cd_municipio",
+            "nm_municipio",
+            "sg_uf",
+            "segmento",
+            "tipo_prestador",
+            "qt_prestador",
+            "qt_especialidade_disponivel",
+            "fonte_publicacao",
+        ],
+    },
 }
 
 
@@ -379,6 +514,266 @@ async def carregar_rn623_lista_bruto(
     )
 
 
+async def carregar_idss_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "idss",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_regime_especial_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "regime_especial",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_prudencial_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "prudencial",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_portabilidade_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "portabilidade",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_taxa_resolutividade_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "taxa_resolutividade",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_diops_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "diops",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_fip_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "fip",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_vda_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "vda",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_glosa_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "glosa",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_rede_assistencial_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "rede_assistencial",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
 async def registrar_quarentena(
     *,
     dataset_codigo: str,
@@ -538,6 +933,8 @@ async def registrar_versao_dataset(
         valor_competencia = registros_brutos[0].get("competencia")
         if valor_competencia is None:
             valor_competencia = registros_brutos[0].get("trimestre")
+        if valor_competencia is None:
+            valor_competencia = registros_brutos[0].get("ano_base")
         competencia = str(valor_competencia) if valor_competencia is not None else None
     await session.execute(
         text(
@@ -548,6 +945,7 @@ async def registrar_versao_dataset(
                 versao,
                 competencia,
                 hash_arquivo,
+                hash_sha256,
                 hash_estrutura,
                 registros,
                 status
@@ -557,6 +955,7 @@ async def registrar_versao_dataset(
                 :versao,
                 :competencia,
                 :hash_arquivo,
+                :hash_sha256,
                 :hash_estrutura,
                 :registros,
                 :status
@@ -569,6 +968,7 @@ async def registrar_versao_dataset(
             "versao": f"{dataset_codigo}_{datetime.now(tz=UTC).strftime('%Y%m%d%H%M%S')}",
             "competencia": competencia,
             "hash_arquivo": hash_arquivo,
+            "hash_sha256": hash_arquivo,
             "hash_estrutura": hash_estrutura,
             "registros": registros,
             "status": status,

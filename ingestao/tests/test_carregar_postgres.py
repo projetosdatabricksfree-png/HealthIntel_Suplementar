@@ -4,6 +4,7 @@ from ingestao.app.carregar_postgres import (
     carregar_cadop_bruto,
     carregar_igr_bruto,
     carregar_nip_bruto,
+    carregar_rede_assistencial_bruto,
     carregar_rn623_lista_bruto,
     carregar_sib_municipio_bruto,
     carregar_sib_operadora_bruto,
@@ -122,6 +123,26 @@ async def test_wrappers_delegam_para_dataset_correto(monkeypatch: pytest.MonkeyP
     assert resultado_igr == "igr"
     assert resultado_nip == "nip"
     assert resultado_rn623 == "rn623_lista"
+    assert await carregar_rede_assistencial_bruto(
+        [
+            {
+                "competencia": 202604,
+                "registro_ans": "000123",
+                "cd_municipio": "3550308",
+                "nm_municipio": "SAO PAULO",
+                "sg_uf": "SP",
+                "segmento": "MEDICO",
+                "tipo_prestador": "HOSPITAL",
+                "qt_prestador": 10,
+                "qt_especialidade_disponivel": 5,
+            }
+        ],
+        arquivo_origem="rede.csv",
+        layout_id="layout_rede_assistencial_csv",
+        layout_versao_id="layout_rede_assistencial_csv:v1",
+        hash_arquivo="sha256:7",
+        hash_estrutura="sha256:g",
+    ) == "rede_assistencial"
     assert [dataset for dataset, _, _ in chamadas] == [
         "cadop",
         "sib_operadora",
@@ -129,4 +150,5 @@ async def test_wrappers_delegam_para_dataset_correto(monkeypatch: pytest.MonkeyP
         "igr",
         "nip",
         "rn623_lista",
+        "rede_assistencial",
     ]

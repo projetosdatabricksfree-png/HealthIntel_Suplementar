@@ -25,6 +25,6 @@ async def aplicar_rate_limit(request: Request) -> None:
     if total > limite_rpm:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail={"codigo_erro": "LIMITE_EXCEDIDO", "mensagem": "Limite por minuto excedido."},
+            detail={"codigo": "LIMITE_EXCEDIDO", "mensagem": "Limite por minuto excedido."},
             headers={"Retry-After": "60"},
         )

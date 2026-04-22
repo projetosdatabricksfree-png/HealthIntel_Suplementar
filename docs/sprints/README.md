@@ -19,11 +19,11 @@ Convencoes:
 | 05 | Concluida | `docs/sprints/sprint_05_metadados_billing_governanca.md` |
 | 06 | Concluida | `docs/sprints/sprint_06_hardening_cicd_piloto.md` |
 | 07 | Concluida | `docs/sprints/sprint_07_igr_nip_rn623.md` |
-| 08 | Planejada | `docs/sprints/sprint_08_score_regulatorio_prudencial.md` |
-| 09 | Planejada | `docs/sprints/sprint_09_diops_fip.md` |
-| 10 | Planejada | `docs/sprints/sprint_10_vda_glosa_score_v2.md` |
-| 11 | Planejada | `docs/sprints/sprint_11_rede_assistencial.md` |
-| 12 | Planejada | `docs/sprints/sprint_12_vazios_oportunidade_rollout.md` |
+| 08 | Concluída | `docs/sprints/sprint_08_score_regulatorio_prudencial.md` |
+| 09 | Concluída | `docs/sprints/sprint_09_diops_fip.md` |
+| 10 | Concluída | `docs/sprints/sprint_10_vda_glosa_score_v2.md` |
+| 11 | Concluída | `docs/sprints/sprint_11_rede_assistencial.md` |
+| 12 | Concluída | `docs/sprints/sprint_12_vazios_oportunidade_rollout.md` |
 
 ## Regra de marcacao
 
@@ -61,13 +61,13 @@ DDL bronze: `regime_especial_operadora_trimestral`, `prudencial_operadora_trimes
 DDL bronze: `diops_operadora_trimestral`, `fip_operadora_trimestral`. DDL plataforma: `publicacao_financeira`. dbt: `stg_diops`, `stg_fip`, `int_financeiro_operadora_periodo`, `fat_financeiro_operadora_trimestral`. DAGs: `dag_ingest_diops`, `dag_ingest_fip`. Seed: `ref_indicador_financeiro.csv`.
 
 ### Sprint 10 — VDA, Glosa e Score v2
-DDL bronze: `vda_operadora_mensal`, `glosa_operadora_mensal`. dbt: `stg_vda`, `stg_glosa`, `fat_vda_operadora_mensal`, `fat_glosa_operadora_mensal`, `fat_score_v2_operadora_mensal`, `api_score_v2_operadora_mensal`, `api_financeiro_operadora_mensal`. DAGs: `dag_ingest_vda`, `dag_ingest_glosa`. Endpoints: `GET /v1/operadoras/{id}/financeiro`, `GET /v1/operadoras/{id}/score-v2`. Suite regressao fase 1.
+DDL bronze: `vda_operadora_mensal`, `glosa_operadora_mensal`. dbt: `stg_vda`, `stg_glosa`, `fat_vda_operadora_mensal`, `fat_glosa_operadora_mensal`, `fat_score_v2_operadora_mensal`, `api_score_v2_operadora_mensal`, `api_financeiro_operadora_mensal`. DAGs: `dag_ingest_vda`, `dag_ingest_glosa`. Endpoints: `GET /v1/operadoras/{id}/financeiro`, `GET /v1/operadoras/{id}/score-v2`. Suite regressao fase 1. Sprint concluída e validada.
 
 ### Sprint 11 — Rede Assistencial
-DDL bronze: `rede_prestador_municipio`. dbt: `stg_rede_assistencial`, `int_rede_assistencial_municipio`, `fat_cobertura_rede_municipio`, `fat_densidade_rede_operadora`, `api_rede_assistencial`. DAG: `dag_ingest_rede_assistencial`. Seeds: `ref_populacao_municipio.csv`, `ref_parametro_rede.csv`. Endpoints: `GET /v1/operadoras/{id}/rede`, `GET /v1/rede/municipio/{cd_municipio}`.
+DDL bronze: `rede_prestador_municipio`. dbt: `stg_rede_assistencial`, `int_rede_assistencial_municipio`, `fat_cobertura_rede_municipio`, `fat_densidade_rede_operadora`, `api_rede_assistencial`. DAG: `dag_ingest_rede_assistencial`. Seeds: `ref_populacao_municipio.csv`, `ref_parametro_rede.csv`. Endpoints: `GET /v1/operadoras/{id}/rede`, `GET /v1/rede/municipio/{cd_municipio}`. Sprint concluída e validada.
 
 ### Sprint 12 — Vazios, Oportunidade v2 e Rollout
-dbt: `fat_vazio_assistencial_municipio`, `fat_oportunidade_v2_municipio_mensal`, `api_vazio_assistencial`, `api_oportunidade_v2_municipio_mensal`. Endpoints: `GET /v1/mercado/vazio-assistencial`, `GET /v1/rankings/municipio/oportunidade-v2`, `GET /v1/meta/endpoints`. Suite regressao fase 2. Runbooks (4). Catalogos finais. Tag `v1.0.0-baseline`.
+dbt: `fat_vazio_assistencial_municipio`, `fat_oportunidade_v2_municipio_mensal`, `api_vazio_assistencial`, `api_oportunidade_v2_municipio_mensal`. Endpoints: `GET /v1/mercado/vazio-assistencial`, `GET /v1/rankings/municipio/oportunidade-v2`, `GET /v1/meta/endpoints`. Suite regressao fase 2. Runbooks (4). Catalogos finais. Baseline `v1.0.0-baseline`.
 
 ## Datasets fora do MVP — Decisao documentada
 

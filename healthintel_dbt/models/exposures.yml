@@ -17,3 +17,91 @@ exposures:
       email: api@healthintel.local
     depends_on:
       - ref('api_score_operadora_mensal')
+  - name: endpoint_mercado_municipio
+    label: Endpoint /v1/mercado/municipio
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_market_share_mensal')
+  - name: endpoint_ranking_score
+    label: Endpoint /v1/rankings/operadora/score
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_ranking_score')
+  - name: endpoint_score_regulatorio
+    label: Endpoint /v1/operadoras/{registro_ans}/score-regulatorio
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_score_regulatorio_operadora_mensal')
+  - name: endpoint_regime_especial
+    label: Endpoint /v1/operadoras/{registro_ans}/regime-especial
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_regime_especial_operadora')
+  - name: endpoint_portabilidade
+    label: Endpoint /v1/operadoras/{registro_ans}/portabilidade
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_portabilidade_operadora_mensal')
+  - name: endpoint_financeiro
+    label: Endpoint /v1/operadoras/{registro_ans}/financeiro
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_financeiro_operadora_mensal')
+  - name: endpoint_score_v2
+    label: Endpoint /v1/operadoras/{registro_ans}/score-v2
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_score_v2_operadora_mensal')
+  - name: endpoint_rede_operadora
+    label: Endpoint /v1/operadoras/{registro_ans}/rede
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_rede_assistencial')
+  - name: endpoint_rede_municipio
+    label: Endpoint /v1/rede/municipio/{cd_municipio}
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_rede_assistencial')
+  - name: endpoint_vazio_assistencial
+    label: Endpoint /v1/mercado/vazio-assistencial
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_vazio_assistencial')
+  - name: endpoint_oportunidade_v2
+    label: Endpoint /v1/rankings/municipio/oportunidade-v2
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_oportunidade_v2_municipio_mensal')

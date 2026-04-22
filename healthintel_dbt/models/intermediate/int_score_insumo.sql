@@ -1,5 +1,6 @@
 with base as (
     select
+        ioc.operadora_id,
         ioc.registro_ans,
         ioc.competencia,
         ioc.nome,
@@ -23,6 +24,7 @@ with base as (
 ),
 insumos as (
     select
+        operadora_id,
         registro_ans,
         competencia,
         nome,
@@ -82,7 +84,7 @@ insumos as (
                 end
             )
         )::numeric(10,2) as score_presenca
-    from base
+from base
 )
 
 select * from insumos

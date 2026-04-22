@@ -24,7 +24,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
     ports:
-      - "${MONGO_EXTERNAL_PORT:-27017}:27017"
+      - "${MONGO_EXTERNAL_PORT:-27018}:27017"
     volumes:
       - mongo_data:/data/db
       - ./mongo/init:/docker-entrypoint-initdb.d

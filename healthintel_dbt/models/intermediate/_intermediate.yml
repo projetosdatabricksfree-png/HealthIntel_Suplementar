@@ -35,3 +35,25 @@ models:
       - name: trimestre
         data_tests:
           - not_null
+  - name: int_beneficiario_operadora_enriquecido
+    description: Beneficiarios mensais com crescimento e volatilidade calculados.
+  - name: int_beneficiario_localidade_enriquecido
+    description: Beneficiarios por localidade com enriquecimento geográfico.
+  - name: int_idss_normalizado
+    description: IDSS normalizado com versao metodologica.
+  - name: int_crescimento_operadora_12m
+    description: Crescimento mensal consolidado por operadora.
+  - name: int_volatilidade_operadora_24m
+    description: Volatilidade mensal consolidada por operadora.
+  - name: int_metrica_municipio
+    description: Medidas de mercado e HHI por operadora e municipio.
+  - name: int_regulatorio_v2_operadora_trimestre
+    description: Consolidacao regulatoria v2 por operadora e competencia mensalizada.
+  - name: int_financeiro_operadora_periodo
+    description: Consolidacao financeira trimestral harmonizada por operadora.
+  - name: int_score_v2_componentes
+    description: Consolidacao mensal dos componentes do score v2 por operadora.
+  - name: int_rede_assistencial_municipio
+    description: Consolidacao geográfica da rede assistencial por operadora e municipio.
+  - name: int_oportunidade_v2_municipio
+    description: Consolidacao municipal da oportunidade v2 combinando mercado, rede, vazio e score v2.

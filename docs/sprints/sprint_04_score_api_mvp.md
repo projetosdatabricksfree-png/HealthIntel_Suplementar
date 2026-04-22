@@ -40,16 +40,16 @@
 
 ### HIS-04.6 — Completar modelos dbt derivados e endpoints de mercado/ranking
 
-- [ ] Implementar `fat_market_share_mensal.sql` (table full refresh, `nucleo_ans`): market share por operadora × municipio × competencia via `int_metrica_municipio` com calculo de HHI via macro `calcular_hhi`.
-- [ ] Implementar `fat_oportunidade_municipio_mensal.sql` (table full refresh, `nucleo_ans`): score de oportunidade por municipio × competencia cruzando beneficiarios, crescimento 12m, HHI e cobertura geografica.
-- [ ] Implementar modelos `api_ans` ausentes do PRD: `api_score_operadora_mensal.sql`, `api_market_share_mensal.sql`, `api_oportunidade_municipio_mensal.sql`, `api_ranking_crescimento.sql`, `api_ranking_score.sql`, `api_ranking_oportunidade.sql` (todos table + post-hook `criar_indices`).
-- [ ] Implementar `api/app/database.py` com asyncpg pool e SQLAlchemy async engine para consultas na `api_ans`.
-- [ ] Implementar `api/app/dependencia.py` com injecoes `validar_chave` (hash SHA-256 + cache Redis TTL 60s) e `verificar_plano` (valida `endpoint_permitido` do plano contratado).
-- [ ] Criar `api/app/services/` com queries async apontando exclusivamente para `api_ans` (a FastAPI nunca le `nucleo_ans` diretamente).
-- [ ] Criar `api/app/routers/mercado.py` com endpoint `GET /v1/mercado/municipio` (filtros: `uf`, `competencia`, `segmento`). Schema Pydantic v2: `MercadoResumoResponse`.
-- [ ] Criar `api/app/routers/ranking.py` com endpoints: `GET /v1/rankings/operadora/score`, `GET /v1/rankings/municipio/oportunidade`, `GET /v1/rankings/operadora/crescimento`.
-- [ ] Criar `api/app/schemas/mercado.py` com `MercadoResumoResponse` e `UfResponse`.
-- [ ] Criar `api/app/schemas/municipio.py` com `MunicipioResponse` e `OportunidadeResponse`.
-- [ ] Garantir que todos os endpoints retornam envelope `{dados: [...], meta: {competencia_referencia, versao_dataset, total, pagina}}`.
-- [ ] Criar teste dbt `assert_share_soma_100_por_competencia.sql` (soma de market share por competencia = 100%).
-- [ ] Criar teste dbt `assert_sem_duplicata_score_mensal.sql` (unicidade de `[operadora_id, competencia_id]` em `fat_score_operadora_mensal`).
+- [x] Implementar `fat_market_share_mensal.sql` (table full refresh, `nucleo_ans`): market share por operadora × municipio × competencia via `int_metrica_municipio` com calculo de HHI via macro `calcular_hhi`.
+- [x] Implementar `fat_oportunidade_municipio_mensal.sql` (table full refresh, `nucleo_ans`): score de oportunidade por municipio × competencia cruzando beneficiarios, crescimento 12m, HHI e cobertura geografica.
+- [x] Implementar modelos `api_ans` ausentes do PRD: `api_score_operadora_mensal.sql`, `api_market_share_mensal.sql`, `api_oportunidade_municipio_mensal.sql`, `api_ranking_crescimento.sql`, `api_ranking_score.sql`, `api_ranking_oportunidade.sql` (todos table + post-hook `criar_indices`).
+- [x] Implementar `api/app/database.py` com asyncpg pool e SQLAlchemy async engine para consultas na `api_ans`.
+- [x] Implementar `api/app/dependencia.py` com injecoes `validar_chave` (hash SHA-256 + cache Redis TTL 60s) e `verificar_plano` (valida `endpoint_permitido` do plano contratado).
+- [x] Criar `api/app/services/` com queries async apontando exclusivamente para `api_ans` (a FastAPI nunca le `nucleo_ans` diretamente).
+- [x] Criar `api/app/routers/mercado.py` com endpoint `GET /v1/mercado/municipio` (filtros: `uf`, `competencia`, `segmento`). Schema Pydantic v2: `MercadoResumoResponse`.
+- [x] Criar `api/app/routers/ranking.py` com endpoints: `GET /v1/rankings/operadora/score`, `GET /v1/rankings/municipio/oportunidade`, `GET /v1/rankings/operadora/crescimento`.
+- [x] Criar `api/app/schemas/mercado.py` com `MercadoResumoResponse` e `UfResponse`.
+- [x] Criar `api/app/schemas/municipio.py` com `MunicipioResponse` e `OportunidadeResponse`.
+- [x] Garantir que todos os endpoints retornam envelope `{dados: [...], meta: {competencia_referencia, versao_dataset, total, pagina}}`.
+- [x] Criar teste dbt `assert_share_soma_100_por_competencia.sql` (soma de market share por competencia = 100%).
+- [x] Criar teste dbt `assert_sem_duplicata_score_mensal.sql` (unicidade de `[operadora_id, competencia_id]` em `fat_score_operadora_mensal`).

@@ -2,7 +2,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test demo-data demo-data-regulatorio bootstrap-regulatorio-layouts billing-close lint sql-lint test ci-local smoke load-test
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede bootstrap-regulatorio-layouts bootstrap-rede-layouts billing-close lint sql-lint test ci-local smoke smoke-rede load-test
 
 up:
 	$(COMPOSE) up -d --build
@@ -37,15 +37,29 @@ dbt-build:
 dbt-test:
 	cd healthintel_dbt && $(DBT_ENV) dbt test
 
+dbt-seed:
+	cd healthintel_dbt && $(DBT_ENV) dbt seed
+
 demo-data:
 	python scripts/seed_demo_core.py
 	python scripts/seed_demo_regulatorio.py
+	python scripts/seed_demo_idss.py
 
 demo-data-regulatorio:
 	python scripts/seed_demo_regulatorio.py
 
+demo-data-idss:
+	python scripts/seed_demo_idss.py
+
+demo-data-rede:
+	python scripts/bootstrap_layout_registry_rede.py
+	python scripts/seed_demo_rede.py
+
 bootstrap-regulatorio-layouts:
 	python scripts/bootstrap_layout_registry_regulatorio.py
+
+bootstrap-rede-layouts:
+	python scripts/bootstrap_layout_registry_rede.py
 
 billing-close:
 	python scripts/fechar_ciclo_billing.py --referencia $(REF)
@@ -58,6 +72,9 @@ sql-lint:
 
 smoke:
 	python scripts/smoke_piloto.py
+
+smoke-rede:
+	python scripts/smoke_rede.py
 
 load-test:
 	bash scripts/run_load_test.sh

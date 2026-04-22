@@ -19,3 +19,93 @@ models:
       - name: trimestre
         data_tests:
           - not_null
+  - name: fat_beneficiario_operadora
+    description: Fato mensal de beneficiarios por operadora.
+  - name: fat_beneficiario_localidade
+    description: Fato mensal de beneficiarios por localidade e operadora.
+  - name: fat_market_share_mensal
+    description: Market share mensal por operadora e municipio.
+  - name: fat_oportunidade_municipio_mensal
+    description: Score mensal de oportunidade por municipio.
+  - name: fat_idss_operadora
+    description: Fato anual de IDSS por operadora.
+  - name: fat_reclamacao_operadora
+    description: Fato trimestral de reclamacao por operadora.
+  - name: fat_regime_especial_historico
+    description: Historico de regime especial por operadora e vigencia.
+  - name: fat_score_regulatorio_operadora_mensal
+    description: Score regulatorio composto por operadora e competencia.
+  - name: fat_financeiro_operadora_trimestral
+    description: Fato financeiro trimestral harmonizado por operadora.
+  - name: fat_vda_operadora_mensal
+    description: Fato mensal de VDA por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: fat_glosa_operadora_mensal
+    description: Fato mensal de glosa por operadora e tipo.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: tipo_glosa
+        data_tests:
+          - not_null
+  - name: fat_score_v2_operadora_mensal
+    description: Score composto v2 por operadora e competencia.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: fat_cobertura_rede_municipio
+    description: Cobertura de rede assistencial por operadora, municipio, segmento e competencia.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+  - name: fat_densidade_rede_operadora
+    description: Densidade de rede assistencial por operadora e competencia.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: fat_vazio_assistencial_municipio
+    description: Vazios assistenciais por municipio, segmento e competencia.
+    columns:
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: segmento
+        data_tests:
+          - not_null
+  - name: fat_oportunidade_v2_municipio_mensal
+    description: Score de oportunidade v2 por municipio, competencia e algoritmo.
+    columns:
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null

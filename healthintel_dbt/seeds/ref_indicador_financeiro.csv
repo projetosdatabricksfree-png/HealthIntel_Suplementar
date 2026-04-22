@@ -1,0 +1,5 @@
+indicador,formula,sentido,intervalo_minimo,intervalo_maximo,peso
+indice_sinistralidade,sinistro_total/contraprestacao_total,menor_melhor,0,2,0.35
+margem_liquida,(receita_total-despesa_total)/receita_total,maior_melhor,-50,50,0.25
+cobertura_provisao,provisao_tecnica/(sinistro_total/4),maior_melhor,0,4,0.20
+resultado_normalizado,resultado_operacional,maior_melhor,-1000000,1000000,0.20

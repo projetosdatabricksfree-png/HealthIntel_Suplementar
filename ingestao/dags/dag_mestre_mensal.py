@@ -2,7 +2,7 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.subdag import SubDagOperator
+from airflow.utils.task_group import TaskGroup
 
 with DAG(
     dag_id="dag_mestre_mensal",
@@ -13,25 +13,25 @@ with DAG(
 ) as dag:
     inicio = EmptyOperator(task_id="inicio")
 
-    preparar_particoes = SubDagOperator(
-        task_id="preparar_particoes",
-        subdag_id="dag_criar_particao_mensal",
-    )
+    with TaskGroup(group_id="preparar_particoes") as preparar_particoes:
+        preparar_particoes_inicio = EmptyOperator(task_id="inicio")
+        preparar_particoes_fim = EmptyOperator(task_id="fim")
+        preparar_particoes_inicio >> preparar_particoes_fim
 
     identificar_dataset = EmptyOperator(task_id="identificar_dataset")
     resolver_layout = EmptyOperator(task_id="resolver_layout")
     carregar_bruto = EmptyOperator(task_id="carregar_bruto")
     executar_dbt = EmptyOperator(task_id="executar_dbt")
 
-    validar_freshness = SubDagOperator(
-        task_id="validar_freshness",
-        subdag_id="dag_dbt_freshness",
-    )
+    with TaskGroup(group_id="validar_freshness") as validar_freshness:
+        validar_freshness_inicio = EmptyOperator(task_id="inicio")
+        validar_freshness_fim = EmptyOperator(task_id="fim")
+        validar_freshness_inicio >> validar_freshness_fim
 
-    registrar_versao = SubDagOperator(
-        task_id="registrar_versao",
-        subdag_id="dag_registrar_versao",
-    )
+    with TaskGroup(group_id="registrar_versao") as registrar_versao:
+        registrar_versao_inicio = EmptyOperator(task_id="inicio")
+        registrar_versao_fim = EmptyOperator(task_id="fim")
+        registrar_versao_inicio >> registrar_versao_fim
 
     publicar_api = EmptyOperator(task_id="publicar_api")
     fim = EmptyOperator(task_id="fim")

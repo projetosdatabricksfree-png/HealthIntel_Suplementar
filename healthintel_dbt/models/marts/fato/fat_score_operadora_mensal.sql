@@ -1,6 +1,6 @@
 {{
     config(
-        unique_key=['registro_ans', 'competencia'],
+        unique_key=['operadora_id', 'competencia'],
         incremental_strategy='delete+insert',
         on_schema_change='sync_all_columns'
     )
@@ -48,6 +48,7 @@ base as (
 )
 
 select
+    base.operadora_id,
     base.registro_ans,
     cast(competencia as text) as competencia,
     round(

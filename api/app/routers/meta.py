@@ -1,6 +1,11 @@
 from fastapi import APIRouter
 
-from api.app.services.meta import listar_datasets, listar_pipeline, listar_versoes
+from api.app.services.meta import (
+    listar_datasets,
+    listar_endpoints,
+    listar_pipeline,
+    listar_versoes,
+)
 
 router = APIRouter(prefix="/meta", tags=["meta"])
 
@@ -18,3 +23,8 @@ async def get_versoes() -> dict:
 @router.get("/pipeline")
 async def get_pipeline() -> dict:
     return await listar_pipeline()
+
+
+@router.get("/endpoints")
+async def get_endpoints() -> dict:
+    return await listar_endpoints()

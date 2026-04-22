@@ -18,6 +18,7 @@ class DatasetMetaResponse(BaseModel):
 
 class PipelineMetaResponse(BaseModel):
     dag_id: str
+    dataset: str | None = None
     status: str
     iniciado_em: str
     finalizado_em: str | None = None
@@ -29,3 +30,13 @@ class VersaoDatasetResponse(BaseModel):
     carregado_em: str
     competencia: str | None = None
     status: str
+
+
+class EndpointMetaResponse(BaseModel):
+    metodo: str
+    rota: str
+    descricao: str
+    autenticacao: str
+    plano_minimo: str
+    dataset_origem: str | None = None
+    versao: str

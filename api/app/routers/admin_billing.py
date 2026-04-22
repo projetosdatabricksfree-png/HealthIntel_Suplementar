@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 
+from api.app.dependencia import verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest
 from api.app.services.billing import (
@@ -11,7 +12,7 @@ from api.app.services.billing import (
 router = APIRouter(
     prefix="/admin/billing",
     tags=["admin-billing"],
-    dependencies=[Depends(validar_api_key)],
+    dependencies=[Depends(validar_api_key), Depends(verificar_plano)],
 )
 
 

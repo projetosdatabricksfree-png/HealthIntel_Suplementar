@@ -24,6 +24,15 @@ def test_hardening_deve_bloquear_payload_maior_que_limite() -> None:
     assert body["detail"]["codigo_erro"] == "PAYLOAD_EXCEDIDO"
 
 
+def test_operadoras_sem_api_key_deve_padronizar_401() -> None:
+    response = client.get("/v1/operadoras")
+
+    assert response.status_code == 401
+    body = response.json()
+    assert body["codigo"] == "CHAVE_INVALIDA"
+    assert "X-Request-ID" in response.headers
+
+
 @patch("api.app.main.obter_prontidao", new_callable=AsyncMock)
 def test_prontidao_deve_retornar_503_quando_dependencia_falha(
     mock_obter_prontidao: AsyncMock,

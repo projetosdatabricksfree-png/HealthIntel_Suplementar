@@ -40,3 +40,63 @@ sources:
         freshness:
           warn_after: {count: 120, period: day}
           error_after: {count: 180, period: day}
+      - name: idss
+        description: IDSS anual por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 365, period: day}
+          error_after: {count: 540, period: day}
+      - name: regime_especial_operadora_trimestral
+        description: Regime especial de direcao fiscal e tecnica por operadora e trimestre.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: prudencial_operadora_trimestral
+        description: Indicadores prudenciais trimestrais por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: portabilidade_operadora_mensal
+        description: Movimentacao de portabilidade mensal por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 35, period: day}
+          error_after: {count: 60, period: day}
+      - name: taxa_resolutividade_operadora_trimestral
+        description: Taxa de resolutividade trimestral por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: diops_operadora_trimestral
+        description: Demonstracoes contabeis e financeiras trimestrais por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: fip_operadora_trimestral
+        description: Serie historica financeira compatibilizada com DIOPS por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: vda_operadora_mensal
+        description: Valor Devido à ANS mensal por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: glosa_operadora_mensal
+        description: Glosa mensal por operadora e tipo de glosa.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: rede_prestador_municipio
+        description: Rede assistencial por operadora, municipio e segmento.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}

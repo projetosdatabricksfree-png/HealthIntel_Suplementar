@@ -1833,16 +1833,16 @@ Decisao: nenhuma compatibilidade nova entra em producao sem workflow humano.
 - [x] 12. Implementar CI/CD e hardening.
 - [x] 13. Implementar IGR e NIP.
 - [x] 14. Implementar listas RN 623.
-- [ ] 15. Implementar regime especial e prudencial.
-- [ ] 16. Implementar score regulatorio.
-- [ ] 17. Implementar DIOPS/FIP.
-- [ ] 18. Implementar VDA operacional.
-- [ ] 19. Implementar glosa.
-- [ ] 20. Implementar score v2.
-- [ ] 21. Implementar rede assistencial.
-- [ ] 22. Implementar vazios assistenciais.
-- [ ] 23. Implementar oportunidade v2.
-- [ ] 24. Fechar rollout enterprise.
+- [x] 15. Implementar regime especial e prudencial.
+- [x] 16. Implementar score regulatorio.
+- [x] 17. Implementar DIOPS/FIP.
+- [x] 18. Implementar VDA operacional.
+- [x] 19. Implementar glosa.
+- [x] 20. Implementar score v2.
+- [x] 21. Implementar rede assistencial.
+- [x] 22. Implementar vazios assistenciais.
+- [x] 23. Implementar oportunidade v2.
+- [x] 24. Fechar rollout enterprise.
 
 Detalhamento operacional por sprint em `docs/sprints/README.md`.
 

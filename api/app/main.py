@@ -1,15 +1,27 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from api.app.core.config import get_settings
+from api.app.core.errors import normalizar_http_exception
 from api.app.middleware.hardening import aplicar_hardening_http
 from api.app.middleware.log_requisicao import registrar_tempo_requisicao
-from api.app.routers import admin_billing, admin_layout, meta, operadora, regulatorio
+from api.app.routers import (
+    admin_billing,
+    admin_layout,
+    financeiro,
+    mercado,
+    meta,
+    operadora,
+    ranking,
+    rede,
+    regulatorio,
+    regulatorio_v2,
+)
 from api.app.services.health import obter_prontidao
 
 settings = get_settings()
@@ -33,9 +45,19 @@ app.middleware("http")(aplicar_hardening_http)
 app.middleware("http")(registrar_tempo_requisicao)
 app.include_router(meta.router, prefix=settings.app_prefixo)
 app.include_router(operadora.router, prefix=settings.app_prefixo)
+app.include_router(mercado.router, prefix=settings.app_prefixo)
+app.include_router(rede.router, prefix=settings.app_prefixo)
+app.include_router(ranking.router, prefix=settings.app_prefixo)
 app.include_router(regulatorio.router, prefix=settings.app_prefixo)
+app.include_router(regulatorio_v2.router, prefix=settings.app_prefixo)
+app.include_router(financeiro.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)
+
+
+@app.exception_handler(HTTPException)
+async def tratar_http_exception(_: Request, exc: HTTPException) -> JSONResponse:
+    return normalizar_http_exception(exc)
 
 
 @app.get("/saude")

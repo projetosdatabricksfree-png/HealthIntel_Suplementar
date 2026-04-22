@@ -1,0 +1,7 @@
+segmento,porte_municipio,limiar_prestador_por_10k,limiar_especialidade_por_10k
+MEDICO,pequeno,0.8,1.2
+MEDICO,medio,1.0,1.5
+MEDICO,grande,1.2,1.8
+ODONTO,pequeno,0.6,0.9
+ODONTO,medio,0.8,1.1
+ODONTO,grande,1.0,1.4

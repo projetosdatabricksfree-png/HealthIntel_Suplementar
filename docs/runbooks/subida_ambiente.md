@@ -7,7 +7,7 @@ Subir o stack local ou staging repetível da Sprint 06 com validação mínima d
 ## Passos
 
 1. Copiar `.env.exemplo` para `.env` ou `.env.local`.
-2. Ajustar `*_EXTERNAL_PORT` se já existir serviço local ocupando `5432`, `6379`, `27017`, `8080`, `8081` ou `8088`.
+2. Ajustar `*_EXTERNAL_PORT` se já existir serviço local ocupando `5432`, `6379`, `27018`, `8080`, `8081` ou `8088`.
 3. Garantir segredos não-padrão fora de `local`:
    - `API_JWT_ADMIN_SECRET`
    - `LAYOUT_SERVICE_TOKEN`

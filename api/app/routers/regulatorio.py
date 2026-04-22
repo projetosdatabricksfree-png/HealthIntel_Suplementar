@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query, Request
 
+from api.app.dependencia import verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.services.regulatorio import listar_rn623
@@ -7,7 +8,7 @@ from api.app.services.regulatorio import listar_rn623
 router = APIRouter(
     prefix="/regulatorio",
     tags=["regulatorio"],
-    dependencies=[Depends(validar_api_key)],
+    dependencies=[Depends(validar_api_key), Depends(verificar_plano)],
 )
 
 
