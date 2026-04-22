@@ -1,0 +1,22 @@
+[sqlfluff]
+dialect = postgres
+templater = dbt
+max_line_length = 100
+sql_file_exts = .sql
+exclude_rules = LT01,LT02,LT05,LT08,ST06,RF02,CV11
+
+[sqlfluff:templater:dbt]
+project_dir = healthintel_dbt
+profiles_dir = healthintel_dbt
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = lower
+
+[sqlfluff:rules:aliasing.table]
+aliasing = explicit

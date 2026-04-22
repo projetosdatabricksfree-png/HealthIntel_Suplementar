@@ -1,0 +1,12 @@
+healthintel_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'healthintel') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'healthintel') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'healthintel') }}"
+      schema: stg_ans
+      threads: 4

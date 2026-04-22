@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: fat_score_operadora_mensal
+    description: Score mensal consolidado por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: fat_monitoramento_regulatorio_trimestral
+    description: Fato trimestral consolidado do monitoramento regulatório por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null

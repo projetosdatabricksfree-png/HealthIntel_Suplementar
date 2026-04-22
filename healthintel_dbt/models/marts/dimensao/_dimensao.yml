@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: dim_operadora_atual
+    description: Dimensao atual da operadora usada pela API e fatos.
+    columns:
+      - name: operadora_id
+        data_tests:
+          - not_null
+          - unique
+      - name: registro_ans
+        data_tests:
+          - not_null
+          - unique
+  - name: dim_competencia
+    description: Calendario de competencias disponiveis nas fontes mensais.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+          - unique

@@ -1,0 +1,19 @@
+version: 2
+
+exposures:
+  - name: endpoint_operadoras
+    label: Endpoint /v1/operadoras
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_operadora')
+  - name: endpoint_score_operadora
+    label: Endpoint /v1/operadoras/{registro_ans}/score
+    type: application
+    owner:
+      name: plataforma_api
+      email: api@healthintel.local
+    depends_on:
+      - ref('api_score_operadora_mensal')

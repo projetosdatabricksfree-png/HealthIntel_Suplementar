@@ -1,0 +1,5 @@
+versao_score,componente,peso,vigente_inicio,vigente_fim,ativo
+score_v1,crescimento,0.35,2024-01-01,,true
+score_v1,qualidade,0.25,2024-01-01,,true
+score_v1,estabilidade,0.20,2024-01-01,,true
+score_v1,presenca,0.20,2024-01-01,,true

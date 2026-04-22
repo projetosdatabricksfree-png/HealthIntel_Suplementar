@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: api_operadora
+    description: Camada desnormalizada de leitura da API.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+          - unique
+  - name: api_score_operadora_mensal
+    description: Camada mensal detalhada de score exposta pela API.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: api_regulatorio_operadora_trimestral
+    description: Camada trimestral regulatória por operadora exposta pela API.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null
+  - name: api_rn623_lista_trimestral
+    description: Listas trimestrais RN 623 para exploração na API.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: tipo_lista
+        data_tests:
+          - not_null

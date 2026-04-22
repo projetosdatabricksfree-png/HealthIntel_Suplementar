@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: stg_cadop
+    description: Cadastro de operadoras padronizado para consumo interno.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: nome
+        data_tests:
+          - not_null
+  - name: stg_sib_operadora
+    description: SIB mensal consolidado por operadora.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_sib_municipio
+    description: SIB mensal consolidado por municipio e operadora.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: codigo_ibge
+        data_tests:
+          - not_null
+  - name: stg_igr
+    description: IGR trimestral padronizado por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_nip
+    description: Demandas NIP e TIR/TR trimestrais por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+  - name: stg_rn623_lista
+    description: Listas da RN 623/2024 padronizadas por operadora e trimestre.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: tipo_lista
+        data_tests:
+          - not_null

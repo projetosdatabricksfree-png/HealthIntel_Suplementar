@@ -1,4 +1,5 @@
 .env
+.env.local
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,3 +7,19 @@ __pycache__/
 venv/
 ENV/
 env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+logs/
+*.log
+*.egg-info/
+healthintel_dbt/dbt_packages/
+healthintel_dbt/target/
+healthintel_dbt/logs/
+healthintel_dbt/package-lock.yml
+testes/load/resultados/
+tmp/

@@ -1,0 +1,193 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: healthintel_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-healthintel}
+      POSTGRES_USER: ${POSTGRES_USER:-healthintel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthintel} -d ${POSTGRES_DB:-healthintel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    container_name: healthintel_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
+    ports:
+      - "${MONGO_EXTERNAL_PORT:-27017}:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --username ${MONGO_INITDB_ROOT_USERNAME:-healthintel} --password ${MONGO_INITDB_ROOT_PASSWORD:-healthintel} --eval 'db.adminCommand({ ping: 1 })' --quiet"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: healthintel_redis
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: python:3.12-slim
+    container_name: healthintel_api
+    working_dir: /workspace
+    command: bash -lc "pip install -e . && uvicorn api.app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-healthintel}
+      POSTGRES_USER: ${POSTGRES_USER:-healthintel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_DB: ${MONGO_DB:-healthintel_layout}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
+      LAYOUT_SERVICE_BASE_URL: http://mongo_layout_service:8001
+      API_ENV: ${API_ENV:-local}
+      API_PORT: 8000
+      API_PREFIX: ${API_PREFIX:-/v1}
+      API_JWT_ADMIN_SECRET: ${API_JWT_ADMIN_SECRET:-trocar_em_producao}
+      API_ALLOWED_HOSTS: ${API_ALLOWED_HOSTS:-localhost,127.0.0.1,testserver,api,healthintel_api}
+      API_CORS_ALLOWED_ORIGINS: ${API_CORS_ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      API_MAX_REQUEST_SIZE_BYTES: ${API_MAX_REQUEST_SIZE_BYTES:-1048576}
+      LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:-healthintel_layout_service_local_token_2026}
+    volumes:
+      - ..:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  mongo_layout_service:
+    image: python:3.12-slim
+    container_name: healthintel_layout_service
+    working_dir: /workspace
+    command: bash -lc "pip install -e . && uvicorn mongo_layout_service.app.main:app --host 0.0.0.0 --port 8001"
+    environment:
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_DB: ${MONGO_DB:-healthintel_layout}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
+      LAYOUT_SERVICE_ENV: ${LAYOUT_SERVICE_ENV:-local}
+      LAYOUT_SERVICE_PORT: 8001
+      LAYOUT_SERVICE_ALLOWED_HOSTS: ${LAYOUT_SERVICE_ALLOWED_HOSTS:-localhost,127.0.0.1,testserver,mongo_layout_service,healthintel_layout_service}
+      LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES: ${LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES:-1048576}
+      LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:-healthintel_layout_service_local_token_2026}
+    volumes:
+      - ..:/workspace
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  airflow-init:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: healthintel_airflow_init
+    user: "${AIRFLOW_UID:-50000}:0"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR:-LocalExecutor}
+      AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+    command: bash -lc "airflow db migrate && (airflow users create --username admin --password admin --firstname Health --lastname Intel --role Admin --email admin@healthintel.local || true)"
+    volumes:
+      - ../ingestao/dags:/opt/airflow/dags
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  airflow-webserver:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: healthintel_airflow_webserver
+    user: "${AIRFLOW_UID:-50000}:0"
+    command: webserver
+    environment:
+      AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR:-LocalExecutor}
+      AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+    ports:
+      - "${AIRFLOW_EXTERNAL_PORT:-8088}:8080"
+    volumes:
+      - ../ingestao/dags:/opt/airflow/dags
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.1-python3.12
+    container_name: healthintel_airflow_scheduler
+    user: "${AIRFLOW_UID:-50000}:0"
+    command: scheduler
+    environment:
+      AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR:-LocalExecutor}
+      AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+    volumes:
+      - ../ingestao/dags:/opt/airflow/dags
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.8.2
+    container_name: healthintel_dbt
+    working_dir: /workspace/healthintel_dbt
+    command: deps
+    environment:
+      DBT_PROFILES_DIR: /workspace/healthintel_dbt
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-healthintel}
+      POSTGRES_USER: ${POSTGRES_USER:-healthintel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+    volumes:
+      - ..:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.26-alpine
+    container_name: healthintel_nginx
+    ports:
+      - "${API_EXTERNAL_PORT:-8080}:8080"
+      - "${LAYOUT_EXTERNAL_PORT:-8081}:8081"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - mongo_layout_service
+
+volumes:
+  postgres_data:
+  mongo_data:

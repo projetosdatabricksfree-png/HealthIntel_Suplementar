@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_operadora_canonica
+    description: Chave canonica de operadora a partir do CADOP.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+          - unique
+  - name: int_operadora_competencia
+    description: Chave canonica por operadora e competencia consolidada do SIB.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: int_score_insumo
+    description: Insumos mensais usados pelo score v1 com base em cadastro e SIB.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+  - name: int_regulatorio_operadora_trimestre
+    description: Consolidacao trimestral do monitoramento regulatorio por operadora.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null

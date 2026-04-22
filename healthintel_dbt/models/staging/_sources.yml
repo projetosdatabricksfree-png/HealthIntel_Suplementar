@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: bruto_ans
+    schema: bruto_ans
+    tables:
+      - name: cadop
+        description: Espelho fiel do cadastro de operadoras.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 7, period: day}
+          error_after: {count: 15, period: day}
+      - name: sib_beneficiario_operadora
+        description: Beneficiarios SIB consolidados por operadora e competencia.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 35, period: day}
+          error_after: {count: 60, period: day}
+      - name: sib_beneficiario_municipio
+        description: Beneficiarios SIB consolidados por municipio e competencia.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 35, period: day}
+          error_after: {count: 60, period: day}
+      - name: igr_operadora_trimestral
+        description: Indicador IGR trimestral por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 180, period: day}
+      - name: nip_operadora_trimestral
+        description: Demandas NIP e taxas de intermediação por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 180, period: day}
+      - name: rn623_lista_operadora_trimestral
+        description: Listas trimestrais de excelência e redução da RN 623/2024.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 180, period: day}

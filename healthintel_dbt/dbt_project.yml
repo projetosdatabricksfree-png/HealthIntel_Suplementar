@@ -1,0 +1,42 @@
+name: healthintel_dbt
+version: 1.0.0
+config-version: 2
+
+profile: healthintel_dbt
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+models:
+  healthintel_dbt:
+    staging:
+      +schema: stg_ans
+      +materialized: view
+    intermediate:
+      +schema: int_ans
+      +materialized: ephemeral
+    marts:
+      dimensao:
+        +schema: nucleo_ans
+        +materialized: table
+      fato:
+        +schema: nucleo_ans
+        +materialized: incremental
+    api:
+      +schema: api_ans
+      +materialized: table
+
+vars:
+  score_pesos:
+    crescimento: 0.40
+    qualidade: 0.30
+    estabilidade: 0.20
+    presenca: 0.10
+
+seeds:
+  healthintel_dbt:
+    +schema: ref_ans
