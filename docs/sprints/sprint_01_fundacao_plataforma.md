@@ -35,3 +35,44 @@
 - [x] Executar checagem de consistencia do scaffold.
 - [x] Garantir que o bootstrap local esteja documentado em `README.md`.
 - [x] Manter o repositório pronto para evolucao por sprint.
+
+### HIS-01.6 — Isolar dependencias e fixar versoes de requirements
+
+- [x] Centralizar dependencias em `pyproject.toml` com versoes pinadas: core (fastapi, uvicorn, pydantic, sqlalchemy, asyncpg, redis, motor, pymongo, httpx, structlog, python-dotenv) e dev (pytest, pytest-asyncio, ruff, sqlfluff, alembic, locust, dbt-core, dbt-postgres).
+- [x] Configurar venv isolado em cada servico: `api/.venv`, `healthintel_dbt/.venv`, `ingestao/.venv` — nenhuma dependencia instalada globalmente.
+- [x] Formalizar targets no `Makefile`: `up` (docker compose up com servicos centrais), `dbt-build` (dbt run completo), `api-dev` (uvicorn em modo dev com reload).
+- [x] Configurar `healthintel_dbt/packages.yml` com `dbt-utils`, `dbt-expectations` e `dbt-codegen` com versoes fixas.
+- [x] Validar instalacao local com `pip install -e .[dev]` e testar imports.
+
+## Validacao e Conclusao
+
+**Data de conclusao:** 2026-04-22
+
+**Status:** ✅ **CONCLUIDA**
+
+### Checklist de Saida
+
+- [x] Monorepo estruturado com todas as arvores principais criadas e congeladas.
+- [x] Infraestrutura local sobe sem erros (`docker compose -f infra/docker-compose.yml up`).
+- [x] Banco de dados PostgreSQL com schemas iniciais e alembic configurado.
+- [x] MongoDB pronto para layouts (mongo_layout_service ativo).
+- [x] Redis operacional para cache de API.
+- [x] Airflow configurado para orquestracao de DAGs.
+- [x] API local em :8000 com health check e auth middleware base.
+- [x] Dependencias centralizadas em `pyproject.toml` com versoes pinadas.
+- [x] CLAUDE.md documentando padroes e fluxos da plataforma.
+- [x] README.md com instrucoes de bootstrap e makefile.
+- [x] Ambiente pronto para Sprint 02 (layout registry Bronze).
+
+### Artifacts de Sprint
+
+| Artefato | Localizacao | Status |
+|----------|-------------|--------|
+| Monorepo scaffold | `/` | Congelado |
+| Docker compose | `infra/docker-compose.yml` | ✅ Validado |
+| Schema PostgreSQL | `infra/postgres/init/001_schemas.sql` | ✅ Ativo |
+| Config centralizada | `pyproject.toml` | ✅ Pinado |
+| API base | `api/app/main.py` | ✅ Health + Auth |
+| Makefile | `Makefile` | ✅ Targets core |
+| CLAUDE.md | `CLAUDE.md` | ✅ Documentado |
+| .env exemplo | `.env` | ✅ Safe defaults |
