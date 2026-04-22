@@ -1,0 +1,17 @@
+[project]
+name = "mcp-health-intel"
+version = "0.1.0"
+description = "MCP Server for Databricks HealthIntel"
+dependencies = [
+    "mcp[cli]>=0.1.0",
+    "databricks-sdk>=0.20.0",
+    "fastmcp>=0.1.0",
+    "python-dotenv",
+]
+
+[project.scripts]
+mcp-server = "server.main:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

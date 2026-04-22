@@ -1,0 +1,8 @@
+command: [
+  "uv",
+  "run",
+  "mcp-server"
+]
+environment:
+  DATABRICKS_HOST: "{{databricks_host}}" # O Databricks Apps preenche isso automaticamente
+  PORT: "8000"

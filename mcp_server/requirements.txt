@@ -1,3 +1,5 @@
+mcp[cli]
 databricks-sdk
+fastmcp
 python-dotenv
-pandas
+uv
