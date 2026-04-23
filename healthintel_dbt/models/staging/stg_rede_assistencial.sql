@@ -6,7 +6,7 @@
 
 with base as (
     select
-        cast(regexp_replace(cast(competencia as text), '[^0-9]', '', 'g') as integer) as competencia,
+        lpad(regexp_replace(cast(competencia as text), '[^0-9]', '', 'g'), 6, '0') as competencia,
         {{ normalizar_registro_ans('registro_ans') }} as registro_ans,
         lpad(regexp_replace(cast(cd_municipio as text), '[^0-9]', '', 'g'), 7, '0') as cd_municipio,
         upper(trim(coalesce(nm_municipio, 'NAO INFORMADO'))) as nm_municipio,

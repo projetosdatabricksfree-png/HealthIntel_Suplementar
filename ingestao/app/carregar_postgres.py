@@ -242,6 +242,46 @@ DATASET_CONFIG = {
             "fonte_publicacao",
         ],
     },
+    "cnes_estabelecimento": {
+        "tabela_destino": "bruto_ans.cnes_estabelecimento",
+        "colunas": [
+            "competencia",
+            "cnes",
+            "cnpj",
+            "razao_social",
+            "nome_fantasia",
+            "sg_uf",
+            "cd_municipio",
+            "nm_municipio",
+            "tipo_unidade",
+            "tipo_unidade_desc",
+            "esfera_administrativa",
+            "vinculo_sus",
+            "leitos_existentes",
+            "leitos_sus",
+            "latitude",
+            "longitude",
+            "situacao",
+            "fonte_publicacao",
+        ],
+    },
+    "tiss_procedimento": {
+        "tabela_destino": "bruto_ans.tiss_procedimento_trimestral",
+        "colunas": [
+            "trimestre",
+            "registro_ans",
+            "sg_uf",
+            "grupo_procedimento",
+            "grupo_desc",
+            "subgrupo_procedimento",
+            "qt_procedimentos",
+            "qt_beneficiarios_distintos",
+            "valor_total",
+            "modalidade",
+            "tipo_contratacao",
+            "fonte_publicacao",
+        ],
+    },
 }
 
 
@@ -762,6 +802,58 @@ async def carregar_rede_assistencial_bruto(
 ) -> LoteCarga:
     return await carregar_dataset_bruto(
         "rede_assistencial",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_cnes_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "cnes_estabelecimento",
+        registros,
+        arquivo_origem=arquivo_origem,
+        layout_id=layout_id,
+        layout_versao_id=layout_versao_id,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        status_parse=status_parse,
+        lote_id=lote_id,
+        colunas_mapeadas=colunas_mapeadas,
+    )
+
+
+async def carregar_tiss_procedimento_bruto(
+    registros: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    status_parse: str = "sucesso",
+    lote_id: str | None = None,
+    colunas_mapeadas: list[dict] | None = None,
+) -> LoteCarga:
+    return await carregar_dataset_bruto(
+        "tiss_procedimento",
         registros,
         arquivo_origem=arquivo_origem,
         layout_id=layout_id,

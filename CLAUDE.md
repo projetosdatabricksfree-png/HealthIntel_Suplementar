@@ -48,16 +48,23 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 | **Start services** | `make up` |
 | **Stop services** | `make down` |
 | **View logs** | `make logs` |
+| **Service status** | `make ps` |
 | **Python linting** | `make lint` (Ruff) |
 | **SQL linting** | `make sql-lint` (SQLFluff) |
 | **Run all tests** | `make test` (pytest) |
 | **Run single test** | `pytest api/tests/unit/test_saude.py -v` |
+| **dbt deps** | `make dbt-deps` |
 | **dbt compile** | `make dbt-compile` |
 | **dbt build** | `make dbt-build` |
 | **dbt test** | `make dbt-test` |
-| **Seed demo data** | `make demo-data` |
-| **Bootstrap layouts** | `make bootstrap-regulatorio-layouts` |
-| **Smoke test** | `make smoke` |
+| **dbt seed** | `make dbt-seed` |
+| **Seed demo data** | `make demo-data` (core + regulatorio + idss) |
+| **Seed rede data** | `make demo-data-rede` |
+| **Bootstrap regulatorio layouts** | `make bootstrap-regulatorio-layouts` |
+| **Bootstrap rede layouts** | `make bootstrap-rede-layouts` |
+| **Close billing cycle** | `make billing-close REF=YYYYMM` |
+| **Smoke test (piloto)** | `make smoke` |
+| **Smoke test (rede)** | `make smoke-rede` |
 | **Load test** | `make load-test` (Locust) |
 | **Dev API server** | `make api-dev` (auto-reload on :8000) |
 | **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
@@ -78,8 +85,8 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 - `app/main.py`: FastAPI entrypoint. Health check, CORS, auth middleware.
 - `app/core/`: Database pools, Redis client, config loading.
-- `app/middleware/`: `autenticacao.py` (X-API-Key validation + Redis cache), `rate_limit.py` (SlowAPI).
-- `app/routers/`: Endpoint groups (operadora, mercado, ranking, regulatorio, financeiro, rede, etc.).
+- `app/middleware/`: `autenticacao.py` (X-API-Key validation + Redis cache), `rate_limit.py` (SlowAPI), `hardening.py` (security headers), `log_requisicao.py` (request timing).
+- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `financeiro_v2`, `rede`, `meta`, `admin_billing`, `admin_layout`.
 - `app/schemas/`: Pydantic v2 request/response models per endpoint group.
 - `app/services/`: Async query builders (never direct dbt model access, only `api_ans`).
 - `app/dependencia.py`: Dependency injection (validar_chave, verificar_plano).
@@ -98,9 +105,10 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `models/intermediate/`: Ephemeral (not materialized). Joins, aggregations, preparation.
 - `models/marts/dimensao/`: Dimension tables (dim_operadora_atual, dim_competencia, dim_localidade).
 - `models/marts/fato/`: Fact tables. Incremental merge with `unique_key` or full refresh.
+- `models/marts/derivado/`: Derived score/index tables computed from facts (score, ranking, oportunidade).
 - `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro.
 - `tests/`: dbt generic tests, singular SQL assertions (assert_*.sql).
-- `macros/`: Reusable functions (normalizar_registro_ans, competencia_para_data, calcular_hhi, versao_metodologia_idss, criar_indices).
+- `macros/`: `normalizar_registro_ans`, `competencia_para_data`, `competencia_para_trimestre`, `trimestre_para_competencia`, `calcular_hhi`, `normalizar_0_100`, `versao_metodologia_idss`, `classificar_rating_regulatorio`, `criar_indices`, `criar_indice_api`, `generate_schema_name`.
 - `seeds/ref_*`: Dimension data (ref_uf, ref_municipio_ibge, ref_competencia, ref_modalidade).
 - `_sources.yml`: Source declarations with freshness checks (warn after N days).
 - `_*.yml`: Documentation (staging, intermediate, dimension, fato, api, exposures).
@@ -133,7 +141,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 1. **Staging (view)**: `models/staging/stg_{source}.sql` — normalize, cast, one-to-one.
 2. **Intermediate (ephemeral)**: `models/intermediate/int_{concept}.sql` — join, derive, prepare.
-3. **Fact/Dimension (table)**: `models/marts/{tipo}/{model}.sql`.
+3. **Fact/Dimension/Derived (table)**: `models/marts/{dimensao|fato|derivado}/{model}.sql`.
    - Set `materialized: table` and `schema: nucleo_ans` (or api_ans for API layer).
    - For incremental: `incremental_merge`, `unique_key: [...]`, reprocess last N competencies.
    - For API: add `post_hook: criar_indices(...)`.
@@ -151,11 +159,15 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 ### Testing
 
-- **Unit**: `pytest api/tests/unit/` — schemas, auth, utilities.
+Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
+
+- **Unit**: `pytest api/tests/unit/` (API) or `pytest testes/unit/` (layout service).
 - **Integration**: `pytest api/tests/integration/` — endpoints vs. live DB.
+- **Regression**: `pytest testes/regressao/` — cross-phase endpoint regression suite.
+- **Ingestao**: `pytest ingestao/tests/` — DAG parsing, mock operator tests.
 - **dbt**: `dbt test` — generic tests + singular SQL assertions.
-- **Smoke**: `python scripts/smoke_piloto.py` — end-to-end, all endpoints + key queries.
-- **Load**: `bash scripts/run_load_test.sh` — Locust perf baseline.
+- **Smoke**: `make smoke` (piloto) or `make smoke-rede` — end-to-end validation.
+- **Load**: `make load-test` — Locust perf baseline (`testes/load/locustfile.py`).
 
 ---
 

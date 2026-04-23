@@ -50,7 +50,7 @@ base as (
 select
     base.operadora_id,
     base.registro_ans,
-    cast(competencia as text) as competencia,
+    competencia,
     round(
         (
             (base.score_crescimento * pesos.peso_crescimento)

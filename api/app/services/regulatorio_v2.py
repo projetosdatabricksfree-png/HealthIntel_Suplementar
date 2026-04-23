@@ -235,7 +235,7 @@ async def listar_portabilidade_operadora(
     filtros = ["registro_ans = :registro_ans"]
     if competencia:
         filtros.append("competencia = :competencia")
-        params["competencia"] = int(competencia)
+        params["competencia"] = competencia
     where_clause = " where " + " and ".join(filtros)
 
     async with SessionLocal() as session:

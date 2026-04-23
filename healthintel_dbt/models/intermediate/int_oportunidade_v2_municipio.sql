@@ -85,7 +85,7 @@ operadora_relevante as (
     ) as cobertura
     inner join {{ ref('fat_score_v2_operadora_mensal') }} as score_v2
         on score_v2.operadora_id = cobertura.operadora_id
-        and cast(score_v2.competencia as text) = cast(cobertura.competencia as text)
+        and score_v2.competencia = cobertura.competencia
 ),
 score_v2_municipio as (
     select

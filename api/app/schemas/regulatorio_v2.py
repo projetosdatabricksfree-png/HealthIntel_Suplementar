@@ -52,7 +52,7 @@ class PortabilidadeResponse(BaseModel):
     nome_fantasia: str | None = None
     modalidade: str | None = None
     uf_sede: str | None = None
-    competencia: int
+    competencia: str
     competencia_data: date | None = None
     modalidade_descricao: str | None = None
     tipo_contratacao: str | None = None

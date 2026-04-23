@@ -16,7 +16,7 @@ select
     operadora_id,
     registro_ans,
     competencia,
-    cast(competencia as text) as competencia_id,
+    competencia as competencia_id,
     beneficiario_total as qt_beneficiario_ativo,
     total_beneficiarios_municipio,
     market_share_pct

@@ -47,12 +47,16 @@ with DAG(
         sql="""
         do $$
         declare
-            v_next_competencia varchar(6);
+            v_inicio timestamp;
+            v_fim    timestamp;
+            v_label  varchar(6);
         begin
-            v_next_competencia := to_char(date_trunc('month', current_date + interval '1 month'), 'YYYYMM');
-            execute 'create table if not exists plataforma.log_uso_' || v_next_competencia ||
-                ' partition of plataforma.log_uso for values from (''' || v_next_competencia ||
-                ''') to (''' || to_char(date_trunc('month', current_date + interval '2 months'), 'YYYYMM') || ''')';
+            v_inicio := date_trunc('month', current_date + interval '1 month');
+            v_fim    := date_trunc('month', current_date + interval '2 months');
+            v_label  := to_char(v_inicio, 'YYYYMM');
+            execute 'create table if not exists plataforma.log_uso_' || v_label ||
+                ' partition of plataforma.log_uso for values from (''' || v_inicio::text ||
+                ''') to (''' || v_fim::text || ''')';
         end $$;
         """,
     )

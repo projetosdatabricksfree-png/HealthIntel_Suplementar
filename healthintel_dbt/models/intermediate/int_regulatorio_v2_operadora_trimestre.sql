@@ -19,7 +19,7 @@ chaves as (
     select distinct registro_ans, trimestre as competencia
     from {{ ref('stg_prudencial') }}
     union
-    select distinct registro_ans, cast(competencia as text) as competencia
+    select distinct registro_ans, competencia
     from {{ ref('stg_portabilidade') }}
     union
     select distinct registro_ans, trimestre as competencia
@@ -101,7 +101,7 @@ prudencial as (
 portabilidade as (
     select
         registro_ans,
-        cast(competencia as text) as competencia,
+        competencia,
         max(modalidade) as modalidade,
         max(modalidade_descricao) as modalidade_descricao,
         max(tipo_contratacao) as tipo_contratacao,

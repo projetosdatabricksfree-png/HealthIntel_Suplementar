@@ -10,7 +10,7 @@ test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
-packages-install-path: ".dbt_packages"
+packages-install-path: "dbt_packages"
 
 models:
   healthintel_dbt:

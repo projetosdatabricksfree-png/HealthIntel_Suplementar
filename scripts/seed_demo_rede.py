@@ -81,7 +81,7 @@ async def seed_demo_rede() -> None:
 
     registros = [
         {
-            "competencia": 202603,
+            "competencia": "202603",
             "registro_ans": "123456",
             "cd_municipio": "3550308",
             "nm_municipio": "Sao Paulo",
@@ -93,7 +93,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202603",
         },
         {
-            "competencia": 202603,
+            "competencia": "202603",
             "registro_ans": "654321",
             "cd_municipio": "3550308",
             "nm_municipio": "Sao Paulo",
@@ -105,7 +105,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202603",
         },
         {
-            "competencia": 202604,
+            "competencia": "202604",
             "registro_ans": "123456",
             "cd_municipio": "3106200",
             "nm_municipio": "Belo Horizonte",
@@ -117,7 +117,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202604",
         },
         {
-            "competencia": 202604,
+            "competencia": "202604",
             "registro_ans": "654321",
             "cd_municipio": "2611606",
             "nm_municipio": "Recife",

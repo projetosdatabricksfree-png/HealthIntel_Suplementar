@@ -14,12 +14,7 @@ with DAG(
 
     executar_freshness = BashOperator(
         task_id="executar_freshness",
-        bash_command="cd /workspace/healthintel_dbt && dbt source freshness",
-        env={
-            "DBT_PROFILES_DIR": "/workspace/healthintel_dbt",
-            "DBT_LOG_PATH": "/tmp/healthintel_dbt_logs",
-            "DBT_TARGET_PATH": "/tmp/healthintel_dbt_target",
-        },
+        bash_command="cd /workspace/healthintel_dbt && /home/airflow/.local/bin/dbt source freshness",
     )
 
     fim = EmptyOperator(task_id="fim")

@@ -12,7 +12,7 @@
 
 select
     competencia,
-    cast(competencia as text) as competencia_id,
+    competencia as competencia_id,
     operadora_id,
     registro_ans,
     nm_municipio,

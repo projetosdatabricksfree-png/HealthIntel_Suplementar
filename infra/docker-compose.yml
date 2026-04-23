@@ -20,20 +20,12 @@ services:
   mongo:
     image: mongo:7
     container_name: healthintel_mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
     ports:
       - "${MONGO_EXTERNAL_PORT:-27018}:27017"
     volumes:
       - mongo_data:/data/db
-      - ./mongo/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "mongosh --username ${MONGO_INITDB_ROOT_USERNAME:-healthintel} --password ${MONGO_INITDB_ROOT_PASSWORD:-healthintel} --eval 'db.adminCommand({ ping: 1 })' --quiet"
-        ]
+      test: ["CMD-SHELL", "mongosh --eval 'db.adminCommand({ ping: 1 })' --quiet"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -152,8 +144,18 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+      DBT_PROFILES_DIR: /workspace/healthintel_dbt
+      DBT_LOG_PATH: /tmp/healthintel_dbt_logs
+      DBT_TARGET_PATH: /tmp/healthintel_dbt_target
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-healthintel}
+      POSTGRES_USER: ${POSTGRES_USER:-healthintel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+      _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres==1.8.2"
     volumes:
       - ../ingestao/dags:/opt/airflow/dags
+      - ..:/workspace
     depends_on:
       airflow-init:
         condition: service_completed_successfully

@@ -1,6 +1,6 @@
 # Sprints do Projeto
 
-Esta pasta centraliza a execucao operacional das `12` sprints do HealthIntel Suplementar.
+Esta pasta centraliza a execucao operacional das sprints do HealthIntel Suplementar. Fase 1 (01–12) concluída. Fase 2 (13–14) em andamento. Fase 3 (15–20) planejada.
 
 Convencoes:
 
@@ -24,6 +24,16 @@ Convencoes:
 | 10 | Concluída | `docs/sprints/sprint_10_vda_glosa_score_v2.md` |
 | 11 | Concluída | `docs/sprints/sprint_11_rede_assistencial.md` |
 | 12 | Concluída | `docs/sprints/sprint_12_vazios_oportunidade_rollout.md` |
+| — | — | **Fase 2** |
+| 13 | Em andamento | `docs/sprints/fase2/sprint_13_cnes_estabelecimentos.md` |
+| 14 | Não iniciada | `docs/sprints/fase2/sprint_14_tiss_cruzamentos.md` |
+| — | — | **Fase 3** |
+| 15 | Não iniciada | `docs/sprints/fase3/sprint_15_governanca_camadas.md` |
+| 16 | Não iniciada | `docs/sprints/fase3/sprint_16_bronze_api_tecnica.md` |
+| 17 | Não iniciada | `docs/sprints/fase3/sprint_17_prata_api_analitica.md` |
+| 18 | Não iniciada | `docs/sprints/fase3/sprint_18_datasets_complementares.md` |
+| 19 | Não iniciada | `docs/sprints/fase3/sprint_19_score_v3_indice_composto.md` |
+| 20 | Não iniciada | `docs/sprints/fase3/sprint_20_comercializacao_enterprise.md` |
 
 ## Regra de marcacao
 

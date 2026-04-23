@@ -34,10 +34,12 @@ class Settings(BaseSettings):
 
     @property
     def mongo_dsn(self) -> str:
-        return (
-            f"mongodb://{self.mongo_user}:{self.mongo_password}"
-            f"@{self.mongo_host}:{self.mongo_port}/?authSource=admin"
-        )
+        if self.mongo_user and self.mongo_password:
+            return (
+                f"mongodb://{self.mongo_user}:{self.mongo_password}"
+                f"@{self.mongo_host}:{self.mongo_port}/?authSource=admin"
+            )
+        return f"mongodb://{self.mongo_host}:{self.mongo_port}"
 
     @property
     def trusted_hosts(self) -> list[str]:

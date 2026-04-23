@@ -12,7 +12,7 @@ select
     operadora_id,
     registro_ans,
     competencia,
-    cast(competencia as text) as competencia_id,
+    competencia as competencia_id,
     beneficiario_total as qt_beneficiario_ativo,
     beneficiario_medico as qt_beneficiario_medico,
     beneficiario_odonto as qt_beneficiario_odonto,
