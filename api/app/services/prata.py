@@ -117,7 +117,7 @@ PRATA_FILTROS_PERMITIDOS = {
     "financeiro_periodo": {"registro_ans"},
     "cnes_municipio": {"cd_municipio"},
     "cnes_rede_gap": {"cd_municipio", "registro_ans"},
-    "tiss_procedimento": {"registro_ans", "grupo_procedimento"},
+    "tiss_procedimento": {"registro_ans", "grupo_procedimento", "cd_procedimento_tuss"},
 }
 
 

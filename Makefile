@@ -173,3 +173,15 @@ dag-test-all:
 	@echo "=== dag_ingest_rn623 ===" && $(COMPOSE) exec airflow-scheduler airflow dags test dag_ingest_rn623 2026-04-22
 	@echo "=== dag_ingest_taxa_resolutividade ===" && $(COMPOSE) exec airflow-scheduler airflow dags test dag_ingest_taxa_resolutividade 2026-04-22
 	@echo "=== dag_ingest_vda ===" && $(COMPOSE) exec airflow-scheduler airflow dags test dag_ingest_vda 2026-04-22
+
+dag-parse:
+	$(COMPOSE) exec airflow-scheduler python -c 'from airflow.models import DagBag; d = DagBag(); print("Errors:", d.import_errors)'
+
+dag-run-real-cadop:
+	python scripts/run_ingestao_real_cadop.py
+
+dag-run-real-sib:
+	python scripts/run_ingestao_real_sib.py "$(UFS)" "$(COMPETENCIA)"
+
+smoke-ingestao-real:
+	python scripts/smoke_ingestao_real.py

@@ -8,25 +8,38 @@ O repositório está organizado como um monorepo contendo todos os componentes d
 
 -   **`api/`**: API principal desenvolvida em FastAPI. Contém endpoints públicos para consulta de operadoras, scores e dados regulatórios, além de endpoints administrativos para billing e gerenciamento.
 -   **`mongo_layout_service/`**: Microserviço dedicado à governança de layouts de arquivos da ANS, utilizando MongoDB para armazenamento flexível de metadados.
--   **`ingestao/`**: Camada de ingestão contendo DAGs do Airflow e scripts Python para extração de dados (IGR, NIP, RN623) e carga na camada Bronze.
+-   **`ingestao/`**: Camada de ingestão contendo DAGs do Airflow e scripts Python para extração de dados (IGR, NIP, RN623, SIB, CADOP) e carga na camada Bronze. Inclui fluxo streaming para arquivos grandes (SIB).
 -   **`healthintel_dbt/`**: Coração da transformação de dados. Implementa a arquitetura medalhão, testes de qualidade de dados e geração de marts para consumo da API.
 -   **`infra/`**: Configuração de infraestrutura local via Docker Compose (PostgreSQL, MongoDB, Redis, Airflow, Nginx).
--   **`docs/`**: Documentação completa do projeto, incluindo PRD mestre, runbooks operacionais e detalhamento de todas as 12 sprints de desenvolvimento.
--   **`scripts/`**: Utilitários para seeding de banco de dados, testes de carga e inicialização de ambiente.
+-   **`docs/`**: Documentação completa do projeto, incluindo PRD mestre, runbooks operacionais e detalhamento de todas as sprints de desenvolvimento.
+-   **`scripts/`**: Utilitários para seeding de banco de dados, testes de carga, ingestão real e inicialização de ambiente.
+
+### Camadas de Dados
+
+| Camada | Schema | Descrição |
+|--------|--------|-----------|
+| **Bronze** | `bruto_ans` | Dados brutos ingeridos da ANS com metadados de lote |
+| **Staging** | `stg_ans` | Tipagem, limpeza, normalização e preparação técnica |
+| **Intermediate** | `int_ans` | Joins, enriquecimentos e modelos intermediários |
+| **Gold Analítico** | `nucleo_ans` | Fatos, dimensões, marts e métricas curadas |
+| **Serving API** | `api_ans` | Modelos otimizados para os endpoints FastAPI |
+| **Consumo** | `consumo_ans` | Data products para clientes com grants de segurança |
 
 ## 🚀 Como Subir o Ambiente Local
 
-Como o projeto lida com dados sensíveis e configurações de infraestrutura, siga os passos abaixo:
-
-1.  **Configuração de Ambiente**: Crie um arquivo `.env` na raiz do projeto seguindo as definições necessárias (PostgreSQL, MongoDB, tokens de serviço).
-2.  **Inicialização da Stack**: Execute o comando para subir todos os containers:
+1.  **Configuração de Ambiente**: Crie um arquivo `.env` na raiz do projeto a partir de `.env.exemplo`.
+2.  **Inicialização da Stack**:
     ```bash
     make up
     ```
-    Se a porta `27017` já estiver ocupada no seu ambiente, o Mongo expõe `27018` por padrão no host.
 3.  **Bootstrap de Layouts**: Inicialize o registro de layouts no MongoDB:
     ```bash
-    python scripts/bootstrap_layout_registry_regulatorio.py
+    make bootstrap-regulatorio-layouts
+    make bootstrap-rede-layouts
+    make bootstrap-cnes-layouts
+    make bootstrap-tiss-layouts
+    make bootstrap-sib-layouts
+    make bootstrap-cadop-layouts
     ```
 4.  **Carga de Dados Demo**: Popule o banco de dados com dados de demonstração:
     ```bash
@@ -44,20 +57,30 @@ Como o projeto lida com dados sensíveis e configurações de infraestrutura, si
 
 ## 🛠️ Desenvolvimento e Qualidade
 
-O projeto utiliza ferramentas modernas para garantir a qualidade do código e dos dados:
-
--   **Linting**: `make lint` (Ruff)
--   **SQL Linting**: `make sql-lint` (SQLFluff)
--   **Testes**: `make test` (Pytest)
--   **Smoke Test**: `make smoke` (Validação fim-a-fim do piloto)
--   **Carga**: `make load-test` (Testes de performance via Locust)
+| Comando | Descrição |
+|---------|-----------|
+| `make lint` | Linting Python (Ruff) |
+| `make sql-lint` | Linting SQL (SQLFluff) |
+| `make test` | Testes unitários e integração (Pytest) |
+| `make smoke` | Smoke test piloto |
+| `make smoke-prata` | Smoke test camada Prata (17 endpoints) |
+| `make smoke-sib` | Smoke test SIB |
+| `make smoke-cadop` | Smoke test CADOP |
+| `make smoke-consumo` | Smoke test camada Consumo |
+| `make smoke-ingestao-real` | Smoke test pós-ingestão real (idempotência) |
+| `make dag-parse DAG=nome` | Validar DAG parseia sem erro |
+| `make dag-run-real-sib UFS=AC COMPETENCIA=202501` | Ingestão real SIB streaming |
+| `make dag-run-real-cadop COMPETENCIA=202501` | Ingestão real CADOP |
+| `make load-test` | Testes de performance via Locust |
 
 ## 📄 Documentação Operacional
 
 Para detalhes sobre a operação da plataforma e runbooks, consulte:
 -   `docs/runbooks/`: Procedimentos de aprovação de layout e reprocessamento.
+-   `docs/runbooks/ingestao_real_ans.md`: Runbook de ingestão real ANS (SIB/CADOP).
 -   `docs/operacao/slo_sla.md`: Metas operacionais e indicadores de performance.
 -   `docs/operacao/baseline_capacidade.md`: Limites de carga e escalabilidade.
+-   `docs/releases/v3.0.0.md`: Relatório de preparação / Release Candidate da versão 3.0.0.
 
 ---
-*Este projeto está em baseline funcional (Sprint 12 concluída).*
+*Status corrente: Release Candidate Fase 4 — v3.0.0 pending. A tag final será criada somente após aprovação dos hard gates completos.*

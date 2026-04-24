@@ -539,6 +539,65 @@ async def carregar_dataset_bruto(
     return lote
 
 
+async def carregar_dataset_bruto_em_batches(
+    dataset_codigo: str,
+    batch: list[dict],
+    *,
+    arquivo_origem: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_arquivo: str,
+    hash_estrutura: str,
+    lote_id: str,
+    status_parse: str = "sucesso",
+    colunas_mapeadas: list[dict] | None = None,
+) -> int:
+    if not batch:
+        return 0
+
+    if dataset_codigo not in DATASET_CONFIG:
+        raise ValueError(f"Dataset nao suportado para carga bronze: {dataset_codigo}")
+
+    config = DATASET_CONFIG[dataset_codigo]
+    carregado_em = datetime.now(tz=UTC)
+    colunas_negocio = config["colunas"]
+    registros_preparados: list[dict] = []
+
+    for registro in batch:
+        linha = {coluna: registro.get(coluna) for coluna in colunas_negocio}
+        linha["_hash_linha"] = _hash_linha_registro(linha)
+        linha.update(
+            {
+                "_carregado_em": carregado_em,
+                "_arquivo_origem": arquivo_origem,
+                "_lote_id": lote_id,
+                "_layout_id": layout_id,
+                "_layout_versao_id": layout_versao_id,
+                "_hash_arquivo": hash_arquivo,
+                "_hash_estrutura": hash_estrutura,
+                "_status_parse": status_parse,
+            }
+        )
+        registros_preparados.append(linha)
+
+    if not registros_preparados:
+        return 0
+
+    colunas = list(registros_preparados[0].keys())
+    placeholders = ", ".join(f":{coluna}" for coluna in colunas)
+    sql = text(
+        f"""
+        insert into {config["tabela_destino"]} ({", ".join(colunas)})
+        values ({placeholders})
+        """
+    )
+    async with SessionLocal() as session:
+        await session.execute(sql, registros_preparados)
+        await session.commit()
+
+    return len(registros_preparados)
+
+
 async def carregar_cadop_bruto(
     registros: list[dict],
     *,

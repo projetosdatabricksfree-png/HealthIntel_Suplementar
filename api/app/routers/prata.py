@@ -372,9 +372,10 @@ async def get_prata_tiss_procedimento(
     filtros: dict[str, object] = {}
     if registro_ans:
         filtros["registro_ans"] = registro_ans.zfill(6)
-    procedimento = grupo_procedimento or cd_procedimento_tuss
-    if procedimento:
-        filtros["grupo_procedimento"] = procedimento
+    if cd_procedimento_tuss:
+        filtros["cd_procedimento_tuss"] = cd_procedimento_tuss
+    if grupo_procedimento:
+        filtros["grupo_procedimento"] = grupo_procedimento
     return await _executar_prata(
         request,
         "tiss_procedimento",

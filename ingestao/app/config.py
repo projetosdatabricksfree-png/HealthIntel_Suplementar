@@ -40,6 +40,27 @@ class Settings(BaseSettings):
         alias="ANS_SIB_BASE_URL",
     )
 
+    # SIB streaming settings
+    ans_sib_batch_size: int = Field(default=5000, alias="ANS_SIB_BATCH_SIZE")
+    ans_sib_ufs_teste: str = Field(default="AC", alias="ANS_SIB_UFS_TESTE")
+    ans_sib_max_memory_safe_mode: bool = Field(default=True, alias="ANS_SIB_MAX_MEMORY_SAFE_MODE")
+    ans_download_timeout_seconds: int = Field(default=180, alias="ANS_DOWNLOAD_TIMEOUT_SECONDS")
+
+    # HTTP resilience settings
+    ans_http_connect_timeout_seconds: int = Field(
+        default=30, alias="ANS_HTTP_CONNECT_TIMEOUT_SECONDS",
+    )
+    ans_http_read_timeout_seconds: int = Field(default=180, alias="ANS_HTTP_READ_TIMEOUT_SECONDS")
+    ans_http_write_timeout_seconds: int = Field(default=180, alias="ANS_HTTP_WRITE_TIMEOUT_SECONDS")
+    ans_http_pool_timeout_seconds: int = Field(default=30, alias="ANS_HTTP_POOL_TIMEOUT_SECONDS")
+    ans_http_max_retries: int = Field(default=3, alias="ANS_HTTP_MAX_RETRIES")
+    ans_http_backoff_seconds: int = Field(default=5, alias="ANS_HTTP_BACKOFF_SECONDS")
+    ans_http_user_agent: str = Field(
+        default="HealthIntelSuplementar/1.0",
+        alias="ANS_HTTP_USER_AGENT",
+    )
+    ans_allow_landing_cache: bool = Field(default=True, alias="ANS_ALLOW_LANDING_CACHE")
+
     @property
     def postgres_dsn(self) -> str:
         return (

@@ -64,3 +64,89 @@ async def processar_arquivo_bruto(
         "tabela_destino": lote.tabela_destino,
         "total_registros": lote.total_registros,
     }
+
+
+async def processar_arquivo_bruto_streaming(
+    *,
+    dataset_codigo: str,
+    nome_arquivo: str,
+    hash_arquivo: str,
+    iterador_batches,
+    lote_id: str,
+    layout_id: str,
+    layout_versao_id: str,
+    hash_estrutura: str,
+    batch_size: int = 5000,
+    colunas_mapeadas: list[dict] | None = None,
+) -> dict:
+    from ingestao.app.carregar_postgres import (
+        carregar_dataset_bruto_em_batches,
+        registrar_lote_ingestao,
+        registrar_quarentena,
+    )
+
+    total_linhas_raw = 0
+    total_aprovadas = 0
+    total_quarentena = 0
+
+    for batch in iterador_batches:
+        total_linhas_raw += len(batch)
+        registros_traduzidos = traduzir_registros(
+            batch, colunas_mapeadas or [], transformacoes=TRANSFORMACOES_PADRAO
+        )
+        aprovados = [
+            r for r in registros_traduzidos
+            if any(v is not None and str(v).strip() for v in r.values())
+        ]
+        rejeitados = [
+            r for r in registros_traduzidos
+            if not any(v is not None and str(v).strip() for v in r.values())
+        ]
+
+        if aprovados:
+            inseridos = await carregar_dataset_bruto_em_batches(
+                dataset_codigo,
+                aprovados,
+                arquivo_origem=nome_arquivo,
+                layout_id=layout_id,
+                layout_versao_id=layout_versao_id,
+                hash_arquivo=hash_arquivo,
+                hash_estrutura=hash_estrutura,
+                lote_id=lote_id,
+                colunas_mapeadas=colunas_mapeadas,
+            )
+            total_aprovadas += inseridos
+
+        for _ in rejeitados:
+            await registrar_quarentena(
+                dataset_codigo=dataset_codigo,
+                arquivo_origem=nome_arquivo,
+                hash_arquivo=hash_arquivo,
+                hash_estrutura=hash_estrutura,
+                motivo="Registro vazio ou invalido no streaming",
+            )
+            total_quarentena += 1
+
+    status = "sucesso_com_alertas" if total_quarentena > 0 else "sucesso"
+    await registrar_lote_ingestao(
+        lote_id=lote_id,
+        dataset_codigo=dataset_codigo,
+        competencia=None,
+        arquivo_origem=nome_arquivo,
+        hash_arquivo=hash_arquivo,
+        hash_estrutura=hash_estrutura,
+        versao_layout=layout_versao_id,
+        status=status,
+        total_linhas_raw=total_linhas_raw,
+        total_aprovadas=total_aprovadas,
+        total_quarentena=total_quarentena,
+        origem_execucao="streaming_pipeline",
+    )
+
+    return {
+        "status": status,
+        "lote_id": lote_id,
+        "total_linhas_raw": total_linhas_raw,
+        "total_aprovadas": total_aprovadas,
+        "total_quarentena": total_quarentena,
+    }

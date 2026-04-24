@@ -81,8 +81,15 @@ models:
         data_tests:
           - not_null
       - name: grupo_procedimento
-        description: Grupo de procedimento TISS.
+        description: Grupo de procedimento TISS (codigo do grupo na tabela TUSS).
         data_tests:
           - not_null
+      - name: subgrupo_procedimento
+        description: Subgrupo de procedimento TISS.
+      - name: cd_procedimento_tuss
+        description: >
+          Alias tecnico derivado de grupo_procedimento. Nao e uma coluna independente
+          da fonte bruta — e exposto como filtro adicional na API para compatibilidade
+          com consumidores que usam nomenclatura TUSS. Contem o mesmo valor de grupo_procedimento.
       - name: taxa_aprovacao_lote
         description: Taxa de aprovacao do lote de origem.
