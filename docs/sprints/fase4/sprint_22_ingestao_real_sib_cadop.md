@@ -1,6 +1,6 @@
 # Sprint 22 — Ingestão Real: SIB e CADOP
 
-**Status:** Pendente
+**Status:** Concluída
 **Objetivo:** implementar ingestão real dos dois datasets mais críticos ausentes (SIB beneficiários e CADOP operadoras); introduzir landing zone física; formalizar controle de lote em `plataforma.lote_ingestao`; garantir idempotência por hash.
 **Critério de saída:** DAGs SIB e CADOP parsando arquivos reais da ANS; `plataforma.lote_ingestao` registrando cada carga com hash; carga duplicada rejeitada com status `ignorado_duplicata`; `make smoke-sib` + `make smoke-cadop` zero falhas.
 

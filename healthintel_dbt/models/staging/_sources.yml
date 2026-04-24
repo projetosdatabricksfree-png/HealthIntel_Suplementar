@@ -112,3 +112,9 @@ sources:
         freshness:
           warn_after: {count: 120, period: day}
           error_after: {count: 180, period: day}
+      - name: ans_arquivo_generico
+        description: Arquivos ANS catalogados e baixados ainda sem parser dedicado.
+        loaded_at_field: data_ingestao
+      - name: ans_linha_generica
+        description: Linhas tabulares ANS em Bronze generica JSONB para datasets sem parser dedicado.
+        loaded_at_field: data_ingestao

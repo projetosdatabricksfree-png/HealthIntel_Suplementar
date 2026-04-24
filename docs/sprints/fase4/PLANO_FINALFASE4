@@ -424,7 +424,7 @@ Ajuste necessário
 
 Atualizar README.md para refletir:
 
-Fase atual: Release Candidate Fase 4;
+Fase atual: Fase 4 concluída;
 arquitetura atual com consumo_ans;
 comandos novos:
 make smoke-prata
@@ -436,7 +436,7 @@ make dag-run-real-sib
 make dag-run-real-cadop
 link para docs/catalogo_dados/;
 link para docs/sprints/fase4/README.md;
-status da release: v3.0.0 somente após hard gates.
+status da release: v3.0.0 com hard gates aprovados.
 Critério de aceite
 
 README não pode mais dizer Sprint 12 como baseline atual, salvo em seção histórica.
@@ -773,5 +773,4 @@ Criar relatório de release v3.0.0.
 Só criar tag depois dos hard gates físicos passarem.
 
 O projeto está perto. O maior divisor entre “bom MVP técnico” e “10/10 produção” agora é parar de tratar SIB como arquivo pequeno e transformar a ingestão real em fluxo resiliente, idempotente e validável.
-
 

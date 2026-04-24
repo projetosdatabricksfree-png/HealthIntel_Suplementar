@@ -1,16 +1,27 @@
 # Fase 4 — ELT Completo: Gold Curado para Clientes
 
-Fase de finalização do pipeline ELT. Fecha as lacunas da Prata, implementa ingestão real de SIB e CADOP, cria marts Gold para consumo analítico, introduz o schema `consumo_ans` como camada de entrega para clientes e consolida qualidade + catálogo com baseline `v3.0.0`.
+Fase de finalização do pipeline ELT. Fecha as lacunas da Prata, implementa ingestão real de SIB e CADOP, cria marts Gold para consumo analítico, introduz o schema `consumo_ans` como camada de entrega para clientes e consolida qualidade + catálogo rumo ao baseline `v3.0.0`.
+
+## Status da Fase 4
+
+**Status:** Concluída  
+**Versão:** `v3.0.0`  
+**Implementação:** Concluída  
+**Validação final:** Concluída  
+**Release Candidate:** Encerrado  
+**Tag final:** `v3.0.0`
+
+A Fase 4 está concluída como `v3.0.0`. Os hard gates foram executados em ambiente com Docker, PostgreSQL, Redis, dbt e ingestão real mínima SIB/CADOP.
 
 ## Sprints
 
 | Sprint | Título | Status |
 |--------|--------|--------|
-| [Sprint 21](sprint_21_prata_completa.md) | Prata Completa | Pendente |
-| [Sprint 22](sprint_22_ingestao_real_sib_cadop.md) | Ingestão Real: SIB e CADOP | Pendente |
-| [Sprint 23](sprint_23_gold_marts_bi.md) | Gold Curado: Data Products ANS | Pendente |
-| [Sprint 24](sprint_24_consumo_ans_serving.md) | consumo_ans: Camada de Entrega para Clientes | Pendente |
-| [Sprint 25](sprint_25_qualidade_catalogo_v3.md) | Qualidade, Catálogo e v3.0.0 | Pendente |
+| [Sprint 21](sprint_21_prata_completa.md) | Prata Completa | Concluída |
+| [Sprint 22](sprint_22_ingestao_real_sib_cadop.md) | Ingestão Real: SIB e CADOP | Concluída |
+| [Sprint 23](sprint_23_gold_marts_bi.md) | Gold Curado: Data Products ANS | Concluída |
+| [Sprint 24](sprint_24_consumo_ans_serving.md) | consumo_ans: Camada de Entrega para Clientes | Concluída |
+| [Sprint 25](sprint_25_qualidade_catalogo_v3.md) | Qualidade, Catálogo e v3.0.0 | Concluída |
 
 ---
 
@@ -60,6 +71,28 @@ api_ans (FastAPI REST)    consumo_ans (tabelas curadas para clientes)
 
 ## Critério de Saída da Fase 4
 
+Hard gates executados para a release final `v3.0.0`:
+
+- [x] `ruff check api ingestao scripts testes`
+- [x] `pytest api/tests/integration/test_prata.py -v`
+- [x] `.venv/bin/python -m pytest ingestao/tests/ -v`
+- [x] `.venv/bin/python -m pytest testes/regressao/test_endpoints_fase4.py -v`
+- [x] `dbt build --select tag:prata tag:mart tag:consumo`
+- [x] `dbt test`
+- [x] `dbt docs generate`
+- [x] `make smoke-prata`
+- [x] `make smoke-sib`
+- [x] `make smoke-cadop`
+- [x] `make consumo-refresh`
+- [x] `make smoke-consumo`
+- [x] `make dag-run-real-sib UFS=AC COMPETENCIA=202501`
+- [x] `make dag-run-real-cadop COMPETENCIA=202501`
+- [x] `make smoke-ingestao-real`
+- [x] Segunda execução SIB/CADOP comprovando `ignorado_duplicata`
+- [x] Tag git `v3.0.0` criada após aprovação
+
+Validações executadas e mantidas como evidência da release final:
+
 - [x] `pytest api/tests/integration/test_prata.py -v` — todos os endpoints Prata registrados em `PRATA_DATASETS` cobertos
 - [x] `make smoke-prata` — zero falhas
 - [x] `make smoke-sib` — zero falhas
@@ -72,4 +105,3 @@ api_ans (FastAPI REST)    consumo_ans (tabelas curadas para clientes)
 - [x] `consumo_ans` acessível via conexão PostgreSQL direta com role `healthintel_cliente_reader`
 - [x] `healthintel_cliente_reader` recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
 - [x] `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas
-- [ ] Tag git `v3.0.0` criada após aprovação

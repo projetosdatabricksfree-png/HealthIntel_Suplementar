@@ -1,6 +1,6 @@
 # Sprint 24 — consumo_ans: Camada de Entrega para Clientes
 
-**Status:** Pendente
+**Status:** Concluída
 **Objetivo:** criar o schema `consumo_ans` com tabelas Gold desnormalizadas prontas para entrega ao cliente; o cliente conecta com Power BI, Metabase, Python, psql ou qualquer ferramenta de sua escolha — o HealthIntel entrega o dado curado e o contrato de acesso, não a visualização; automatizar refresh via Airflow; criar role de acesso restrito; validar conectividade e smoke E2E.
 **Critério de saída:** 8 modelos em `consumo_ans` compilando via dbt; `make consumo-refresh` executando sem erro; `make smoke-consumo` zero falhas; contrato de dados publicado em `docs/arquitetura/consumo_ans_guia.md`.
 

@@ -1,6 +1,6 @@
 # Sprint 25 — Qualidade, Catálogo e v3.0.0
 
-**Status:** Pendente
+**Status:** Concluída
 **Objetivo:** expandir contratos de qualidade para todos os modelos finais; criar catálogo de dados para clientes; executar suite de regressão Fase 4; congelar baseline `v3.0.0`.
 **Critério de saída:** `dbt test` zero falhas em toda a stack (hard gate); catálogo publicado com grão e métricas documentados; `testes/regressao/test_endpoints_fase4.py` zero falhas (hard gate); `make smoke-prata` e `make smoke-consumo` zero falhas (hard gates); `dbt docs generate` sem `description` vazia nos modelos finais; tag `v3.0.0` criada.
 

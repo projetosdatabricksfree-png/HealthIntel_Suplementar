@@ -1,6 +1,6 @@
 # Sprint 21 — Prata Completa
 
-**Status:** Pendente
+**Status:** Concluída
 **Objetivo:** fechar todas as lacunas da camada Prata — cobertura de testes, CNES e TISS na prata, aviso de qualidade no envelope, smoke E2E e documentação de colunas no YAML dbt.
 **Critério de saída:** todos os endpoints Prata registrados em `PRATA_DATASETS` cobertos por testes de integração; `make smoke-prata` zero falhas; `api_prata_cnes_*` e `api_prata_tiss_procedimento` servindo dados; `aviso_qualidade` emitido quando `taxa_aprovacao < 0.95`.
 

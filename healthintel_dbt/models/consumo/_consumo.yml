@@ -2,18 +2,207 @@ version: 2
 
 models:
   - name: consumo_operadora_360
-    description: Data product de operadora 360 para clientes.
+    description: "Tabela de consumo com visão consolidada da operadora por competência. Fonte principal: mart_operadora_360. Grão: registro_ans + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: nome_fantasia
+        description: "Nome fantasia da operadora."
+      - name: modalidade
+        description: "Modalidade da operadora."
+      - name: uf
+        description: "UF da sede da operadora."
+      - name: qt_beneficiarios
+        description: "Quantidade de beneficiários ativos."
+      - name: variacao_12m_pct
+        description: "Variação percentual de beneficiários em 12 meses."
+      - name: score_total
+        description: "Score consolidado da operadora."
+
   - name: consumo_beneficiarios_operadora_mes
-    description: Data product mensal de beneficiarios por operadora.
+    description: "Tabela de consumo mensal de beneficiários por operadora. Fonte principal: fat_beneficiario_operadora. Grão: registro_ans + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: nome_fantasia
+        description: "Nome fantasia da operadora."
+      - name: modalidade
+        description: "Modalidade da operadora."
+      - name: uf
+        description: "UF da sede da operadora."
+      - name: qt_beneficiarios
+        description: "Quantidade total de beneficiários ativos."
+      - name: qt_beneficiario_medico
+        description: "Quantidade de beneficiários médico-hospitalares."
+      - name: qt_beneficiario_odonto
+        description: "Quantidade de beneficiários odontológicos."
+
   - name: consumo_beneficiarios_municipio_mes
-    description: Data product mensal de beneficiarios por municipio.
+    description: "Tabela de consumo mensal de beneficiários e mercado por município. Fonte principal: mart_mercado_municipio. Grão: cd_municipio + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: "Código IBGE do município."
+        tests:
+          - not_null
+      - name: municipio
+        description: "Nome do município."
+      - name: uf
+        description: "UF do município."
+      - name: qt_beneficiarios
+        description: "Quantidade total de beneficiários no município."
+      - name: qt_operadoras
+        description: "Quantidade de operadoras ativas no município."
+      - name: hhi
+        description: "Índice HHI de concentração de mercado municipal."
+
   - name: consumo_financeiro_operadora_trimestre
-    description: Data product trimestral financeiro por operadora.
+    description: "Tabela de consumo trimestral financeiro por operadora. Fonte principal: fat_financeiro_operadora_trimestral. Grão: registro_ans + trimestre."
+    columns:
+      - name: trimestre
+        description: "Trimestre de referência."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: receita_total
+        description: "Receita total no trimestre."
+      - name: despesa_total
+        description: "Despesa total no trimestre."
+      - name: resultado_periodo
+        description: "Resultado do período."
+      - name: indice_sinistralidade
+        description: "Índice de sinistralidade calculado."
+      - name: score_financeiro_base
+        description: "Score financeiro base."
+      - name: rating_financeiro
+        description: "Rating financeiro derivado das métricas financeiras."
+
   - name: consumo_regulatorio_operadora_trimestre
-    description: Data product trimestral regulatorio por operadora.
+    description: "Tabela de consumo trimestral regulatório por operadora. Fonte principal: mart_regulatorio_operadora. Grão: registro_ans + trimestre."
+    columns:
+      - name: trimestre
+        description: "Trimestre de referência."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: qtd_reclamacoes
+        description: "Quantidade de reclamações no período."
+      - name: indice_reclamacao
+        description: "Índice geral de reclamação."
+      - name: demandas_nip
+        description: "Quantidade de demandas NIP."
+      - name: taxa_resolutividade
+        description: "Taxa de resolutividade."
+      - name: nivel_alerta
+        description: "Faixa de risco regulatório."
+
   - name: consumo_rede_assistencial_municipio
-    description: Data product mensal de rede assistencial por municipio.
+    description: "Tabela de consumo da rede assistencial por município e operadora. Fonte principal: mart_rede_assistencial. Grão: registro_ans + cd_municipio + competencia + segmento."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: "Código IBGE do município."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: municipio
+        description: "Nome do município."
+      - name: uf
+        description: "UF do município."
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: segmento
+        description: "Segmento de rede assistencial."
+      - name: qt_prestadores
+        description: "Quantidade de prestadores."
+      - name: classificacao_vazio
+        description: "Classificação do vazio assistencial."
+
   - name: consumo_oportunidade_municipio
-    description: Data product mensal de oportunidade territorial.
+    description: "Tabela de consumo de oportunidade territorial por município. Fonte principal: mart_mercado_municipio. Grão: cd_municipio + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: "Código IBGE do município."
+        tests:
+          - not_null
+      - name: municipio
+        description: "Nome do município."
+      - name: uf
+        description: "UF do município."
+      - name: qt_beneficiarios
+        description: "Quantidade total de beneficiários no município."
+      - name: qt_operadoras
+        description: "Quantidade de operadoras ativas no município."
+      - name: hhi
+        description: "Índice HHI de concentração de mercado municipal."
+      - name: score_oportunidade
+        description: "Score de oportunidade já disponível no mart de mercado."
+
   - name: consumo_score_operadora_mes
-    description: Data product mensal de score por operadora.
+    description: "Tabela de consumo mensal de score por operadora. Fonte principal: mart_score_operadora. Grão: registro_ans + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: razao_social
+        description: "Razão social da operadora."
+      - name: modalidade
+        description: "Modalidade da operadora."
+      - name: score_total
+        description: "Score consolidado da operadora."
+      - name: faixa_score
+        description: "Faixa textual do score consolidado."
+      - name: componente_core
+        description: "Componente core do score."
+      - name: componente_regulatorio
+        description: "Componente regulatório do score."
+      - name: componente_financeiro
+        description: "Componente financeiro do score."
+      - name: componente_rede
+        description: "Componente de rede do score."
+      - name: componente_estrutural
+        description: "Componente estrutural do score."

@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: stg_ans_arquivo_generico
+    description: Auditoria staging dos arquivos ANS em Bronze generica.
+    columns:
+      - name: dataset_codigo
+        data_tests:
+          - not_null
+      - name: familia
+        data_tests:
+          - not_null
+      - name: hash_arquivo
+        data_tests:
+          - not_null
+  - name: stg_ans_linha_generica
+    description: Auditoria staging das linhas tabulares ANS carregadas em JSONB.
+    columns:
+      - name: dataset_codigo
+        data_tests:
+          - not_null
+      - name: familia
+        data_tests:
+          - not_null
+      - name: hash_arquivo
+        data_tests:
+          - not_null
+      - name: linha_origem
+        data_tests:
+          - not_null

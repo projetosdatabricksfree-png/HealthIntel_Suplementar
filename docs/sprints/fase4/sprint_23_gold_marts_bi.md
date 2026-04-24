@@ -1,6 +1,6 @@
 # Sprint 23 — Gold Curado: Data Products ANS
 
-**Status:** Pendente
+**Status:** Concluída
 **Objetivo:** criar os marts Gold em `nucleo_ans` com fatos, dimensões, marts e métricas de negócio, prontos para API e consumo externo; introduzir dimensões adicionais; documentar grão e chaves de cada mart.
 **Critério de saída:** 6 marts em `nucleo_ans` compilando sem erro; `dbt test --select tag:mart` zero falhas; grão documentado para cada mart em `_marts_gold.yml`.
 

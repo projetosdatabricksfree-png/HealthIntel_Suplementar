@@ -3,7 +3,13 @@ COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 DBT_BIN := ../.venv/bin/dbt
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-sib smoke-cadop smoke-consumo consumo-refresh load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-sib smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
+
+PYTHON ?= python
+ELT_ESCOPO ?= sector_core
+ELT_FAMILIAS ?=
+ELT_LIMITE ?= 100
+ELT_MAX_DEPTH ?= 5
 
 up:
 	$(COMPOSE) up -d --build
@@ -127,6 +133,31 @@ consumo-refresh:
 
 smoke-consumo:
 	python scripts/smoke_consumo.py
+
+elt-discover:
+	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_discover_ans.py --escopo $(ELT_ESCOPO) --max-depth $(ELT_MAX_DEPTH)
+
+elt-extract:
+	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_extract_ans.py --escopo $(ELT_ESCOPO) --familias "$(ELT_FAMILIAS)" --limite $(ELT_LIMITE)
+
+elt-load:
+	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_load_ans.py --escopo $(ELT_ESCOPO) --familias "$(ELT_FAMILIAS)" --limite $(ELT_LIMITE)
+
+elt-all:
+	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_all_ans.py --escopo $(ELT_ESCOPO) --familias "$(ELT_FAMILIAS)" --limite $(ELT_LIMITE) --max-depth $(ELT_MAX_DEPTH)
+
+elt-status:
+	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_status_ans.py
+
+elt-transform-all:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:staging tag:prata tag:mart tag:consumo
+
+elt-validate-all:
+	ruff check ingestao scripts healthintel_dbt
+	pytest ingestao/tests/test_elt_discovery.py -v
+	pytest ingestao/tests/test_elt_catalogo.py -v
+	pytest ingestao/tests/test_elt_loaders.py -v
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) compile --select tag:staging
 
 load-test:
 	bash scripts/run_load_test.sh

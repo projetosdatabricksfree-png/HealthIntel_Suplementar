@@ -80,7 +80,7 @@ Para detalhes sobre a operação da plataforma e runbooks, consulte:
 -   `docs/runbooks/ingestao_real_ans.md`: Runbook de ingestão real ANS (SIB/CADOP).
 -   `docs/operacao/slo_sla.md`: Metas operacionais e indicadores de performance.
 -   `docs/operacao/baseline_capacidade.md`: Limites de carga e escalabilidade.
--   `docs/releases/v3.0.0.md`: Relatório de preparação / Release Candidate da versão 3.0.0.
+-   `docs/releases/v3.0.0.md`: Relatório final da versão 3.0.0.
 
 ---
-*Status corrente: Release Candidate Fase 4 — v3.0.0 pending. A tag final será criada somente após aprovação dos hard gates completos.*
+*Status corrente: HealthIntel Suplementar v3.0.0 — Fase 4 concluída.*
