@@ -434,7 +434,7 @@ async def seed_diops() -> None:
     ops_financeiras = [op for op in OPERADORAS if "odonto" not in op[3] and "administradora" not in op[3]]
     for tri in TRIMESTRES:
         registros = []
-        for reg_ans, _, _, modal, cnpj, _, _ in ops_financeiras:
+        for reg_ans, _, _, _modal, cnpj, _, _ in ops_financeiras:
             ativo = r_float(10_000_000, 5_000_000_000, 2)
             passivo = round(ativo * r_float(0.4, 0.8, 4), 2)
             pl = round(ativo - passivo, 2)

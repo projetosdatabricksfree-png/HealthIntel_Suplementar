@@ -10,6 +10,7 @@ from api.app.services.operadora import (
 )
 from api.app.services.rede import detalhar_rede_operadora
 from api.app.services.regulatorio import detalhar_regulatorio_operadora
+from api.app.services.score_v3 import buscar_historico_score_v3, buscar_score_v3_operadora
 
 router = APIRouter(
     prefix="/operadoras",
@@ -90,5 +91,29 @@ async def get_operadora_rede(
         pagina=pagina,
         por_pagina=por_pagina,
     )
+    request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
+    return payload
+
+
+@router.get("/{registro_ans}/score-v3")
+async def get_operadora_score_v3(
+    registro_ans: str,
+    request: Request,
+    competencia: str | None = Query(default=None, min_length=6, max_length=6),
+) -> dict:
+    await aplicar_rate_limit(request)
+    payload = await buscar_score_v3_operadora(registro_ans, competencia=competencia)
+    request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
+    return payload
+
+
+@router.get("/{registro_ans}/score-v3/historico")
+async def get_operadora_score_v3_historico(
+    registro_ans: str,
+    request: Request,
+    periodos: int = Query(default=12, ge=1, le=24),
+) -> dict:
+    await aplicar_rate_limit(request)
+    payload = await buscar_historico_score_v3(registro_ans, periodos=periodos)
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload

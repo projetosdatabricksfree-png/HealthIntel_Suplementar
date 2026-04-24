@@ -126,3 +126,51 @@ models:
       - name: segmento
         data_tests:
           - not_null
+  - name: api_cnes_municipio
+    description: Leitura API de estabelecimentos CNES agregados por municipio e tipo de unidade.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        data_tests:
+          - not_null
+  - name: api_cnes_rede_gap
+    description: Leitura API do gap entre CNES e rede declarada por municipio.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        data_tests:
+          - not_null
+  - name: api_tiss_operadora_trimestral
+    description: Leitura API de procedimentos TISS consolidados por operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        data_tests:
+          - not_null
+  - name: api_sinistralidade_procedimento
+    description: Leitura API da sinistralidade por grupo de procedimento.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        data_tests:
+          - not_null

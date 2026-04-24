@@ -38,5 +38,6 @@ class EndpointMetaResponse(BaseModel):
     descricao: str
     autenticacao: str
     plano_minimo: str
+    camada: str | None = None
     dataset_origem: str | None = None
     versao: str

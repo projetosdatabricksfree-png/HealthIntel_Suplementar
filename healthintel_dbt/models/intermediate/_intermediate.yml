@@ -57,3 +57,11 @@ models:
     description: Consolidacao geográfica da rede assistencial por operadora e municipio.
   - name: int_oportunidade_v2_municipio
     description: Consolidacao municipal da oportunidade v2 combinando mercado, rede, vazio e score v2.
+  - name: int_cnes_municipio_resumo
+    description: Resumo de CNES por competencia, municipio e tipo de unidade.
+  - name: int_cnes_x_rede_municipio
+    description: Cruzamento de estabelecimentos CNES com rede assistencial por municipio.
+  - name: int_tiss_operadora_trimestre
+    description: Consolidacao TISS por operadora, trimestre e grupo de procedimento.
+  - name: int_sinistralidade_procedimento
+    description: Sinistralidade por grupo de procedimento cruzando TISS e DIOPS.

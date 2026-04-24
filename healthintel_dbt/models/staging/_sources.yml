@@ -100,3 +100,15 @@ sources:
         freshness:
           warn_after: {count: 60, period: day}
           error_after: {count: 120, period: day}
+      - name: cnes_estabelecimento
+        description: Cadastro Nacional de Estabelecimentos de Saude consolidado em bronze.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: tiss_procedimento_trimestral
+        description: Dados assistenciais TISS trimestrais consolidados em bronze.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 180, period: day}

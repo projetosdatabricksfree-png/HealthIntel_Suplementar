@@ -2,7 +2,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede bootstrap-regulatorio-layouts bootstrap-rede-layouts billing-close lint sql-lint test ci-local smoke smoke-rede load-test airflow-setup dag-test dag-test-all seed-dados-completos
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
 
 up:
 	$(COMPOSE) up -d --build
@@ -55,11 +55,25 @@ demo-data-rede:
 	python scripts/bootstrap_layout_registry_rede.py
 	python scripts/seed_demo_rede.py
 
+demo-data-cnes:
+	python scripts/bootstrap_layout_registry_cnes.py
+	python scripts/seed_demo_cnes.py
+
+demo-data-tiss:
+	python scripts/bootstrap_layout_registry_tiss.py
+	python scripts/seed_demo_tiss.py
+
 bootstrap-regulatorio-layouts:
 	python scripts/bootstrap_layout_registry_regulatorio.py
 
 bootstrap-rede-layouts:
 	python scripts/bootstrap_layout_registry_rede.py
+
+bootstrap-cnes-layouts:
+	python scripts/bootstrap_layout_registry_cnes.py
+
+bootstrap-tiss-layouts:
+	python scripts/bootstrap_layout_registry_tiss.py
 
 billing-close:
 	python scripts/fechar_ciclo_billing.py --referencia $(REF)
@@ -75,6 +89,15 @@ smoke:
 
 smoke-rede:
 	python scripts/smoke_rede.py
+
+smoke-cnes:
+	python scripts/seed_demo_cnes.py
+	python scripts/smoke_cnes.py
+
+smoke-tiss:
+	python scripts/seed_demo_rede.py
+	python scripts/seed_demo_tiss.py
+	python scripts/smoke_tiss.py
 
 load-test:
 	bash scripts/run_load_test.sh
@@ -99,6 +122,9 @@ dag-test:
 
 seed-dados-completos:
 	python scripts/seed_dados_completos.py
+
+dbt-seed-ref:
+	cd healthintel_dbt && $(DBT_ENV) dbt seed --select ref_tuss ref_rol_procedimento
 
 dag-test-all:
 	@echo "=== dag_criar_particao_mensal ===" && $(COMPOSE) exec airflow-scheduler airflow dags test dag_criar_particao_mensal 2026-04-22

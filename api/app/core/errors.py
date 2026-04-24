@@ -33,7 +33,9 @@ def normalizar_http_exception(exc: HTTPException) -> JSONResponse:
         content={
             "codigo": codigo,
             "mensagem": mensagem,
-            "detalhe": detalhe.get("detalhe") if detalhe and detalhe.get("detalhe") is not None else extras,
+            "detalhe": (
+                detalhe.get("detalhe") if detalhe and detalhe.get("detalhe") is not None else extras
+            ),
         },
         headers=exc.headers,
     )

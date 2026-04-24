@@ -30,6 +30,10 @@ models:
     api:
       +schema: api_ans
       +materialized: table
+      bronze:
+        +materialized: view
+      prata:
+        +materialized: table
 
 vars:
   score_pesos:
@@ -48,7 +52,17 @@ vars:
     score_regulatorio_peso: 0.30
     score_financeiro_peso: 0.20
     penalizacoes_peso: 0.10
+  score_v3_pesos:
+    core: 0.25
+    regulatorio: 0.25
+    financeiro: 0.20
+    rede: 0.20
+    estrutural: 0.10
   taxa_glosa_limite: 0.15
+  quality_gates:
+    min_taxa_aprovacao_stg: 0.95
+    min_integridade_referencial_int: 1.0
+    min_linhas_fato: 1
 
 seeds:
   healthintel_dbt:

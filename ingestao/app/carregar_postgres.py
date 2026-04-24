@@ -1,3 +1,5 @@
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -23,6 +25,31 @@ def preparar_carga(tabela_destino: str, lote_id: str, total_registros: int) -> L
     return LoteCarga(
         tabela_destino=tabela_destino, lote_id=lote_id, total_registros=total_registros
     )
+
+
+def _hash_sha256_texto(texto: str) -> str:
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
+def _hash_linha_registro(registro: dict) -> str:
+    payload = json.dumps(
+        registro,
+        sort_keys=True,
+        ensure_ascii=False,
+        default=str,
+        separators=(",", ":"),
+    )
+    return _hash_sha256_texto(payload)
+
+
+def _extrair_competencia(registros: list[dict]) -> str | None:
+    if not registros:
+        return None
+    for chave in ("competencia", "trimestre", "ano_base"):
+        valor = registros[0].get(chave)
+        if valor is not None:
+            return str(valor)
+    return None
 
 
 DATASET_CONFIG = {
@@ -307,6 +334,7 @@ def montar_registros_carga(
     registros_preparados: list[dict] = []
     for registro in registros:
         linha = {coluna: registro.get(coluna) for coluna in colunas_negocio}
+        linha["_hash_linha"] = _hash_linha_registro(linha)
         linha.update(
             {
                 "_carregado_em": carregado_em,
@@ -342,7 +370,29 @@ async def carregar_dataset_bruto(
     status_parse: str = "sucesso",
     lote_id: str | None = None,
     colunas_mapeadas: list[dict] | None = None,
+    registros_quarentena: list[dict] | None = None,
 ) -> LoteCarga:
+    competencia = _extrair_competencia(registros)
+    async with SessionLocal() as session:
+        resultado_dup = await session.execute(
+            text(
+                """
+                select 1
+                from plataforma.versao_dataset
+                where dataset = :dataset
+                  and hash_arquivo = :hash_arquivo
+                  and coalesce(competencia, '') = coalesce(:competencia, '')
+                limit 1
+                """
+            ),
+            {
+                "dataset": dataset_codigo,
+                "hash_arquivo": hash_arquivo,
+                "competencia": competencia,
+            },
+        )
+        duplicado = resultado_dup.scalar_one_or_none() is not None
+
     lote, registros_preparados = montar_registros_carga(
         dataset_codigo,
         registros,
@@ -354,7 +404,43 @@ async def carregar_dataset_bruto(
         status_parse=status_parse,
         lote_id=lote_id,
     )
+    if duplicado:
+        await registrar_job_carga(
+            dataset_codigo=dataset_codigo,
+            hash_arquivo=hash_arquivo,
+            status="ignorado_duplicata",
+            total_processado=0,
+            total_erro=0,
+            camada="bronze",
+            mensagem_erro="Lote duplicado rejeitado por hash_arquivo e competencia.",
+        )
+        return preparar_carga(
+            tabela_destino=lote.tabela_destino,
+            lote_id=lote.lote_id,
+            total_registros=0,
+        )
+
+    if registros_quarentena:
+        for registro_quarentena in registros_quarentena:
+            await registrar_quarentena(
+                dataset_codigo=dataset_codigo,
+                arquivo_origem=arquivo_origem,
+                hash_arquivo=hash_arquivo,
+                hash_estrutura=hash_estrutura,
+                motivo=str(registro_quarentena.get("motivo", "registro inválido")),
+                status=str(registro_quarentena.get("status", "pendente")),
+            )
+
     if not registros_preparados:
+        total_erro = len(registros_quarentena or [])
+        await registrar_job_carga(
+            dataset_codigo=dataset_codigo,
+            hash_arquivo=hash_arquivo,
+            status="sucesso",
+            total_processado=0,
+            total_erro=total_erro,
+            camada="bronze",
+        )
         return lote
 
     colunas = list(registros_preparados[0].keys())
@@ -395,6 +481,15 @@ async def carregar_dataset_bruto(
             status=status_parse,
         )
         await session.commit()
+    total_quarentena = len(registros_quarentena or [])
+    await registrar_job_carga(
+        dataset_codigo=dataset_codigo,
+        hash_arquivo=hash_arquivo,
+        status="sucesso_com_alertas" if total_quarentena > 0 else "sucesso",
+        total_processado=lote.total_registros,
+        total_erro=total_quarentena,
+        camada="bronze",
+    )
     return lote
 
 
@@ -902,6 +997,65 @@ async def registrar_quarentena(
     return quarentena_id
 
 
+async def registrar_job_carga(
+    *,
+    dataset_codigo: str,
+    hash_arquivo: str,
+    status: str,
+    total_processado: int,
+    total_erro: int,
+    camada: str,
+    mensagem_erro: str | None = None,
+) -> None:
+    async with SessionLocal() as session:
+        await session.execute(
+            text(
+                """
+                insert into plataforma.job (
+                    id,
+                    dag_id,
+                    nome_job,
+                    fonte_ans,
+                    hash_arquivo,
+                    camada,
+                    status,
+                    iniciado_em,
+                    finalizado_em,
+                    registro_processado,
+                    registro_com_falha,
+                    mensagem_erro
+                ) values (
+                    :id,
+                    :dag_id,
+                    :nome_job,
+                    :fonte_ans,
+                    :hash_arquivo,
+                    :camada,
+                    :status,
+                    now(),
+                    now(),
+                    :registro_processado,
+                    :registro_com_falha,
+                    :mensagem_erro
+                )
+                """
+            ),
+            {
+                "id": str(uuid4()),
+                "dag_id": f"ingestao_{dataset_codigo}",
+                "nome_job": f"carga_{dataset_codigo}",
+                "fonte_ans": dataset_codigo,
+                "hash_arquivo": hash_arquivo,
+                "camada": camada,
+                "status": status,
+                "registro_processado": total_processado,
+                "registro_com_falha": total_erro,
+                "mensagem_erro": mensagem_erro,
+            },
+        )
+        await session.commit()
+
+
 async def registrar_execucao_layout(
     *,
     session: AsyncSession,
@@ -1037,7 +1191,6 @@ async def registrar_versao_dataset(
                 versao,
                 competencia,
                 hash_arquivo,
-                hash_sha256,
                 hash_estrutura,
                 registros,
                 status
@@ -1047,7 +1200,6 @@ async def registrar_versao_dataset(
                 :versao,
                 :competencia,
                 :hash_arquivo,
-                :hash_sha256,
                 :hash_estrutura,
                 :registros,
                 :status
@@ -1060,7 +1212,6 @@ async def registrar_versao_dataset(
             "versao": f"{dataset_codigo}_{datetime.now(tz=UTC).strftime('%Y%m%d%H%M%S')}",
             "competencia": competencia,
             "hash_arquivo": hash_arquivo,
-            "hash_sha256": hash_arquivo,
             "hash_estrutura": hash_estrutura,
             "registros": registros,
             "status": status,

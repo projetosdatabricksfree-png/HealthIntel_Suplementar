@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
@@ -17,10 +18,16 @@ with DAG(
         declare
             v_next_competencia varchar(6);
         begin
-            v_next_competencia := to_char(date_trunc('month', current_date + interval '1 month'), 'YYYYMM');
-            execute 'create table if not exists bruto_ans.sib_beneficiario_operadora_' || v_next_competencia ||
-                ' partition of bruto_ans.sib_beneficiario_operadora for values from (''' || v_next_competencia ||
-                ''') to (''' || to_char(date_trunc('month', current_date + interval '2 months'), 'YYYYMM') || ''')';
+            v_next_competencia :=
+                to_char(date_trunc('month', current_date + interval '1 month'), 'YYYYMM');
+            execute
+                'create table if not exists bruto_ans.sib_beneficiario_operadora_'
+                || v_next_competencia
+                || ' partition of bruto_ans.sib_beneficiario_operadora'
+                || ' for values from (''' || v_next_competencia
+                || ''') to ('''
+                || to_char(date_trunc('month', current_date + interval '2 months'), 'YYYYMM')
+                || ''')';
         end $$;
         """,
     )
@@ -33,10 +40,16 @@ with DAG(
         declare
             v_next_competencia varchar(6);
         begin
-            v_next_competencia := to_char(date_trunc('month', current_date + interval '1 month'), 'YYYYMM');
-            execute 'create table if not exists bruto_ans.sib_beneficiario_municipio_' || v_next_competencia ||
-                ' partition of bruto_ans.sib_beneficiario_municipio for values from (''' || v_next_competencia ||
-                ''') to (''' || to_char(date_trunc('month', current_date + interval '2 months'), 'YYYYMM') || ''')';
+            v_next_competencia :=
+                to_char(date_trunc('month', current_date + interval '1 month'), 'YYYYMM');
+            execute
+                'create table if not exists bruto_ans.sib_beneficiario_municipio_'
+                || v_next_competencia
+                || ' partition of bruto_ans.sib_beneficiario_municipio'
+                || ' for values from (''' || v_next_competencia
+                || ''') to ('''
+                || to_char(date_trunc('month', current_date + interval '2 months'), 'YYYYMM')
+                || ''')';
         end $$;
         """,
     )
@@ -61,4 +74,8 @@ with DAG(
         """,
     )
 
-    [criar_particao_sib_operadora, criar_particao_sib_municipio, criar_particao_log_uso]
+    (
+        criar_particao_sib_operadora
+        >> criar_particao_sib_municipio
+        >> criar_particao_log_uso
+    )

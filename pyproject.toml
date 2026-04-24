@@ -42,6 +42,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/seed_dados_completos.py" = ["E501"]
+
 [tool.ruff.format]
 quote-style = "double"
 

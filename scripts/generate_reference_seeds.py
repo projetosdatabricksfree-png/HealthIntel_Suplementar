@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 import csv
-import json
-from datetime import date
 from pathlib import Path
 
 import httpx
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SEEDS = ROOT / "healthintel_dbt" / "seeds"
@@ -86,7 +83,7 @@ def gerar_modalidades() -> None:
     escrever_csv(
         SEEDS / "ref_modalidade.csv",
         ["modalidade", "descricao"],
-        [{"modalidade": modalidade, "descricao": descricao} for modalidade, descricao in MODALIDADES],
+        [{"modalidade": m, "descricao": d} for m, d in MODALIDADES],
     )
 
 

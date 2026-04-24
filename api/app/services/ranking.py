@@ -5,10 +5,11 @@ import json
 from sqlalchemy import text
 
 from api.app.core.config import get_settings
+from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
-from api.app.database import SessionLocal
 from api.app.schemas.meta import MetaEnvelope
 from api.app.schemas.ranking import (
+    RankingCompostoResponse,
     RankingCrescimentoResponse,
     RankingOperadoraScoreResponse,
     RankingOportunidadeResponse,
@@ -246,6 +247,85 @@ async def listar_ranking_oportunidade_v2(*, pagina: int = 1, por_pagina: int = 5
         "meta": MetaEnvelope(
             competencia_referencia=rows[0]["competencia"] if rows else "atual",
             versao_dataset="opportunity_v2",
+            total=total,
+            pagina=pagina,
+            por_pagina=por_pagina,
+        ).model_dump(),
+    }
+    payload["meta"]["cache"] = "miss"
+    await _salvar_cache(cache_key, payload)
+    return payload
+
+
+async def listar_ranking_composto(
+    *,
+    pagina: int = 1,
+    por_pagina: int = 50,
+    competencia: str | None = None,
+    modalidade: str | None = None,
+    uf: str | None = None,
+) -> dict:
+    pagina = max(pagina, 1)
+    por_pagina = min(max(por_pagina, 1), 100)
+    offset = (pagina - 1) * por_pagina
+    cache_key = (
+        f"ranking:composto:{pagina}:{por_pagina}:{competencia or ''}:{modalidade or ''}:{uf or ''}"
+    )
+    cached = await _obter_cache(cache_key)
+    if cached:
+        cached.setdefault("meta", {})["cache"] = "hit"
+        return cached
+
+    filtros = ["1=1"]
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    if competencia:
+        filtros.append("competencia_id = :competencia")
+        params["competencia"] = competencia
+    if modalidade:
+        filtros.append("modalidade = :modalidade")
+        params["modalidade"] = modalidade
+    if uf:
+        filtros.append("uf_sede = :uf")
+        params["uf"] = uf.upper()
+    where_clause = " where " + " and ".join(filtros)
+
+    async with SessionLocal() as session:
+        total_result = await session.execute(
+            text(f"select count(*) from api_ans.api_ranking_composto_mensal {where_clause}"),
+            params,
+        )
+        total = int(total_result.scalar_one())
+        sql = f"""
+            select
+                operadora_id,
+                competencia_id,
+                registro_ans,
+                nome,
+                nome_fantasia,
+                modalidade,
+                uf_sede,
+                score_v3_final,
+                posicao_geral,
+                posicao_por_modalidade,
+                variacao_posicao_3m,
+                versao_metodologia
+            from api_ans.api_ranking_composto_mensal
+            {where_clause}
+            order by posicao_geral asc, score_v3_final desc
+            limit :limit offset :offset
+            """
+        result = await session.execute(
+            text(sql),
+            params,
+        )
+        rows = result.mappings().all()
+
+    dados = [RankingCompostoResponse(**row).model_dump() for row in rows]
+    payload = {
+        "dados": dados,
+        "meta": MetaEnvelope(
+            competencia_referencia=rows[0]["competencia_id"] if rows else "atual",
+            versao_dataset="score_v3",
             total=total,
             pagina=pagina,
             por_pagina=por_pagina,

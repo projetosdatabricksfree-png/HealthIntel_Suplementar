@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: api_prata_cadop
+    description: Espelho analitico de CADOP com metadados de qualidade.
+  - name: api_prata_sib_operadora
+    description: Espelho analitico do SIB por operadora com metadados de qualidade.
+  - name: api_prata_sib_municipio
+    description: Espelho analitico do SIB por municipio com metadados de qualidade.
+  - name: api_prata_igr
+    description: Espelho analitico do IGR com metadados de qualidade.
+  - name: api_prata_nip
+    description: Espelho analitico de NIP com metadados de qualidade.
+  - name: api_prata_idss
+    description: Espelho analitico de IDSS com metadados de qualidade.
+  - name: api_prata_diops
+    description: Espelho analitico do DIOPS com metadados de qualidade.
+  - name: api_prata_fip
+    description: Espelho analitico do FIP com metadados de qualidade.
+  - name: api_prata_vda
+    description: Espelho analitico do VDA com metadados de qualidade.
+  - name: api_prata_glosa
+    description: Espelho analitico de glosa com metadados de qualidade.
+  - name: api_prata_rede_assistencial
+    description: Espelho analitico da rede assistencial com metadados de qualidade.
+  - name: api_prata_operadora_enriquecida
+    description: Operadora enriquecida com crescimento de beneficiarios.
+  - name: api_prata_municipio_metrica
+    description: Metricas municipais de mercado e concentracao.
+  - name: api_prata_financeiro_periodo
+    description: Consolidacao financeira por operadora e trimestre.

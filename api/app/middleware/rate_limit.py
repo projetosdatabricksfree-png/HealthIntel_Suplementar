@@ -13,13 +13,23 @@ async def aplicar_rate_limit(request: Request) -> None:
         getattr(request.state, "chave_api", "anonimo"),
     )
     limite_rpm = getattr(request.state, "limite_rpm", settings.app_rate_limit_rpm)
+    rota = request.url.path
+    if rota.startswith("/v1/bronze"):
+        peso = 3
+        camada = "bronze"
+    elif rota.startswith("/v1/prata"):
+        peso = 2
+        camada = "prata"
+    else:
+        peso = 1
+        camada = "ouro"
     chave = f"rate_limit:{identificador}"
     try:
-        total = await redis_client.incr(chave)
+        total = await redis_client.incrby(chave, peso)
     except Exception:
         return
 
-    if total == 1:
+    if total == peso:
         await redis_client.expire(chave, 60)
 
     if total > limite_rpm:
@@ -28,3 +38,5 @@ async def aplicar_rate_limit(request: Request) -> None:
             detail={"codigo": "LIMITE_EXCEDIDO", "mensagem": "Limite por minuto excedido."},
             headers={"Retry-After": "60"},
         )
+
+    request.state.camada = camada

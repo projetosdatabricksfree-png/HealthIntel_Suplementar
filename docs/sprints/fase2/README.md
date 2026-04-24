@@ -15,11 +15,11 @@ Fase de expansão pós-MVP cobrindo datasets ausentes e camada analítica de pro
 - [x] Layout registry MongoDB
 - [x] DAG ingestão
 - [x] Loader Python
-- [ ] Partição automática (dag_criar_particao_mensal)
-- [ ] Source freshness (_sources.yml)
-- [ ] dbt staging + intermediates + marts + API
-- [ ] FastAPI endpoints + schemas + service
-- [ ] Seed demo + smoke test + Makefile targets
+- [x] Partição automática (dag_criar_particao_mensal)
+- [x] Source freshness (_sources.yml)
+- [x] dbt staging + intermediates + marts + API
+- [x] FastAPI endpoints + schemas + service
+- [x] Seed demo + smoke test + Makefile targets
 
 ## Progresso Sprint 14 — D-TISS
 
@@ -27,7 +27,7 @@ Fase de expansão pós-MVP cobrindo datasets ausentes e camada analítica de pro
 - [x] Layout registry MongoDB
 - [x] DAG ingestão
 - [x] Loader Python
-- [ ] Seeds ref_tuss + ref_rol_procedimento
-- [ ] dbt staging + intermediates + marts + API
-- [ ] FastAPI endpoints TISS
-- [ ] Seed demo + Makefile targets
+- [x] Seeds ref_tuss + ref_rol_procedimento
+- [x] dbt staging + intermediates + marts + API
+- [x] FastAPI endpoints TISS
+- [x] Seed demo + Makefile targets

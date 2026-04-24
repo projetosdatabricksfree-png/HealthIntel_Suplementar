@@ -1,7 +1,6 @@
+import asyncio
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-
-import pytest
 
 from api.app.services import uso
 from api.app.services.uso import registrar_log_uso
@@ -19,8 +18,7 @@ class FakeSession:
         self.committed = True
 
 
-@pytest.mark.asyncio
-async def test_registrar_log_uso_persiste_hash_ip(monkeypatch) -> None:
+def test_registrar_log_uso_persiste_hash_ip(monkeypatch) -> None:
     fake_session = FakeSession()
 
     @asynccontextmanager
@@ -38,18 +36,22 @@ async def test_registrar_log_uso_persiste_hash_ip(monkeypatch) -> None:
         ),
     )
 
-    await registrar_log_uso(
-        chave_id="33333333-3333-3333-3333-333333333333",
-        cliente_id="22222222-2222-2222-2222-222222222222",
-        plano_id="11111111-1111-1111-1111-111111111111",
-        endpoint="/v1/operadoras",
-        rota="/v1/operadoras",
-        metodo="GET",
-        codigo_status=200,
-        latencia_ms=42,
-        cache_hit=True,
-        ip_cliente="127.0.0.1",
-    )
+    async def executar() -> None:
+        await registrar_log_uso(
+            chave_id="33333333-3333-3333-3333-333333333333",
+            cliente_id="22222222-2222-2222-2222-222222222222",
+            plano_id="11111111-1111-1111-1111-111111111111",
+            camada="ouro",
+            endpoint="/v1/operadoras",
+            rota="/v1/operadoras",
+            metodo="GET",
+            codigo_status=200,
+            latencia_ms=42,
+            cache_hit=True,
+            ip_cliente="127.0.0.1",
+        )
+
+    asyncio.run(executar())
 
     assert fake_session.committed is True
     assert len(fake_session.executed) == 1

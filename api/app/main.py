@@ -13,14 +13,18 @@ from api.app.middleware.log_requisicao import registrar_tempo_requisicao
 from api.app.routers import (
     admin_billing,
     admin_layout,
+    bronze,
+    cnes,
     financeiro,
     mercado,
     meta,
     operadora,
+    prata,
     ranking,
     rede,
     regulatorio,
     regulatorio_v2,
+    tiss,
 )
 from api.app.services.health import obter_prontidao
 
@@ -51,6 +55,10 @@ app.include_router(ranking.router, prefix=settings.app_prefixo)
 app.include_router(regulatorio.router, prefix=settings.app_prefixo)
 app.include_router(regulatorio_v2.router, prefix=settings.app_prefixo)
 app.include_router(financeiro.router, prefix=settings.app_prefixo)
+app.include_router(bronze.router, prefix=settings.app_prefixo)
+app.include_router(prata.router, prefix=settings.app_prefixo)
+app.include_router(cnes.router, prefix=settings.app_prefixo)
+app.include_router(tiss.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)
 

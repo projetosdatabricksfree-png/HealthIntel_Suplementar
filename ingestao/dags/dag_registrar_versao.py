@@ -1,7 +1,8 @@
 from datetime import datetime
+
 from airflow import DAG
-from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 with DAG(
     dag_id="dag_registrar_versao",

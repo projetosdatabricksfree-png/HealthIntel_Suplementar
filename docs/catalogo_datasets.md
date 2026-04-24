@@ -20,4 +20,8 @@
 | `rede_assistencial` | `bruto_ans` | `stg_rede_assistencial` / `fat_cobertura_rede_municipio` | `dag_ingest_rede_assistencial` | `30d` | Painel de Rede e Vazios Assistenciais |
 | `vazio_assistencial` | derivado | `fat_vazio_assistencial_municipio` / `api_vazio_assistencial` | derivação dbt | `30d` | Painel de Rede e Vazios Assistenciais |
 | `oportunidade_v2` | derivado | `fat_oportunidade_v2_municipio_mensal` / `api_oportunidade_v2_municipio_mensal` | derivação dbt | `30d` | composto interno |
-
+| `cnes_estabelecimento` | `bruto_ans` | `stg_cnes_estabelecimento` / `fat_cnes_estabelecimento_municipio` | `dag_ingest_cnes` | `60d` | CNES / DATASUS |
+| `tiss_procedimento` | `bruto_ans` | `stg_tiss_procedimento` / `fat_tiss_procedimento_operadora` | `dag_ingest_tiss` | `95d` | TISS |
+| `sinistralidade_procedimento` | derivado | `int_sinistralidade_procedimento` / `api_sinistralidade_procedimento` | derivação dbt | `95d` | Sinistralidade por procedimento |
+| `score_v3` | derivado | `fat_score_v3_operadora_mensal` / `api_score_v3_operadora_mensal` | derivação dbt | `30d` | Score composto v3 |
+| `ranking_composto` | derivado | `fat_ranking_composto_mensal` / `api_ranking_composto_mensal` | derivação dbt | `30d` | Ranking composto v3 |

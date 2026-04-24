@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
@@ -14,7 +15,10 @@ with DAG(
 
     executar_freshness = BashOperator(
         task_id="executar_freshness",
-        bash_command="cd /workspace/healthintel_dbt && /home/airflow/.local/bin/dbt source freshness",
+        bash_command=(
+            "cd /workspace/healthintel_dbt"
+            " && /home/airflow/.local/bin/dbt source freshness"
+        ),
     )
 
     fim = EmptyOperator(task_id="fim")

@@ -6,12 +6,12 @@ Fase de formalização arquitetural e expansão comercial. Estabelece contratos 
 
 | Sprint | Título | Status |
 |--------|--------|--------|
-| [Sprint 15](sprint_15_governanca_camadas.md) | Governança de Camadas | Não iniciada |
-| [Sprint 16](sprint_16_bronze_api_tecnica.md) | Bronze API Técnica | Não iniciada |
-| [Sprint 17](sprint_17_prata_api_analitica.md) | Prata API Analítica | Não iniciada |
-| [Sprint 18](sprint_18_datasets_complementares.md) | Datasets Complementares | Não iniciada |
-| [Sprint 19](sprint_19_score_v3_indice_composto.md) | Score v3 e Índice Composto | Não iniciada |
-| [Sprint 20](sprint_20_comercializacao_enterprise.md) | Comercialização e Enterprise Final | Não iniciada |
+| [Sprint 15](sprint_15_governanca_camadas.md) | Governança de Camadas | Concluída |
+| [Sprint 16](sprint_16_bronze_api_tecnica.md) | Bronze API Técnica | Concluída |
+| [Sprint 17](sprint_17_prata_api_analitica.md) | Prata API Analítica | Concluída |
+| [Sprint 18](sprint_18_datasets_complementares.md) | Datasets Complementares | Concluída |
+| [Sprint 19](sprint_19_score_v3_indice_composto.md) | Score v3 e Índice Composto | Concluída |
+| [Sprint 20](sprint_20_comercializacao_enterprise.md) | Comercialização e Enterprise Final | Concluída |
 
 ---
 
@@ -71,8 +71,8 @@ Raw/Landing  →  Bronze        →  Prata entrada  →  Prata saída  →  Ouro
 
 ## Critério de Saída da Fase 3
 
-- [ ] `pytest testes/regressao/test_endpoints_fase3.py` — zero falhas (hard gate)
-- [ ] `dbt compile` sem erros com todos os novos modelos
-- [ ] `docs/arquitetura/contratos_por_camada.md` revisado e aprovado
-- [ ] `plataforma.plano` contém os 5 tiers com `sla_*` e `camadas_permitidas`
-- [ ] Tag git `v2.0.0` criada após aprovação
+- [x] `pytest testes/regressao/test_endpoints_fase3.py` — zero falhas (hard gate)
+- [x] `dbt compile` sem erros com todos os novos modelos
+- [x] `docs/arquitetura/contratos_por_camada.md` revisado e aprovado
+- [x] `plataforma.plano` contém os 5 tiers com `sla_*` e `camadas_permitidas`
+- [x] Tag git `v2.0.0` criada após aprovação

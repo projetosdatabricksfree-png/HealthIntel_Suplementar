@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: api_bronze_cadop
+    description: Espelho tecnico de CADOP em bronze.
+  - name: api_bronze_sib_operadora
+    description: Espelho tecnico do SIB por operadora.
+  - name: api_bronze_sib_municipio
+    description: Espelho tecnico do SIB por municipio.
+  - name: api_bronze_igr
+    description: Espelho tecnico do IGR trimestral.
+  - name: api_bronze_nip
+    description: Espelho tecnico de NIP e TIR/TR.
+  - name: api_bronze_idss
+    description: Espelho tecnico do IDSS anual.
+  - name: api_bronze_diops
+    description: Espelho tecnico do DIOPS trimestral.
+  - name: api_bronze_fip
+    description: Espelho tecnico do FIP trimestral.
+  - name: api_bronze_vda
+    description: Espelho tecnico do VDA mensal.
+  - name: api_bronze_glosa
+    description: Espelho tecnico da glosa mensal.
+  - name: api_bronze_rede_assistencial
+    description: Espelho tecnico da rede assistencial por municipio.

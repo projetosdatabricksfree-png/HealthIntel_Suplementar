@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 
 from fastapi import Header, HTTPException, Request, status
 from sqlalchemy import text
@@ -48,6 +48,22 @@ def _extrair_erros(row: dict) -> dict:
     }
 
 
+def _normalizar_camadas(camadas: Iterable[str] | None, plano_nome: str | None = None) -> list[str]:
+    if camadas:
+        normalizadas = [str(camada).strip().lower() for camada in camadas if str(camada).strip()]
+        if normalizadas:
+            return normalizadas
+
+    nome = (plano_nome or "").strip().lower()
+    if nome in {"piloto", "essencial", "starter_local"}:
+        return ["ouro"]
+    if nome in {"plus", "tecnico", "analitico", "growth_local", "pro_local"}:
+        return ["ouro", "prata"]
+    if nome in {"enterprise", "enterprise_tecnico", "enterprise_local", "admin_interno"}:
+        return ["ouro", "prata", "bronze"]
+    return ["ouro"]
+
+
 async def validar_chave(
     request: Request,
     x_api_key: str | None = Header(default=None),
@@ -75,7 +91,9 @@ async def validar_chave(
                         chave.status as status_chave,
                         cliente.status as status_cliente,
                         plano.limite_rpm,
-                        plano.endpoint_permitido
+                        plano.endpoint_permitido,
+                        plano.camadas_permitidas,
+                        plano.nome as plano_nome
                     from plataforma.chave_api chave
                     inner join plataforma.cliente cliente
                         on chave.cliente_id = cliente.id
@@ -102,6 +120,10 @@ async def validar_chave(
                 "status_cliente": str(row["status_cliente"]),
                 "limite_rpm": int(row["limite_rpm"]),
                 "endpoint_permitido": list(row["endpoint_permitido"] or []),
+                "camadas_permitidas": _normalizar_camadas(
+                    row["camadas_permitidas"], row["plano_nome"]
+                ),
+                "plano_nome": str(row["plano_nome"]),
             }
             await _salvar_cache_chave(hash_chave, row)
 
@@ -123,6 +145,8 @@ async def validar_chave(
     request.state.plano_id = str(row["plano_id"])
     request.state.limite_rpm = int(row["limite_rpm"])
     request.state.endpoint_permitido = endpoints_permitidos
+    request.state.camadas_permitidas = list(row.get("camadas_permitidas") or [])
+    request.state.plano_nome = row.get("plano_nome")
     request.state.auth_cache = "hit" if cached else "miss"
     return x_api_key
 
@@ -140,3 +164,21 @@ async def verificar_plano(request: Request) -> None:
                 "mensagem": "Plano sem acesso a este endpoint.",
             },
         )
+
+
+def verificar_camada(camada: str):
+    camada_normalizada = camada.strip().lower()
+
+    async def _verificador(request: Request) -> None:
+        camadas_permitidas: Sequence[str] = getattr(request.state, "camadas_permitidas", [])
+        camadas_normalizadas = {str(item).strip().lower() for item in camadas_permitidas}
+        if camada_normalizada not in camadas_normalizadas:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "codigo": "CAMADA_SEM_ACESSO",
+                    "mensagem": f"Plano sem acesso a camada {camada_normalizada}.",
+                },
+            )
+
+    return _verificador

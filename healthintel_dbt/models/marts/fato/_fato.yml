@@ -109,3 +109,51 @@ models:
       - name: competencia
         data_tests:
           - not_null
+  - name: fat_cnes_estabelecimento_municipio
+    description: Estabelecimentos CNES agregados por municipio, competencia e tipo de unidade.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        data_tests:
+          - not_null
+  - name: fat_cnes_rede_gap_municipio
+    description: Gap entre CNES e rede declarada por municipio e tipo de unidade.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        data_tests:
+          - not_null
+  - name: fat_tiss_procedimento_operadora
+    description: Procedimentos TISS consolidados por operadora, trimestre e grupo.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        data_tests:
+          - not_null
+  - name: fat_sinistralidade_procedimento
+    description: Sinistralidade por grupo de procedimento e operadora.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        data_tests:
+          - not_null

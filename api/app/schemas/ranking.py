@@ -58,3 +58,18 @@ class RankingOportunidadeV2Response(BaseModel):
     ranking_posicao: int
     sinal_vazio: str | None = None
     versao_algoritmo: str | None = None
+
+
+class RankingCompostoResponse(BaseModel):
+    operadora_id: int
+    competencia_id: str
+    registro_ans: str
+    nome: str | None = None
+    nome_fantasia: str | None = None
+    modalidade: str | None = None
+    uf_sede: str | None = None
+    score_v3_final: float
+    posicao_geral: int
+    posicao_por_modalidade: int
+    variacao_posicao_3m: int | None = None
+    versao_metodologia: str | None = None

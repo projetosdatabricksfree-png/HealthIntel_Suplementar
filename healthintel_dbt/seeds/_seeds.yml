@@ -1,0 +1,7 @@
+version: 2
+
+seeds:
+  - name: ref_tuss
+    description: Base sintética representativa de referencia TUSS para desenvolvimento e CI.
+  - name: ref_rol_procedimento
+    description: Base sintética representativa de procedimentos da RN vigente para desenvolvimento e CI.

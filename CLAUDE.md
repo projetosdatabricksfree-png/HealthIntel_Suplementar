@@ -86,10 +86,10 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `app/main.py`: FastAPI entrypoint. Health check, CORS, auth middleware.
 - `app/core/`: Database pools, Redis client, config loading.
 - `app/middleware/`: `autenticacao.py` (X-API-Key validation + Redis cache), `rate_limit.py` (SlowAPI), `hardening.py` (security headers), `log_requisicao.py` (request timing).
-- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `financeiro_v2`, `rede`, `meta`, `admin_billing`, `admin_layout`.
+- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `financeiro_v2`, `rede`, `meta`, `admin_billing`, `admin_layout`. **Phase 3 additions (planned):** `bronze`, `prata`.
 - `app/schemas/`: Pydantic v2 request/response models per endpoint group.
 - `app/services/`: Async query builders (never direct dbt model access, only `api_ans`).
-- `app/dependencia.py`: Dependency injection (validar_chave, verificar_plano).
+- `app/dependencia.py`: Dependency injection (`validar_chave`, `verificar_plano`, `verificar_camada`). **Phase 3:** `verificar_camada(camada: str)` checks `plataforma.plano.camadas_permitidas[]` — blocks access if plan does not include the requested layer.
 - `tests/unit/`: Health checks, auth, schema validation.
 - `tests/integration/`: End-to-end endpoint tests against live PostgreSQL.
 
@@ -106,7 +106,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `models/marts/dimensao/`: Dimension tables (dim_operadora_atual, dim_competencia, dim_localidade).
 - `models/marts/fato/`: Fact tables. Incremental merge with `unique_key` or full refresh.
 - `models/marts/derivado/`: Derived score/index tables computed from facts (score, ranking, oportunidade).
-- `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro.
+- `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro. **Phase 3 additions (planned):** `api/bronze/` (thin views over `bruto_ans`, no cache) and `api/prata/` (tables from `stg_ans` + `int_ans`, TTL 300s cache).
 - `tests/`: dbt generic tests, singular SQL assertions (assert_*.sql).
 - `macros/`: `normalizar_registro_ans`, `competencia_para_data`, `competencia_para_trimestre`, `trimestre_para_competencia`, `calcular_hhi`, `normalizar_0_100`, `versao_metodologia_idss`, `classificar_rating_regulatorio`, `criar_indices`, `criar_indice_api`, `generate_schema_name`.
 - `seeds/ref_*`: Dimension data (ref_uf, ref_municipio_ibge, ref_competencia, ref_modalidade).
@@ -133,8 +133,8 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 1. Create router in `api/app/routers/{topic}.py`.
 2. Define schema in `api/app/schemas/{topic}.py` (Pydantic v2).
 3. Query only `api_ans` models via `app/services/{topic}.py`.
-4. Use dependency injection: `validar_chave`, `verificar_plano`.
-5. Return envelope: `{dados: [...], meta: {competencia_referencia, versao_dataset, total, pagina}}`.
+4. Use dependency injection: `validar_chave`, `verificar_plano`. For Bronze/Prata endpoints also `verificar_camada('bronze'|'prata')`.
+5. Return envelope: `{dados: [...], meta: {competencia_referencia, versao_dataset, total, pagina}}`. Bronze envelope adds `aviso_qualidade`. Prata envelope adds `qualidade: {taxa_aprovacao, registros_quarentena}`.
 6. Add test in `api/tests/integration/test_{topic}.py`.
 
 ### Adding a dbt Model
@@ -194,18 +194,32 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 - **Partition strategy**: RANGE by competência (monthly) or trimestre (quarterly); no LIST or HASH.
 - **Freshness**: Entry in `_sources.yml` required for every bronze table.
 - **venv isolation**: Each service (`api/`, `healthintel_dbt/`, `ingestao/`) has isolated `.venv` if running outside containers.
+- **Layer access control (Phase 3)**: `plataforma.plano` has `camadas_permitidas TEXT[]`. Use `verificar_camada('bronze'|'prata')` dependency for Bronze/Prata endpoints. Gold endpoints use existing `verificar_plano`.
+- **Rate limit multipliers (Phase 3)**: `/v1/bronze` routes consume 3× bucket; `/v1/prata` routes consume 2×; `/v1` (gold) consumes 1×.
+- **Bronze cache**: Redis cache DISABLED for Bronze API routes (data is mutable until lote closes).
+- **Prata cache**: Redis TTL 300s (5 min) for Prata API routes.
+- **Quarantine tables (Phase 3)**: Each dataset has a `bruto_ans.*_quarentena` table. Records failing staging validation go there, never into served data. Rejection reason, failed rule and lote preserved.
+- **Score v3 (Phase 3)**: `versao_metodologia = 'v3.0'`. Five components: core(0.25) + regulatorio(0.25) + financeiro(0.20) + rede(0.20) + estrutural(0.10). Fallback to score_v2 with `componente_estimado = true` when a component is missing.
 
 ---
 
 ## Sprint Structure
 
-Sprints 01–07 complete (MVP + regulatory base). Sprints 08–12 in progress:
+**Fase 1 (Sprints 01–12): CONCLUÍDA** — baseline v1.0.0 taggeada.
+**Fase 2 (Sprints 13–14): EM ANDAMENTO** — docs in `docs/sprints/fase2/`.
+**Fase 3 (Sprints 15–20): PLANEJADA** — docs in `docs/sprints/fase3/`.
 
-- **Sprint 08**: Score regulatório, regime especial, prudencial, portabilidade.
-- **Sprint 09**: DIOPS, FIP, harmonização financeira.
-- **Sprint 10**: VDA, glosa, score v2.
-- **Sprint 11**: Rede assistencial.
-- **Sprint 12**: Vazios assistenciais, oportunidade v2, rollout enterprise.
+### Fase 2
+- **Sprint 13**: CNES (estabelecimentos de saúde) — bronze, staging, int por operadora. Em andamento.
+- **Sprint 14**: TISS (procedimentos) — bronze, staging, cruzamentos financeiros. Não iniciada.
+
+### Fase 3
+- **Sprint 15**: Governança de camadas — hash bronze, quarentena semântica real, quality gates, freshness SLO, contratos formais.
+- **Sprint 16**: Bronze API — 11 endpoints `/v1/bronze/*`, plano `enterprise_tecnico`, `verificar_camada('bronze')`, DDL `015_plano_camadas.sql`.
+- **Sprint 17**: Prata API — 14 endpoints `/v1/prata/*`, plano `analitico`, `verificar_camada('prata')`, envelope com `qualidade.taxa_aprovacao`.
+- **Sprint 18**: Datasets complementares — QUALISS, IEPRS, reajustes coletivos (viability), catálogo completo dos 22 datasets.
+- **Sprint 19**: Score v3 — 5 componentes ponderados, ranking composto, `versao_metodologia = 'v3.0'`.
+- **Sprint 20**: Comercialização enterprise — 5 tiers com `camadas_permitidas` + SLAs, billing por camada, regressão Fase 3, baseline v2.0.0.
 
 Each sprint has: HIS-*.* stories, "Entregas esperadas" checklist, "Validação esperada" checklist.
 

@@ -160,3 +160,30 @@ models:
       - name: cd_municipio
         data_tests:
           - not_null
+  - name: stg_cnes_estabelecimento
+    description: CNES de estabelecimentos padronizado para uso analitico e geograficamente validado.
+    columns:
+      - name: competencia
+        data_tests:
+          - not_null
+      - name: cnes
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        data_tests:
+          - not_null
+  - name: stg_tiss_procedimento
+    description: Dados assistenciais TISS padronizados por operadora, trimestre e grupo de procedimento.
+    columns:
+      - name: trimestre
+        data_tests:
+          - not_null
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        data_tests:
+          - not_null
