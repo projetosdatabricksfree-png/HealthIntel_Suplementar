@@ -24,12 +24,13 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - **`api/`**: FastAPI service exposing data via REST. Reads PostgreSQL `api_ans` schema exclusively (never `nucleo_ans`). X-API-Key auth + Redis caching (TTL 60s). Response envelope: `{dados: [...], meta: {...}}`.
 - **`mongo_layout_service/`**: MongoDB governance service. Stores file layout metadata, versioning, and bootstrap registries. Token-based auth.
 - **`ingestao/`**: Airflow DAGs + Python scripts. Download ANS datasets, validate structure via MongoDB layouts, load to PostgreSQL `bruto_ans` (Bronze).
-- **`healthintel_dbt/`**: dbt transformation engine. Medallion flow: `bruto_ans` (bronze) → `stg_ans` (silver views) → `int_ans` (ephemeral intermediates) → `nucleo_ans` (gold marts) → `api_ans` (gold API).
+- **`healthintel_dbt/`**: dbt transformation engine. Medallion flow: `bruto_ans` (bronze) → `stg_ans` (silver views) → `int_ans` (ephemeral intermediates) → `nucleo_ans` (gold marts) → `api_ans` (gold API) → `consumo_ans` (client delivery).
 
 **Key flows:**
 - **Ingest**: DAG downloads file → validate layout in MongoDB → load `bruto_ans` → record `plataforma.job`.
 - **Transform**: dbt staging normalizes, dbt tests validate, dbt marts aggregate, post-hooks create physical indices in `api_ans`.
 - **Serve**: FastAPI queries `api_ans` only, logs to `plataforma.log_uso`, caches in Redis.
+- **Client delivery**: `consumo_ans` schema serves desnormalized Gold tables directly to client BI tools (Power BI, Metabase, psql). Role `healthintel_cliente_reader` (NOLOGIN) is granted per-client user with no access to internal schemas. Refreshed via `dag_dbt_consumo_refresh.py` / `make consumo-refresh`.
 
 **Data schemas:**
 - `bruto_ans`: Raw bronze tables (CADOP, SIB, IGR, NIP, RN623, IDSS, etc.). RANGE partitioned by competência or trimestre.
@@ -37,7 +38,8 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `int_ans`: Ephemeral intermediates (not materialized). Enrich, join, derive metrics.
 - `nucleo_ans`: Gold mart tables (facts: `fat_*`, dimensions: `dim_*`). Incremental or full refresh per model.
 - `api_ans`: Gold API tables. Denormalized, indexed, read-only from FastAPI.
-- `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions).
+- `consumo_ans`: Client delivery tables. Desnormalized Gold for direct BI/analyst access. Role `healthintel_cliente_reader`; each client gets individual LOGIN user. No access to internal schemas.
+- `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions, `lote_ingestao`).
 
 ---
 
@@ -62,17 +64,26 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 | **Seed rede data** | `make demo-data-rede` |
 | **Seed CNES data** | `make demo-data-cnes` |
 | **Seed TISS data** | `make demo-data-tiss` |
+| **Seed SIB data** | `make demo-data-sib` |
+| **Seed CADOP data** | `make demo-data-cadop` |
 | **Seed all datasets** | `make seed-dados-completos` |
 | **Bootstrap regulatorio layouts** | `make bootstrap-regulatorio-layouts` |
 | **Bootstrap rede layouts** | `make bootstrap-rede-layouts` |
 | **Bootstrap CNES layouts** | `make bootstrap-cnes-layouts` |
 | **Bootstrap TISS layouts** | `make bootstrap-tiss-layouts` |
+| **Bootstrap SIB layouts** | `make bootstrap-sib-layouts` |
+| **Bootstrap CADOP layouts** | `make bootstrap-cadop-layouts` |
 | **Seed ref seeds** | `make dbt-seed-ref` (ref_tuss, ref_rol_procedimento) |
 | **Close billing cycle** | `make billing-close REF=YYYYMM` |
+| **Refresh consumo layer** | `make consumo-refresh` (runs tag:consumo models + tests) |
 | **Smoke test (piloto)** | `make smoke` |
 | **Smoke test (rede)** | `make smoke-rede` |
 | **Smoke test (CNES)** | `make smoke-cnes` |
 | **Smoke test (TISS)** | `make smoke-tiss` |
+| **Smoke test (Prata)** | `make smoke-prata` |
+| **Smoke test (SIB)** | `make smoke-sib` |
+| **Smoke test (CADOP)** | `make smoke-cadop` |
+| **Smoke test (consumo)** | `make smoke-consumo` |
 | **Load test** | `make load-test` (Locust) |
 | **Dev API server** | `make api-dev` (auto-reload on :8000) |
 | **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
@@ -106,7 +117,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 ### Ingestao (`ingestao/`)
 
-- `dags/`: Airflow DAGs (dag_mestre_mensal, dag_trimestral, dag_anual_idss, etc.). Sub-DAG pattern for orchestration.
+- `dags/`: Individual `dag_ingest_{dataset}.py` per dataset (SIB, CADOP, IGR, NIP, RN623, TISS, CNES, DIOPS, FIP, Glosa, VDA, Rede, Regime Especial, Portabilidade, Prudencial, Taxa Resolutividade). Also: `dag_anual_idss.py`, `dag_criar_particao_mensal.py`, `dag_dbt_freshness.py`, `dag_dbt_consumo_refresh.py`.
 - `app/`: Operators, hooks, utilities (file downloads, layout validation, load jobs).
 - `tests/`: DAG parsing, mock operator tests.
 
@@ -116,10 +127,11 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `models/intermediate/`: Ephemeral (not materialized). Joins, aggregations, preparation.
 - `models/marts/dimensao/`: Dimension tables (dim_operadora_atual, dim_competencia, dim_localidade).
 - `models/marts/fato/`: Fact tables. Incremental merge with `unique_key` or full refresh.
-- `models/marts/derivado/`: Derived score/index tables computed from facts (score, ranking, oportunidade).
+- `models/marts/derivado/`: Reserved directory (currently empty; derived models live in `fato/`).
 - `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro.
 - `models/api/bronze/`: Thin views over `bruto_ans` (11 datasets). Redis cache DISABLED — data mutable until lote closes.
-- `models/api/prata/`: Tables from `stg_ans` + `int_ans` (14 models). Redis TTL 300s.
+- `models/api/prata/`: Tables from `stg_ans` + `int_ans` (17 models including CNES and TISS). Redis TTL 300s.
+- `models/consumo/`: Client delivery tables in `consumo_ans` schema (8 models, `tag: consumo`). Materialized as `table`. No API layer — direct BI access. Refreshed by `dag_dbt_consumo_refresh.py`.
 - `tests/`: dbt generic tests, singular SQL assertions (assert_*.sql).
 - `macros/`: `normalizar_registro_ans`, `competencia_para_data`, `competencia_para_trimestre`, `trimestre_para_competencia`, `calcular_hhi`, `normalizar_0_100`, `versao_metodologia_idss`, `classificar_rating_regulatorio`, `taxa_aprovacao_dataset`, `criar_indices`, `criar_indice_api`, `generate_schema_name`.
 - `seeds/ref_*`: Dimension data (ref_uf, ref_municipio_ibge, ref_competencia, ref_modalidade).
@@ -154,13 +166,14 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 1. **Staging (view)**: `models/staging/stg_{source}.sql` — normalize, cast, one-to-one.
 2. **Intermediate (ephemeral)**: `models/intermediate/int_{concept}.sql` — join, derive, prepare.
-3. **Fact/Dimension/Derived (table)**: `models/marts/{dimensao|fato|derivado}/{model}.sql`.
-   - Set `materialized: table` and `schema: nucleo_ans` (or api_ans for API layer).
+3. **Fact/Dimension (table)**: `models/marts/{dimensao|fato}/{model}.sql`.
+   - Set `materialized: table` and `schema: nucleo_ans` (or api_ans for API layer, consumo_ans for client delivery).
    - For incremental: `incremental_merge`, `unique_key: [...]`, reprocess last N competencies.
    - For API: add `post_hook: criar_indices(...)`.
-4. Document in matching `_{tipo}.yml`.
-5. Add tests: `tests/assert_*.sql` or `generic_tests` in YAML.
-6. Tag with `tag: staging`, `tag: intermediario`, `tag: fato`, `tag: derivado`, or `tag: api`.
+4. **Consumo (table)**: `models/consumo/consumo_{concept}.sql`. Schema `consumo_ans`, tag `consumo`. Readable column names — no internal prefixes.
+5. Document in matching `_{tipo}.yml`.
+6. Add tests: `tests/assert_*.sql` or `generic_tests` in YAML.
+7. Tag with `tag: staging`, `tag: intermediario`, `tag: fato`, `tag: api`, or `tag: consumo`.
 
 ### Adding a DAG
 
@@ -191,7 +204,7 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 | **API** | 8000 | PostgreSQL, Redis, MongoDB (layout lookup) | Reads only `api_ans` |
 | **Layout Service** | 8001 | MongoDB | Token-gated, no auth header |
 | **Airflow** | 8088 | PostgreSQL, MongoDB (layout validation) | DAGs load from `ingestao/dags/` |
-| **PostgreSQL** | 5432 | — | Schemas: bruto_ans, stg_ans, int_ans, nucleo_ans, api_ans, plataforma, alembic |
+| **PostgreSQL** | 5432 | — | Schemas: bruto_ans, stg_ans, int_ans, nucleo_ans, api_ans, consumo_ans, plataforma, alembic |
 | **MongoDB** | 27017 (27018 external) | — | DB: healthintel_layout, Collections: layout, layout_versao, etc. |
 | **Redis** | 6379 | — | Cache for API key validation (TTL 60s) |
 
@@ -221,6 +234,7 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 **Fase 1 (Sprints 01–12): CONCLUÍDA** — baseline v1.0.0 taggeada.
 **Fase 2 (Sprints 13–14): CONCLUÍDA** — CNES + TISS implementados.
 **Fase 3 (Sprints 15–20): CONCLUÍDA** — baseline v2.0.0 taggeada.
+**Fase 4 (Sprints 21–25): EM ANDAMENTO** — Prata completa, ingestão real, Gold marts BI, consumo_ans, qualidade v3.
 
 ### Fase 2 (entregue)
 - **Sprint 13**: CNES — bronze, `stg_cnes_estabelecimento`, `fat_cnes_estabelecimento_municipio`, `fat_cnes_rede_gap_municipio`, `api_cnes_municipio`, `api_cnes_rede_gap`. Router/service: `cnes`.
@@ -229,11 +243,18 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 ### Fase 3 (entregue)
 - **Sprint 15**: Governança — hash bronze, quarentena semântica, quality gates, freshness SLO, macro `taxa_aprovacao_dataset`.
 - **Sprint 16**: Bronze API — 11 modelos em `api/bronze/`, router `bronze`, plano `enterprise_tecnico`, `verificar_camada('bronze')`.
-- **Sprint 17**: Prata API — 14 modelos em `api/prata/`, router `prata`, plano `analitico`, `verificar_camada('prata')`, envelope `qualidade.taxa_aprovacao`.
+- **Sprint 17**: Prata API — modelos em `api/prata/`, router `prata`, plano `analitico`, `verificar_camada('prata')`, envelope `qualidade.taxa_aprovacao`.
 - **Sprint 19**: Score v3 — `fat_score_v3_operadora_mensal`, `api_score_v3_operadora_mensal`, `api_ranking_composto_mensal`, `score_v3.py` service.
 - **Sprint 20**: v2.0.0 tag, 5 tiers com `camadas_permitidas`, billing por camada.
 
-Each sprint has: HIS-*.* stories in `docs/sprints/fase{2,3}/`.
+### Fase 4 (em andamento)
+- **Sprint 21**: Prata completa — CNES/TISS na Prata (17 modelos total), cobertura de testes de integração, `make smoke-prata`.
+- **Sprint 22**: Ingestão real — SIB e CADOP com DAGs individuais, `dag_ingest_sib.py` / `dag_ingest_cadop.py`, `make smoke-sib` / `make smoke-cadop`.
+- **Sprint 23**: Gold marts BI — `mart_operadora_360`, `mart_mercado_municipio`, `mart_score_operadora`, `mart_rede_assistencial`, `mart_regulatorio_operadora` em `nucleo_ans`.
+- **Sprint 24**: consumo_ans — schema `consumo_ans`, 8 modelos desnormalizados, role `healthintel_cliente_reader`, `dag_dbt_consumo_refresh.py`, `make consumo-refresh` / `make smoke-consumo`.
+- **Sprint 25**: Qualidade v3 / catálogo — freshness SLO dashboard, catálogo atualizado.
+
+Sprint docs: `docs/sprints/fase{2,3,4,5}/`. HIS-*.* stories por sprint.
 
 ---
 

@@ -1,0 +1,777 @@
+Abaixo está o checklist detalhado e objetivo do que ainda precisa ser ajustado para o projeto ficar 10/10 e poder fechar uma v3.0.0 com segurança.
+
+Meu veredito: o projeto está entre 8,5 e 9/10, mas ainda não está 10/10 por causa de contratos Prata incompletos no service, ingestão real SIB ainda in-memory, download CADOP frágil, regressão Fase 4 insuficiente e artefatos dbt docs v3.0.0 ausentes.
+
+1. Ajuste crítico: Prata CNES/TISS está com rota, mas o service não está completo
+Problema
+
+O arquivo api/app/routers/prata.py já possui rotas para:
+
+/v1/prata/cnes/municipio
+/v1/prata/cnes/rede-gap
+/v1/prata/tiss/procedimento
+
+As rotas chamam os datasets cnes_municipio, cnes_rede_gap e tiss_procedimento.
+
+Porém, no api/app/services/prata.py, o dicionário PRATA_DATASETS termina em financeiro_periodo e não inclui cnes_municipio, cnes_rede_gap e tiss_procedimento.
+
+Isso significa que, em execução real, a rota pode existir, mas o service pode cair em:
+
+raise ValueError(f"Dataset prata nao suportado: {dataset}")
+
+porque o dataset não está registrado.
+
+Ajuste necessário
+
+Adicionar em PRATA_DATASETS:
+
+"cnes_municipio": {
+    "tabela": "api_ans.api_prata_cnes_municipio",
+    "competencia": "competencia",
+    "fonte": "cnes_estabelecimento",
+},
+"cnes_rede_gap": {
+    "tabela": "api_ans.api_prata_cnes_rede_gap",
+    "competencia": "competencia",
+    "fonte": "cnes_estabelecimento",
+},
+"tiss_procedimento": {
+    "tabela": "api_ans.api_prata_tiss_procedimento",
+    "competencia": "trimestre",
+    "fonte": "tiss_procedimento_trimestral",
+},
+
+Adicionar em PRATA_FILTROS_PERMITIDOS:
+
+"cnes_municipio": {"cd_municipio"},
+"cnes_rede_gap": {"cd_municipio", "registro_ans"},
+"tiss_procedimento": {"registro_ans", "cd_procedimento_tuss", "grupo_procedimento"},
+Critério de aceite
+
+Rodar:
+
+pytest api/tests/integration/test_prata.py -v
+pytest testes/regressao/test_endpoints_fase4.py -v
+make smoke-prata
+
+E validar que os 17 endpoints Prata realmente passam sem monkeypatch do service.
+
+2. Ajuste crítico: aviso_qualidade ainda não está entrando no payload real
+Problema
+
+O service calcula qualidade, mas no payload real montado em buscar_prata, o campo meta inclui fonte, competencia, versao_dataset, qualidade, total, paginação e cache. Não aparece aviso_qualidade no payload final.
+
+Ajuste necessário
+
+Depois de calcular qualidade, gerar:
+
+aviso_qualidade = (
+    f"Qualidade abaixo do limiar: {qualidade.taxa_aprovacao:.1%} aprovado "
+    f"({qualidade.registros_quarentena} registros em quarentena)"
+    if qualidade.taxa_aprovacao < 0.95 else None
+)
+
+E incluir em meta:
+
+"aviso_qualidade": aviso_qualidade,
+Critério de aceite
+
+Criar ou ajustar teste:
+
+test_prata_aviso_qualidade_presente_quando_taxa_baixa
+
+E validar resposta real simulando taxa < 0.95.
+
+3. Ajuste crítico: filtro temporal da Prata precisa ser robusto para int, text, ano_base e trimestre
+Problema
+
+Hoje o filtro temporal é montado assim:
+
+where_clauses = [f"{cfg['competencia']} = :competencia"]
+
+Isso pode falhar ou retornar vazio quando a coluna física for int e o parâmetro vier como string, ou quando o nome lógico for competencia, mas o dataset usar trimestre ou ano_base.
+
+Ajuste necessário
+
+Alterar para comparação segura:
+
+where_clauses = [f"cast({cfg['competencia']} as text) = cast(:competencia as text)"]
+
+Também recomendo mudar o nome interno do parâmetro de competencia para algo mais genérico no service, por exemplo periodo, mantendo compatibilidade na API.
+
+Critério de aceite
+
+Testar datasets com temporalidades diferentes:
+
+cadop com competencia
+diops com trimestre
+idss com ano_base
+tiss_procedimento com trimestre
+4. Ajuste crítico: TISS está aceitando cd_procedimento_tuss, mas filtrando como grupo_procedimento
+Problema
+
+Na rota /v1/prata/tiss/procedimento, o router aceita cd_procedimento_tuss, mas depois faz:
+
+procedimento = grupo_procedimento or cd_procedimento_tuss
+if procedimento:
+    filtros["grupo_procedimento"] = procedimento
+
+Ou seja: mesmo quando o usuário passa cd_procedimento_tuss, o filtro aplicado é grupo_procedimento.
+
+Ajuste necessário
+
+Decidir o contrato correto:
+
+Opção A — contrato por código TUSS
+
+Usar:
+
+if cd_procedimento_tuss:
+    filtros["cd_procedimento_tuss"] = cd_procedimento_tuss
+if grupo_procedimento:
+    filtros["grupo_procedimento"] = grupo_procedimento
+Opção B — contrato por grupo de procedimento
+
+Remover cd_procedimento_tuss da rota e da documentação.
+
+Minha recomendação: manter os dois filtros, porque o produto fica mais útil para cliente.
+
+Critério de aceite
+
+Testes com:
+
+/v1/prata/tiss/procedimento?competencia=2025T1&cd_procedimento_tuss=...
+/v1/prata/tiss/procedimento?competencia=2025T1&grupo_procedimento=...
+5. Ajuste crítico: ingestão SIB precisa deixar de carregar arquivo inteiro em memória
+Problema
+
+A função _ler_csv_bytes decodifica o conteúdo inteiro do CSV e retorna uma lista completa:
+
+texto = conteudo.decode(encoding)
+reader = csv.DictReader(io.StringIO(texto), dialect=dialect)
+return [dict(row) for row in reader]
+
+Na ingestão SIB, o código abre o ZIP e faz:
+
+registros.extend(_ler_csv_bytes(pacote.read(nome)))
+
+Ou seja: lê o arquivo interno inteiro do ZIP para memória e ainda acumula tudo em registros.
+
+Além disso, processar_arquivo_bruto recebe registros: list[dict], detecta layout com base nessa lista e depois traduz todos os registros de uma vez.
+
+E carregar_dataset_bruto também recebe registros: list[dict], monta registros_preparados e executa insert com a lista completa.
+
+Esse é o principal motivo do exit 137 no SIB real.
+
+Ajuste necessário
+
+Criar fluxo streaming/chunk para SIB.
+
+Arquivos a ajustar
+ingestao/app/ingestao_real.py
+ingestao/app/pipeline_bronze.py
+ingestao/app/carregar_postgres.py
+ingestao/dags/dag_ingest_sib.py
+testes em ingestao/tests/
+Implementação esperada
+
+Criar algo como:
+
+def iterar_csv_zip(path_zip: Path, *, encoding: str | None = None) -> Iterator[dict[str, str]]:
+    ...
+
+E/ou:
+
+def iterar_csv_em_batches(
+    arquivo_texto: IO[str],
+    batch_size: int,
+) -> Iterator[list[dict[str, str]]]:
+    ...
+
+Novo fluxo:
+
+baixar ZIP
+calcular hash do ZIP
+abrir ZIP
+identificar CSV interno
+ler header
+resolver layout
+processar linhas em batches
+traduzir batch
+validar batch
+inserir batch
+atualizar contadores
+commit por batch
+registrar lote final
+Regras obrigatórias
+
+Não pode existir para SIB real:
+
+pacote.read(nome)
+
+Não pode existir para SIB real:
+
+return [dict(row) for row in reader]
+
+Não pode acumular:
+
+registros: list[dict] = []
+registros.extend(...)
+Variáveis recomendadas
+SIB_BATCH_SIZE=5000
+SIB_UFS_TESTE=AC
+SIB_MAX_MEMORY_SAFE_MODE=true
+SIB_DOWNLOAD_TIMEOUT_SECONDS=180
+Critério de aceite
+
+Rodar ingestão real mínima com UF pequena:
+
+ANS_SIB_UFS=AC make dag-run-real-sib
+make smoke-sib
+
+Depois validar idempotência:
+
+ANS_SIB_UFS=AC make dag-run-real-sib
+
+A segunda execução deve registrar ignorado_duplicata.
+
+6. Ajuste crítico: CADOP precisa de downloader com retry, backoff, streaming e cache
+Problema
+
+O downloader atual usa:
+
+httpx.AsyncClient(timeout=120.0, follow_redirects=True)
+response = await client.get(url)
+response.raise_for_status()
+destino.write_bytes(response.content)
+
+Isso tem quatro limitações:
+
+não tem retry;
+não tem backoff;
+grava response.content, ou seja, mantém o corpo inteiro em memória;
+não reaproveita arquivo já baixado na landing zone em caso de indisponibilidade temporária.
+Ajuste necessário
+
+Refatorar baixar_arquivo em ingestao/app/landing.py.
+
+Implementar
+connect_timeout
+read_timeout
+max_retries
+backoff
+user-agent
+streaming para disco
+cache local opcional
+registro claro quando usar cache
+erro rastreável quando falhar
+Variáveis recomendadas
+ANS_HTTP_CONNECT_TIMEOUT_SECONDS=30
+ANS_HTTP_READ_TIMEOUT_SECONDS=180
+ANS_HTTP_MAX_RETRIES=3
+ANS_HTTP_BACKOFF_SECONDS=5
+ANS_HTTP_USER_AGENT=HealthIntelSuplementar/1.0
+ANS_ALLOW_LANDING_CACHE=true
+Exigência
+
+Trocar:
+
+destino.write_bytes(response.content)
+
+por streaming:
+
+async with client.stream("GET", url) as response:
+    response.raise_for_status()
+    with destino.open("wb") as f:
+        async for chunk in response.aiter_bytes():
+            f.write(chunk)
+Critério de aceite
+
+Rodar:
+
+make dag-run-real-cadop
+make smoke-cadop
+
+E forçar reteste com arquivo já presente na landing zone para validar cache.
+
+7. Ajuste crítico: separar dag-test de execução real pesada
+Problema
+
+As DAGs físicas usam BashOperator e executam ingestão real dentro do comando. A DAG SIB usa ANS_SIB_UFS, com default SP.
+
+A CADOP também executa ingestão real diretamente via BashOperator.
+
+Se o target make dag-test estiver executando a task física, ele deixa de ser “teste de parse” e vira “execução real pesada”.
+
+Ajuste necessário
+
+Separar targets:
+
+dag-parse:
+    # valida import/parse da DAG
+
+dag-run-real-sib:
+    # executa ingestão real mínima configurável
+
+dag-run-real-cadop:
+    # executa ingestão real CADOP
+
+smoke-ingestao-real:
+    # valida SIB real mínimo + CADOP real
+Regras
+dag-parse não deve baixar arquivo real.
+dag-run-real-sib deve baixar/processar pelo menos uma UF real.
+dag-run-real-cadop deve baixar/processar CADOP real ou cache explícito.
+O default local não deve ser SP; use AC ou outra UF menor para hard gate local.
+Produção pode usar todas as UFs via configuração.
+Critério de aceite
+
+Rodar:
+
+make dag-parse DAG=dag_ingest_sib
+make dag-parse DAG=dag_ingest_cadop
+ANS_SIB_UFS=AC make dag-run-real-sib
+make dag-run-real-cadop
+make smoke-ingestao-real
+8. Ajuste crítico: regressão Fase 4 está muito fraca
+Problema
+
+testes/regressao/test_endpoints_fase4.py tem 72 linhas e apenas dois testes principais. Ele testa os 3 novos endpoints Prata com fake_service e o bloqueio de plano sem camada Prata.
+
+Isso não prova a Fase 4 inteira.
+
+Ajuste necessário
+
+Expandir testes/regressao/test_endpoints_fase4.py para cobrir:
+
+API Prata
+todos os 17 endpoints;
+bloqueio piloto/sem camada Prata;
+aviso_qualidade;
+filtros inválidos ignorados ou rejeitados conforme contrato;
+temporalidade competencia, trimestre, ano_base.
+Bronze/API
+endpoints Bronze principais;
+acesso autorizado por camada;
+bloqueio sem permissão.
+Ouro/API
+endpoints principais de operadoras, ranking e score.
+Banco
+plataforma.lote_ingestao com SIB/CADOP;
+ausência de duplicidade de sucesso por hash_arquivo;
+consumo_ans com 8 modelos;
+healthintel_cliente_reader sem acesso às camadas internas.
+Critério de aceite
+
+A regressão precisa deixar de ser “rota registrada” e virar “contrato Fase 4”.
+
+Comando:
+
+pytest testes/regressao/test_endpoints_fase4.py -v
+9. Ajuste crítico: docs/dbt_docs_v3.0.0/ ainda precisa existir
+Problema
+
+O catálogo DaaS existe e contém README, glossário, 6 marts e 8 modelos de consumo.
+
+Mas a pasta docs/dbt_docs_v3.0.0/ ainda não está visível no repositório. A rota consultada retornou erro/ausência.
+
+Ajuste necessário
+
+Depois de rodar:
+
+cd healthintel_dbt
+dbt docs generate
+cd ..
+
+Copiar:
+
+mkdir -p docs/dbt_docs_v3.0.0
+cp healthintel_dbt/target/manifest.json docs/dbt_docs_v3.0.0/
+cp healthintel_dbt/target/catalog.json docs/dbt_docs_v3.0.0/
+cp healthintel_dbt/target/index.html docs/dbt_docs_v3.0.0/
+Também criar auditoria de descrição
+
+Criar:
+
+scripts/check_dbt_docs_descriptions.py
+
+Esse script deve falhar se algum modelo final estiver sem description:
+
+api_prata_*
+mart_*
+consumo_*
+
+E deve auditar colunas críticas:
+
+chaves;
+temporalidade;
+métricas principais.
+Critério de aceite
+
+Rodar:
+
+dbt docs generate
+python scripts/check_dbt_docs_descriptions.py
+ls docs/dbt_docs_v3.0.0/
+10. Ajuste importante: README principal ainda está defasado
+Problema
+
+O README principal ainda diz que o projeto está em “baseline funcional Sprint 12 concluída”.
+
+Para um release v3.0.0, isso fica incoerente.
+
+Ajuste necessário
+
+Atualizar README.md para refletir:
+
+Fase atual: Release Candidate Fase 4;
+arquitetura atual com consumo_ans;
+comandos novos:
+make smoke-prata
+make smoke-sib
+make smoke-cadop
+make consumo-refresh
+make smoke-consumo
+make dag-run-real-sib
+make dag-run-real-cadop
+link para docs/catalogo_dados/;
+link para docs/sprints/fase4/README.md;
+status da release: v3.0.0 somente após hard gates.
+Critério de aceite
+
+README não pode mais dizer Sprint 12 como baseline atual, salvo em seção histórica.
+
+11. Ajuste importante: consumo_ans precisa garantir grants após dbt criar/recriar tabelas
+O que está bom
+
+O DDL cria schema consumo_ans, role healthintel_cliente_reader NOLOGIN, grants e revokes nas camadas internas.
+
+Risco
+
+ALTER DEFAULT PRIVILEGES só vale para objetos criados pelo mesmo owner/role configurado. Se o dbt criar tabelas com outro usuário, os grants podem não aplicar automaticamente.
+
+Ajuste necessário
+
+Adicionar um destes mecanismos:
+
+Opção A — post-hook dbt em modelos consumo_*
+grant select on {{ this }} to healthintel_cliente_reader
+Opção B — target Makefile após dbt run
+psql -c "grant select on all tables in schema consumo_ans to healthintel_cliente_reader;"
+Opção C — macro dbt
+grant_select_consumo_ans()
+Critério de aceite
+
+Após dbt build --select tag:consumo, rodar make smoke-consumo e validar SELECT como role cliente.
+
+12. Ajuste importante: criar CLI/targets de ingestão real mínima
+Problema
+
+Hoje a execução física real está acoplada ao Airflow/BashOperator.
+
+Ajuste necessário
+
+Criar scripts operacionais diretos:
+
+scripts/run_ingestao_real_sib.py
+scripts/run_ingestao_real_cadop.py
+
+Com argumentos:
+
+python scripts/run_ingestao_real_sib.py --competencia 202501 --ufs AC --batch-size 5000
+python scripts/run_ingestao_real_cadop.py --competencia 202501
+Por quê
+
+Isso permite testar ingestão real sem depender da UI do Airflow.
+
+Critério de aceite
+
+Targets:
+
+ingestao-real-sib:
+    python scripts/run_ingestao_real_sib.py --competencia $(COMPETENCIA) --ufs $(UFS)
+
+ingestao-real-cadop:
+    python scripts/run_ingestao_real_cadop.py --competencia $(COMPETENCIA)
+13. Ajuste importante: idempotência precisa ser provada com arquivo real, não só seed demo
+O que já está bom
+
+plataforma.lote_ingestao tem pgcrypto, check constraint de status, índice de hash e unique parcial para sucessos.
+
+O código também registra ignorado_duplicata quando encontra lote anterior com mesmo hash e sucesso.
+
+O que falta
+
+Provar isso com:
+
+CADOP real baixado;
+SIB real de UF pequena;
+reprocessamento do mesmo arquivo real;
+ignorado_duplicata;
+zero duplicidade de sucesso.
+Critério de aceite
+
+Rodar:
+
+SELECT
+    hash_arquivo,
+    COUNT(*) FILTER (WHERE status IN ('sucesso', 'sucesso_com_alertas')) AS sucessos
+FROM plataforma.lote_ingestao
+GROUP BY hash_arquivo
+HAVING COUNT(*) FILTER (WHERE status IN ('sucesso', 'sucesso_com_alertas')) > 1;
+
+Resultado deve ser zero linhas.
+
+14. Ajuste importante: testes de ingestão precisam cobrir streaming e falhas reais
+Ajuste necessário
+
+Adicionar testes em ingestao/tests/:
+
+CSV grande fake processado em chunks;
+ZIP com CSV interno processado sem read() total;
+batch commit;
+linha inválida vai para quarentena;
+layout não aprovado bloqueia carga;
+download timeout gera erro rastreável;
+cache landing zone é usado quando habilitado;
+duplicate hash registra ignorado_duplicata.
+Critério de aceite
+pytest ingestao/tests/ -v
+15. Ajuste importante: CI GitHub Actions para não depender só do ambiente local
+Problema
+
+Hoje a validação forte depende muito do ambiente local.
+
+Ajuste necessário
+
+Criar workflow:
+
+.github/workflows/fase4-ci.yml
+
+Com jobs:
+
+lint;
+pytest unit/integration sem banco externo;
+docker compose up;
+dbt debug/deps/compile/build/test;
+smoke local com seeds;
+regressão Fase 4.
+Observação
+
+Ingestão real ANS pode ser job manual ou nightly, porque depende da rede externa.
+
+Critério de aceite
+
+Workflow rodando em push/PR e job manual para ingestão real.
+
+16. Ajuste médio: materialização dbt precisa ter contrato explícito de unique_key
+Ajuste necessário
+
+Revisar todos os modelos:
+
+mart_*
+consumo_*
+api_prata_*
+
+Garantir:
+
+materialized;
+schema;
+tags;
+unique_key, quando incremental;
+testes unique e not_null;
+dbt_utils.unique_combination_of_columns para grãos compostos.
+Critério de aceite
+dbt build --select tag:prata tag:mart tag:consumo
+dbt test
+17. Ajuste médio: documentar claramente três níveis de validação
+
+Hoje há mistura entre smoke, seed demo e ingestão real. Para 10/10, deixe explícito:
+
+Nível 1 — Demo local
+make demo-data-sib
+make demo-data-cadop
+make smoke-sib
+make smoke-cadop
+Nível 2 — Ingestão real mínima
+ANS_SIB_UFS=AC make dag-run-real-sib
+make dag-run-real-cadop
+make smoke-ingestao-real
+Nível 3 — Execução mensal completa
+ANS_SIB_UFS=AC,AL,AP,...,SP,RJ,MG make dag-run-real-sib
+Critério de aceite
+
+Documentar isso em:
+
+docs/runbooks/ingestao_real_ans.md
+18. Ajuste médio: criar relatório de release v3.0.0
+
+Criar:
+
+docs/releases/v3.0.0.md
+
+Conteúdo:
+
+escopo entregue;
+comandos executados;
+evidência dos hard gates;
+pendências aceitas, se houver;
+datasets validados;
+versão de dbt;
+hash/commit da tag;
+data da validação.
+Critério de aceite
+
+A tag v3.0.0 só pode ser criada depois desse relatório.
+
+19. Ordem recomendada dos próximos commits
+Commit 1 — Corrigir contrato Prata
+
+Arquivos:
+
+api/app/services/prata.py
+api/app/routers/prata.py
+api/tests/integration/test_prata.py
+testes/regressao/test_endpoints_fase4.py
+
+Entregar:
+
+cnes_municipio, cnes_rede_gap, tiss_procedimento registrados no service;
+filtros corretos;
+aviso_qualidade;
+temporalidade robusta;
+testes reais.
+Commit 2 — Refatorar ingestão SIB streaming
+
+Arquivos:
+
+ingestao/app/ingestao_real.py
+ingestao/app/pipeline_bronze.py
+ingestao/app/carregar_postgres.py
+ingestao/tests/*
+
+Entregar:
+
+processamento por batch;
+sem lista completa;
+sem pacote.read(nome) para SIB grande;
+lote final correto.
+Commit 3 — Downloader resiliente CADOP/ANS
+
+Arquivos:
+
+ingestao/app/landing.py
+ingestao/app/config.py
+.env.exemplo
+ingestao/tests/*
+
+Entregar:
+
+retry;
+backoff;
+streaming;
+cache landing zone;
+logs claros.
+Commit 4 — Makefile, DAGs e runbooks
+
+Arquivos:
+
+Makefile
+ingestao/dags/dag_ingest_sib.py
+ingestao/dags/dag_ingest_cadop.py
+scripts/run_ingestao_real_sib.py
+scripts/run_ingestao_real_cadop.py
+docs/runbooks/ingestao_real_ans.md
+
+Entregar:
+
+parse separado de execução real;
+hard gate local com UF pequena;
+runbook claro.
+Commit 5 — Regressão, docs e release
+
+Arquivos:
+
+testes/regressao/test_endpoints_fase4.py
+scripts/check_dbt_docs_descriptions.py
+docs/dbt_docs_v3.0.0/*
+README.md
+docs/releases/v3.0.0.md
+
+Entregar:
+
+regressão completa;
+docs versionados;
+README atualizado;
+release report.
+20. Hard gates finais para considerar 10/10
+
+Só considerar 10/10 quando estes comandos passarem:
+
+ruff check api ingestao scripts testes
+
+pytest api/tests/integration/test_prata.py -v
+pytest ingestao/tests/ -v
+pytest testes/regressao/test_endpoints_fase4.py -v
+
+cd healthintel_dbt
+dbt debug
+dbt deps
+dbt compile --select tag:prata tag:mart tag:consumo
+dbt build --select tag:prata tag:mart tag:consumo
+dbt test
+dbt docs generate
+cd ..
+
+python scripts/check_dbt_docs_descriptions.py
+
+make smoke-prata
+make demo-data-sib
+make smoke-sib
+make demo-data-cadop
+make smoke-cadop
+make consumo-refresh
+make smoke-consumo
+
+make dag-parse DAG=dag_ingest_sib
+make dag-parse DAG=dag_ingest_cadop
+make dag-parse DAG=dag_dbt_consumo_refresh
+
+ANS_SIB_UFS=AC make dag-run-real-sib
+make dag-run-real-cadop
+make smoke-ingestao-real
+
+E validar em SQL:
+
+SELECT
+    hash_arquivo,
+    COUNT(*) FILTER (WHERE status IN ('sucesso', 'sucesso_com_alertas')) AS sucessos
+FROM plataforma.lote_ingestao
+GROUP BY hash_arquivo
+HAVING COUNT(*) FILTER (WHERE status IN ('sucesso', 'sucesso_com_alertas')) > 1;
+
+Resultado: zero linhas.
+
+Veredito final
+
+Para virar 10/10, os pontos realmente obrigatórios são estes:
+
+Corrigir PRATA_DATASETS e filtros para CNES/TISS.
+Incluir aviso_qualidade no payload real.
+Corrigir filtro temporal com cast seguro.
+Corrigir contrato TISS cd_procedimento_tuss versus grupo_procedimento.
+Refatorar SIB para streaming/chunks.
+Refatorar downloader CADOP/ANS com retry/backoff/stream/cache.
+Separar parse de DAG de execução real.
+Expandir regressão Fase 4.
+Publicar docs/dbt_docs_v3.0.0/.
+Atualizar README principal.
+Garantir grants pós-dbt em consumo_ans.
+Validar idempotência com arquivo real.
+Criar runbook de ingestão real.
+Criar relatório de release v3.0.0.
+Só criar tag depois dos hard gates físicos passarem.
+
+O projeto está perto. O maior divisor entre “bom MVP técnico” e “10/10 produção” agora é parar de tratar SIB como arquivo pequeno e transformar a ingestão real em fluxo resiliente, idempotente e validável.
+
+
