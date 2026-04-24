@@ -119,7 +119,7 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
       dbt run --select tag:mart tag:consumo
       dbt test --select tag:consumo
   ```
-- [ ] Adicionar target `make dag-test DAG=dag_dbt_consumo_refresh`.
+- [x] Adicionar target `make dag-test DAG=dag_dbt_consumo_refresh`.
 
 ### HIS-24.5 — Smoke consumo_ans
 
@@ -176,4 +176,4 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
 - [x] `make smoke-consumo` — zero falhas
 - [x] `make dag-test DAG=dag_dbt_consumo_refresh` — parsing OK
 - [x] Role `healthintel_cliente_reader` acessa `consumo_ans` mas recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
-- [ ] `consumo_ans.consumo_operadora_360` contém registros para `competencia=202501`
+- [x] `consumo_ans.consumo_operadora_360` contém registros para `competencia=202501`

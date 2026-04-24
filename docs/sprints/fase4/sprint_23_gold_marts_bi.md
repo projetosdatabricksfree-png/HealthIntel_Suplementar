@@ -8,9 +8,9 @@
 
 ### HIS-23.0 — Auditoria de Dependências Gold
 
-- [ ] Antes de criar SQL dos marts, confirmar todos os modelos `fat_*`, `dim_*` e `int_*` citados como dependência.
-- [ ] Para cada mart, registrar em `_marts_gold.yml` a origem efetiva das dependências e o fallback arquitetural quando o modelo necessário ainda não existir.
-- [ ] Bloquear implementação de mart que dependa de modelo inexistente sem decisão explícita de criar a dependência nesta sprint.
+- [x] Antes de criar SQL dos marts, confirmar todos os modelos `fat_*`, `dim_*` e `int_*` citados como dependência.
+- [x] Para cada mart, registrar em `_marts_gold.yml` a origem efetiva das dependências e o fallback arquitetural quando o modelo necessário ainda não existir.
+- [x] Bloquear implementação de mart que dependa de modelo inexistente sem decisão explícita de criar a dependência nesta sprint.
 
 ### HIS-23.1 — Dimensões Adicionais
 
@@ -24,7 +24,7 @@
 - [x] Criar `healthintel_dbt/models/marts/dimensao/dim_tipo_contratacao.sql`:
   - Tipos: coletivo empresarial, coletivo por adesão, individual/familiar
   - Source: CADOP ou seed de referência
-- [ ] Documentar as 3 novas dimensões em `healthintel_dbt/models/marts/dimensao/_dimensao.yml`:
+- [x] Documentar as 3 novas dimensões em `healthintel_dbt/models/marts/dimensao/_dimensao.yml`:
   - Grão: uma linha por modalidade/segmentação/tipo
   - Testes: `unique` em `_id`, `not_null` em `codigo_*`
 
@@ -133,7 +133,7 @@
 - [x] `models/marts/fato/mart_score_operadora.sql`
 - [x] `models/marts/fato/mart_tiss_procedimento.sql`
 - [x] `models/marts/fato/_marts_gold.yml` com column-level docs e testes
-- [ ] `models/marts/dimensao/_dimensao.yml` atualizado com novas dimensões
+- [x] `models/marts/dimensao/_dimensao.yml` atualizado com novas dimensões
 - [x] Testes singulares `assert_mart_*.sql`
 
 ## Validação esperada
@@ -142,5 +142,5 @@
 - [x] `dbt build --select tag:mart` — sem falhas em dados demo
 - [x] `dbt test --select tag:mart` — zero falhas
 - [x] `mart_operadora_360` materializado em `nucleo_ans` com dados para `competencia=202501`
-- [ ] `mart_score_operadora` com `score_total between 0 and 100` para todos os registros
-- [ ] `assert_mart_operadora_360_grao_unico` passando (zero duplicatas)
+- [x] `mart_score_operadora` com `score_total between 0 and 100` para todos os registros
+- [x] `assert_mart_operadora_360_grao_unico` passando (zero duplicatas)

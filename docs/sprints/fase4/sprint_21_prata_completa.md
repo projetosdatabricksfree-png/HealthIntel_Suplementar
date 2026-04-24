@@ -8,21 +8,21 @@
 
 ### HIS-21.0 — Auditoria de Dependências Prata
 
-- [ ] Confirmar existência dos modelos/sources:
+- [x] Confirmar existência dos modelos/sources:
   - `stg_ans.stg_cnes_estabelecimento`
   - `stg_ans.stg_tiss_procedimento`
   - modelos `int_ans` derivados de CNES, se utilizados
   - modelos `int_ans` derivados de TISS, se utilizados
-- [ ] Caso algum source/modelo não exista, decidir explicitamente:
+- [x] Caso algum source/modelo não exista, decidir explicitamente:
   - criar nesta sprint;
   - usar seed/demo controlado;
   - ou bloquear o endpoint até a dependência existir.
 - [x] Registrar no `_prata_api.yml` a origem real de cada modelo Prata.
-- [ ] Bloquear implementação de modelo `api_prata_*` que dependa de tabela inexistente sem fallback técnico documentado.
+- [x] Bloquear implementação de modelo `api_prata_*` que dependa de tabela inexistente sem fallback técnico documentado.
 
 ### HIS-21.1 — Testes de Integração para todos os Endpoints Dataset
 
-- [ ] Expandir `api/tests/integration/test_prata.py` com um teste por endpoint dataset usando padrão `fake_service` (monkeypatch no `buscar_prata`):
+- [x] Expandir `api/tests/integration/test_prata.py` com um teste por endpoint dataset usando padrão `fake_service` (monkeypatch no `buscar_prata`):
   - `test_prata_cadop_retorna_payload`
   - `test_prata_sib_operadora_retorna_payload`
   - `test_prata_sib_municipio_retorna_payload`
@@ -37,10 +37,10 @@
   - `test_prata_operadora_enriquecida_retorna_payload`
   - `test_prata_municipio_metrica_retorna_payload`
   - `test_prata_financeiro_periodo_retorna_payload`
-- [ ] Adicionar teste de bloqueio por plano: `test_prata_cadop_plano_piloto_retorna_403` — plano `piloto` não acessa `/v1/prata/*`.
-- [ ] Adicionar teste de envelope: `test_prata_qualidade_no_meta` — campo `meta.qualidade.taxa_aprovacao` sempre presente.
-- [ ] Adicionar teste de quarentena dataset: `test_prata_quarentena_dataset_retorna_payload`.
-- [ ] Padrão de fake_auth compartilhado: extrair `_fake_prata_auth()` em fixture de módulo para evitar duplicação entre testes.
+- [x] Adicionar teste de bloqueio por plano: `test_prata_cadop_plano_piloto_retorna_403` — plano `piloto` não acessa `/v1/prata/*`.
+- [x] Adicionar teste de envelope: `test_prata_qualidade_no_meta` — campo `meta.qualidade.taxa_aprovacao` sempre presente.
+- [x] Adicionar teste de quarentena dataset: `test_prata_quarentena_dataset_retorna_payload`.
+- [x] Padrão de fake_auth compartilhado: extrair `_fake_prata_auth()` em fixture de módulo para evitar duplicação entre testes.
 
 ### HIS-21.2 — CNES na Camada Prata
 
@@ -80,7 +80,7 @@
   ```python
   "tiss_procedimento": {"tabela": "api_ans.api_prata_tiss_procedimento", "competencia": "trimestre", "fonte": "tiss_procedimento_trimestral"},
   ```
-- [ ] Adicionar filtros: `tiss_procedimento → {registro_ans, cd_procedimento_tuss}`.
+- [x] Adicionar filtros: `tiss_procedimento → {registro_ans, cd_procedimento_tuss}`.
 - [x] Criar endpoint `GET /v1/prata/tiss/procedimento` com filtros `registro_ans` e `cd_procedimento_tuss`.
 
 ### HIS-21.4 — aviso_qualidade no Envelope Prata
@@ -102,11 +102,11 @@
 - [x] Avaliar e corrigir `GET /v1/prata/quarentena/{dataset}` em `api/app/routers/prata.py`:
   - Atualmente usa `Depends(verificar_camada("bronze"))` — planos apenas-bronze acessam dados de quarentena de prata.
   - Corrigir para `Depends(verificar_camada("prata"))` — acesso à quarentena exige no mínimo plano prata.
-- [ ] Atualizar teste `test_prata_quarentena_dataset_retorna_payload` para validar plano prata.
+- [x] Atualizar teste `test_prata_quarentena_dataset_retorna_payload` para validar plano prata.
 
 ### HIS-21.6 — Documentação YAML e dbt Tests na Prata
 
-- [ ] Expandir `healthintel_dbt/models/api/prata/_prata_api.yml`: para cada um dos 17 modelos (14 originais + 3 novos), adicionar:
+- [x] Expandir `healthintel_dbt/models/api/prata/_prata_api.yml`: para cada um dos 17 modelos (14 originais + 3 novos), adicionar:
   - `config`: `materialized`, `schema`, `tags`
   - `columns`: ao menos as colunas-chave (`competencia`, `registro_ans` ou equivalente, `taxa_aprovacao_lote`)
   - `tests` genéricos por coluna: `not_null` para chave primária + competência
@@ -114,7 +114,7 @@
 
 ### HIS-21.7 — Smoke Prata
 
-- [ ] Criar `scripts/smoke_prata.py` exercitando:
+- [x] Criar `scripts/smoke_prata.py` exercitando:
   - Autenticação com plano `analitico` (HTTP 200 em todos os 17 endpoints)
   - Bloqueio com plano `piloto` (HTTP 403 em `/v1/prata/cadop`)
   - Presença de `meta.qualidade.taxa_aprovacao` na resposta
@@ -128,7 +128,7 @@
 
 ## Entregas esperadas
 
-- [ ] `api/tests/integration/test_prata.py` — 18+ testes (todos os datasets + bloqueio + qualidade + quarentena)
+- [x] `api/tests/integration/test_prata.py` — 18+ testes (todos os datasets + bloqueio + qualidade + quarentena)
 - [x] `healthintel_dbt/models/api/prata/api_prata_cnes_municipio.sql`
 - [x] `healthintel_dbt/models/api/prata/api_prata_cnes_rede_gap.sql`
 - [x] `healthintel_dbt/models/api/prata/api_prata_tiss_procedimento.sql`

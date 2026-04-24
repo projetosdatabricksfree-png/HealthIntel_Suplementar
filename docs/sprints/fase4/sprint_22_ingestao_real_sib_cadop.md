@@ -8,10 +8,10 @@
 
 ### HIS-22.1 — Landing Zone Física
 
-- [ ] Criar volume `ingestao_landing` em `infra/docker-compose.yml` mapeando para `/tmp/healthintel/landing` no container Airflow.
-- [ ] Definir variável de ambiente `INGESTAO_LANDING_PATH=/tmp/healthintel/landing` em `.env` e `ingestao/app/config.py`.
+- [x] Criar volume `ingestao_landing` em `infra/docker-compose.yml` mapeando para `/tmp/healthintel/landing` no container Airflow.
+- [x] Definir variável de ambiente `INGESTAO_LANDING_PATH=/tmp/healthintel/landing` em `.env` e `ingestao/app/config.py`.
 - [x] Criar estrutura de diretórios por dataset: `{LANDING_PATH}/{dataset}/{competencia}/` — gerado automaticamente na descarga.
-- [ ] Criar utilitário `ingestao/app/landing.py`:
+- [x] Criar utilitário `ingestao/app/landing.py`:
   - `salvar_arquivo(dataset, competencia, nome_arquivo, conteudo_bytes) -> Path`
   - `calcular_hash_arquivo(path: Path) -> str` (SHA-256)
   - `arquivo_ja_processado(hash: str) -> bool` (consulta `plataforma.lote_ingestao`)
@@ -73,7 +73,7 @@
     4. `carregar_sib_municipio` — idem para SIB município
     5. `registrar_versao_sib` — chamar `dag_registrar_versao` para `sib_operadora` e `sib_municipio`
   - Em `dag_mestre_mensal.py`: adicionar SIB como sub-DAG após CADOP.
-- [ ] Adicionar target `make dag-test DAG=dag_ingest_sib` — parsing sem falhas.
+- [x] Adicionar target `make dag-test DAG=dag_ingest_sib` — parsing sem falhas.
 
 ### HIS-22.5 — Contratos CADOP
 
@@ -117,19 +117,19 @@
 
 ### HIS-22.9 — Padronização de colunas técnicas Bronze
 
-- [ ] Garantir que toda tabela Bronze carregada pela ingestão real contenha os campos técnicos obrigatórios: `id_lote`, `arquivo_origem`, `hash_arquivo`, `hash_linha`, `linha_origem`, `competencia`, `versao_layout`, `data_ingestao`, `status_linha`, `motivo_rejeicao`.
-- [ ] Documentar contrato das colunas técnicas nos contratos SIB/CADOP e validar presença antes da carga em `bruto_ans`.
-- [ ] Aplicar a mesma padronização às tabelas de quarentena para preservar rastreabilidade de rejeições.
+- [x] Garantir que toda tabela Bronze carregada pela ingestão real contenha os campos técnicos obrigatórios: `id_lote`, `arquivo_origem`, `hash_arquivo`, `hash_linha`, `linha_origem`, `competencia`, `versao_layout`, `data_ingestao`, `status_linha`, `motivo_rejeicao`.
+- [x] Documentar contrato das colunas técnicas nos contratos SIB/CADOP e validar presença antes da carga em `bruto_ans`.
+- [x] Aplicar a mesma padronização às tabelas de quarentena para preservar rastreabilidade de rejeições.
 
 ### HIS-22.10 — Regressão de Layout ANS Alterado
 
-- [ ] Criar testes de regressão para layout com coluna renomeada por alias conhecido.
-- [ ] Criar cenário de coluna obrigatória ausente, com fallback seguro para quarentena.
-- [ ] Criar cenário de coluna extra, sem quebra de carga das colunas conhecidas.
-- [ ] Criar cenário de ordem de colunas alterada, resolvido por nome/header normalizado.
-- [ ] Criar cenário de encoding diferente, com detecção e erro rastreável quando não suportado.
-- [ ] Criar cenário de arquivo sem layout aprovado, bloqueando carga Bronze e registrando motivo.
-- [ ] Criar cenário de layout antigo reprocessável, reaproveitando histórico/fingerprint aprovado.
+- [x] Criar testes de regressão para layout com coluna renomeada por alias conhecido.
+- [x] Criar cenário de coluna obrigatória ausente, com fallback seguro para quarentena.
+- [x] Criar cenário de coluna extra, sem quebra de carga das colunas conhecidas.
+- [x] Criar cenário de ordem de colunas alterada, resolvido por nome/header normalizado.
+- [x] Criar cenário de encoding diferente, com detecção e erro rastreável quando não suportado.
+- [x] Criar cenário de arquivo sem layout aprovado, bloqueando carga Bronze e registrando motivo.
+- [x] Criar cenário de layout antigo reprocessável, reaproveitando histórico/fingerprint aprovado.
 
 ## Entregas esperadas
 
@@ -145,7 +145,7 @@
 - [x] `scripts/seed_demo_cadop.py`
 - [x] `scripts/smoke_sib.py`
 - [x] `scripts/smoke_cadop.py`
-- [ ] `infra/docker-compose.yml` com volume `ingestao_landing`
+- [x] `infra/docker-compose.yml` com volume `ingestao_landing`
 - [x] Makefile com targets `bootstrap-sib-layouts`, `bootstrap-cadop-layouts`, `demo-data-sib`, `demo-data-cadop`, `smoke-sib`, `smoke-cadop`
 - [x] `dag_mestre_mensal.py` atualizado com SIB e CADOP
 
@@ -153,9 +153,9 @@
 
 - [x] `ruff check ingestao scripts`
 - [x] `pytest ingestao/tests/` — zero falhas
-- [ ] `make dag-test DAG=dag_ingest_sib` — parsing OK
-- [ ] `make dag-test DAG=dag_ingest_cadop` — parsing OK
+- [x] `make dag-test DAG=dag_ingest_sib` — parsing OK
+- [x] `make dag-test DAG=dag_ingest_cadop` — parsing OK
 - [x] `make demo-data-sib` + `make smoke-sib` — zero falhas
 - [x] `make demo-data-cadop` + `make smoke-cadop` — zero falhas
 - [x] `plataforma.lote_ingestao` contém entradas com `status='sucesso'` para SIB e CADOP
-- [ ] Reprocessamento do mesmo arquivo resulta em `status='ignorado_duplicata'`
+- [x] Reprocessamento do mesmo arquivo resulta em `status='ignorado_duplicata'`
