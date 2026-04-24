@@ -8,7 +8,7 @@
 
 ### HIS-24.1 — Schema consumo_ans e Role de Acesso
 
-- [ ] Criar DDL `infra/postgres/init/022_consumo_ans.sql`:
+- [x] Criar DDL `infra/postgres/init/022_consumo_ans.sql`:
   ```sql
   CREATE SCHEMA IF NOT EXISTS consumo_ans;
 
@@ -30,64 +30,64 @@
   REVOKE ALL ON SCHEMA nucleo_ans FROM healthintel_cliente_reader;
   REVOKE ALL ON SCHEMA plataforma FROM healthintel_cliente_reader;
   ```
-- [ ] Role `healthintel_cliente_reader`: role de grupo `NOLOGIN`, read-only exclusivo em `consumo_ans`; cada cliente deve receber usuário próprio `LOGIN` e `GRANT healthintel_cliente_reader TO <cliente>`.
-- [ ] Usuários cliente não acessam `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` ou `plataforma`.
-- [ ] Adicionar `consumo_ans` em `healthintel_dbt/dbt_project.yml` como schema gerenciado com macro `generate_schema_name` existente.
-- [ ] Criar pasta `healthintel_dbt/models/consumo/` com `_consumo.yml` base.
+- [x] Role `healthintel_cliente_reader`: role de grupo `NOLOGIN`, read-only exclusivo em `consumo_ans`; cada cliente deve receber usuário próprio `LOGIN` e `GRANT healthintel_cliente_reader TO <cliente>`.
+- [x] Usuários cliente não acessam `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` ou `plataforma`.
+- [x] Adicionar `consumo_ans` em `healthintel_dbt/dbt_project.yml` como schema gerenciado com macro `generate_schema_name` existente.
+- [x] Criar pasta `healthintel_dbt/models/consumo/` com `_consumo.yml` base.
 
 ### HIS-24.2 — Modelos de Entrega em consumo_ans
 
 Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas com nomes legíveis — sem prefixos técnicos internos.
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_operadora_360.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_operadora_360.sql`:
   - Source: `nucleo_ans.mart_operadora_360`
   - Grão: `(registro_ans, competencia)` — visão mensal consolidada da operadora
   - Colunas analíticas sem colunas técnicas internas; histórico entregue conforme contrato do cliente
   - Post-hook: índice em `(registro_ans, competencia)`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_beneficiarios_operadora_mes.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_beneficiarios_operadora_mes.sql`:
   - Source: `nucleo_ans.fat_beneficiario_operadora`
   - Grão: `(registro_ans, competencia)`
   - Colunas: `registro_ans`, `razao_social`, `modalidade`, `competencia`, `qt_beneficiarios`, `variacao_mensal_pct`, `variacao_12m_pct`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_beneficiarios_municipio_mes.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_beneficiarios_municipio_mes.sql`:
   - Source: `nucleo_ans.fat_beneficiario_localidade`
   - Grão: `(registro_ans, cd_municipio, competencia)`
   - Colunas: `registro_ans`, `razao_social`, `cd_municipio`, `nome_municipio`, `uf`, `competencia`, `qt_beneficiarios`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_financeiro_operadora_trimestre.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_financeiro_operadora_trimestre.sql`:
   - Source: `nucleo_ans.fat_financeiro_operadora_trimestral`
   - Grão: `(registro_ans, trimestre)`
   - Colunas: `registro_ans`, `razao_social`, `trimestre`, `receita_total`, `sinistralidade_pct`, `despesas_administrativas`, `resultado_operacional`, `margem_operacional_pct`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_regulatorio_operadora_trimestre.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_regulatorio_operadora_trimestre.sql`:
   - Source: `nucleo_ans.mart_regulatorio_operadora`
   - Grão: `(registro_ans, trimestre)`
   - Colunas: `registro_ans`, `razao_social`, `trimestre`, `nivel_alerta`, `tendencia_regulatoria`, `qtd_processos_ativos`, `multas_total`, `idss_score`, `indice_reclamacao`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_rede_assistencial_municipio.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_rede_assistencial_municipio.sql`:
   - Source: `nucleo_ans.mart_rede_assistencial`
   - Grão: `(registro_ans, cd_municipio, competencia)`
   - Colunas: `registro_ans`, `razao_social`, `cd_municipio`, `nome_municipio`, `uf`, `competencia`, `qt_prestadores`, `densidade_por_10k`, `gap_leitos_cnes`, `classificacao_vazio`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_oportunidade_municipio.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_oportunidade_municipio.sql`:
   - Source: `nucleo_ans.mart_mercado_municipio`
   - Grão: `(cd_municipio, competencia)`
   - Colunas: `cd_municipio`, `nome_municipio`, `uf`, `competencia`, `qt_beneficiarios_total`, `penetracao_pct`, `score_oportunidade`, `qt_operadoras_ativas`, `hhi`, `operadora_dominante`
 
-- [ ] Criar `healthintel_dbt/models/consumo/consumo_score_operadora_mes.sql`:
+- [x] Criar `healthintel_dbt/models/consumo/consumo_score_operadora_mes.sql`:
   - Source: `nucleo_ans.mart_score_operadora`
   - Grão: `(registro_ans, competencia)`
   - Colunas: `registro_ans`, `razao_social`, `modalidade`, `competencia`, `score_total`, `faixa_score`, `posicao_geral`, `posicao_por_modalidade`, `componente_core`, `componente_regulatorio`, `componente_financeiro`, `componente_rede`, `componente_estrutural`, `variacao_score_mom`
 
 ### HIS-24.3 — Documentação YAML dos Modelos de Consumo
 
-- [ ] Criar `healthintel_dbt/models/consumo/_consumo.yml` documentando todos os 8 modelos:
+- [x] Criar `healthintel_dbt/models/consumo/_consumo.yml` documentando todos os 8 modelos:
   - `config`: `materialized: table`, `schema: consumo_ans`, `tags: [consumo]`
   - `description`: propósito do data product, grão, cadência de atualização
   - `columns`: cada coluna com `description`, unidade (se numérica), valores esperados
   - `tests`: `not_null` em chaves, `dbt_utils.expression_is_true` para invariantes críticos (score 0-100, sinistralidade ≥ 0)
-- [ ] Adicionar exposures em `healthintel_dbt/models/exposures.yml`:
+- [x] Adicionar exposures em `healthintel_dbt/models/exposures.yml`:
   ```yaml
   - name: consumo_ans_clientes
     type: application
@@ -105,7 +105,7 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
 
 ### HIS-24.4 — DAG de Refresh consumo_ans
 
-- [ ] Criar `ingestao/dags/dag_dbt_consumo_refresh.py`:
+- [x] Criar `ingestao/dags/dag_dbt_consumo_refresh.py`:
   - Schedule: `@daily`
   - Tasks:
     1. `dbt_run_marts` — `dbt run --select tag:mart`
@@ -113,7 +113,7 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
     3. `dbt_test_consumo` — `dbt test --select tag:consumo`
     4. `registrar_refresh_consumo` — inserir em `plataforma.job` com `dataset='consumo_ans'`, status e timestamp
   - Dependência: roda após `dag_mestre_mensal` completar com sucesso no mesmo período
-- [ ] Adicionar target Makefile:
+- [x] Adicionar target Makefile:
   ```makefile
   consumo-refresh:
       dbt run --select tag:mart tag:consumo
@@ -123,14 +123,14 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
 
 ### HIS-24.5 — Smoke consumo_ans
 
-- [ ] Criar `scripts/smoke_consumo.py`:
+- [x] Criar `scripts/smoke_consumo.py`:
   - Conectar ao PostgreSQL com role `healthintel_cliente_reader`
   - Verificar que `consumo_ans` contém os 8 modelos
   - Definir mapa explícito de filtro temporal por modelo: modelos mensais usam `competencia`; modelos trimestrais usam `trimestre`
   - Para cada modelo: executar `SELECT count(*) FROM consumo_ans.{modelo} WHERE {coluna_temporal} = {valor_referencia}` e validar `count > 0`
   - Verificar isolamento: `healthintel_cliente_reader` recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
   - Validar `consumo_score_operadora_mes.score_total BETWEEN 0 AND 100` em amostra
-- [ ] Adicionar target Makefile:
+- [x] Adicionar target Makefile:
   ```makefile
   smoke-consumo:
       python scripts/smoke_consumo.py
@@ -138,7 +138,7 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
 
 ### HIS-24.6 — Contrato de Dados para Clientes
 
-- [ ] Criar `docs/arquitetura/consumo_ans_guia.md` com:
+- [x] Criar `docs/arquitetura/consumo_ans_guia.md` com:
   - Propósito do schema `consumo_ans`: camada de entrega final; o HealthIntel entrega dados curados, o cliente usa a ferramenta de sua escolha
   - Separação de responsabilidades: `api_ans` para REST FastAPI; `consumo_ans` para acesso direto PostgreSQL pelo cliente
   - Conexão PostgreSQL: host, porta, database, schema `consumo_ans`, role `healthintel_cliente_reader`
@@ -150,30 +150,30 @@ Cada modelo materializa como `table` em `consumo_ans`. Tag: `consumo`. Colunas c
 
 ## Entregas esperadas
 
-- [ ] DDL `infra/postgres/init/022_consumo_ans.sql`
-- [ ] Role `healthintel_cliente_reader` com isolamento garantido
-- [ ] `models/consumo/consumo_operadora_360.sql`
-- [ ] `models/consumo/consumo_beneficiarios_operadora_mes.sql`
-- [ ] `models/consumo/consumo_beneficiarios_municipio_mes.sql`
-- [ ] `models/consumo/consumo_financeiro_operadora_trimestre.sql`
-- [ ] `models/consumo/consumo_regulatorio_operadora_trimestre.sql`
-- [ ] `models/consumo/consumo_rede_assistencial_municipio.sql`
-- [ ] `models/consumo/consumo_oportunidade_municipio.sql`
-- [ ] `models/consumo/consumo_score_operadora_mes.sql`
-- [ ] `models/consumo/_consumo.yml` com column-level docs, config e testes
-- [ ] `healthintel_dbt/models/exposures.yml` com exposure `consumo_ans_clientes`
-- [ ] `ingestao/dags/dag_dbt_consumo_refresh.py`
-- [ ] `scripts/smoke_consumo.py`
-- [ ] `docs/arquitetura/consumo_ans_guia.md`
-- [ ] Makefile com targets `consumo-refresh` e `smoke-consumo`
+- [x] DDL `infra/postgres/init/022_consumo_ans.sql`
+- [x] Role `healthintel_cliente_reader` com isolamento garantido
+- [x] `models/consumo/consumo_operadora_360.sql`
+- [x] `models/consumo/consumo_beneficiarios_operadora_mes.sql`
+- [x] `models/consumo/consumo_beneficiarios_municipio_mes.sql`
+- [x] `models/consumo/consumo_financeiro_operadora_trimestre.sql`
+- [x] `models/consumo/consumo_regulatorio_operadora_trimestre.sql`
+- [x] `models/consumo/consumo_rede_assistencial_municipio.sql`
+- [x] `models/consumo/consumo_oportunidade_municipio.sql`
+- [x] `models/consumo/consumo_score_operadora_mes.sql`
+- [x] `models/consumo/_consumo.yml` com column-level docs, config e testes
+- [x] `healthintel_dbt/models/exposures.yml` com exposure `consumo_ans_clientes`
+- [x] `ingestao/dags/dag_dbt_consumo_refresh.py`
+- [x] `scripts/smoke_consumo.py`
+- [x] `docs/arquitetura/consumo_ans_guia.md`
+- [x] Makefile com targets `consumo-refresh` e `smoke-consumo`
 
 ## Validação esperada
 
-- [ ] `dbt compile --select tag:consumo`
-- [ ] `dbt build --select tag:consumo` — sem falhas
-- [ ] `dbt test --select tag:consumo` — zero falhas
-- [ ] `make consumo-refresh` — sem erros
-- [ ] `make smoke-consumo` — zero falhas
-- [ ] `make dag-test DAG=dag_dbt_consumo_refresh` — parsing OK
-- [ ] Role `healthintel_cliente_reader` acessa `consumo_ans` mas recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
+- [x] `dbt compile --select tag:consumo`
+- [x] `dbt build --select tag:consumo` — sem falhas
+- [x] `dbt test --select tag:consumo` — zero falhas
+- [x] `make consumo-refresh` — sem erros
+- [x] `make smoke-consumo` — zero falhas
+- [x] `make dag-test DAG=dag_dbt_consumo_refresh` — parsing OK
+- [x] Role `healthintel_cliente_reader` acessa `consumo_ans` mas recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
 - [ ] `consumo_ans.consumo_operadora_360` contém registros para `competencia=202501`

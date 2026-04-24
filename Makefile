@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
+DBT_BIN := ../.venv/bin/dbt
 
 .PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-sib smoke-cadop smoke-consumo consumo-refresh load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
 
@@ -26,19 +27,19 @@ layout-dev:
 	uvicorn mongo_layout_service.app.main:app --reload --host 0.0.0.0 --port 8001
 
 dbt-deps:
-	cd healthintel_dbt && $(DBT_ENV) dbt deps
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps
 
 dbt-compile:
-	cd healthintel_dbt && $(DBT_ENV) dbt compile
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) compile
 
 dbt-build:
-	cd healthintel_dbt && $(DBT_ENV) dbt build
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build
 
 dbt-test:
-	cd healthintel_dbt && $(DBT_ENV) dbt test
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test
 
 dbt-seed:
-	cd healthintel_dbt && $(DBT_ENV) dbt seed
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed
 
 demo-data:
 	python scripts/seed_demo_core.py
@@ -121,8 +122,8 @@ smoke-cadop:
 	python scripts/smoke_cadop.py
 
 consumo-refresh:
-	cd healthintel_dbt && $(DBT_ENV) dbt run --select tag:mart tag:consumo
-	cd healthintel_dbt && $(DBT_ENV) dbt test --select tag:consumo
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) run --select tag:mart tag:consumo
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:consumo
 
 smoke-consumo:
 	python scripts/smoke_consumo.py
@@ -131,7 +132,7 @@ load-test:
 	bash scripts/run_load_test.sh
 
 ci-local: compose-config lint sql-lint test
-	cd healthintel_dbt && $(DBT_ENV) dbt deps && $(DBT_ENV) dbt compile
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps && $(DBT_ENV) $(DBT_BIN) compile
 
 test:
 	pytest
@@ -152,7 +153,7 @@ seed-dados-completos:
 	python scripts/seed_dados_completos.py
 
 dbt-seed-ref:
-	cd healthintel_dbt && $(DBT_ENV) dbt seed --select ref_tuss ref_rol_procedimento
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed --select ref_tuss ref_rol_procedimento
 
 dag-test-all:
 	@echo "=== dag_criar_particao_mensal ===" && $(COMPOSE) exec airflow-scheduler airflow dags test dag_criar_particao_mensal 2026-04-22

@@ -16,7 +16,7 @@ async def main() -> None:
                 "modalidade": "medicina_de_grupo",
                 "cidade": "Sao Paulo",
                 "uf": "SP",
-                "competencia": "202501",
+                "competencia": 202501,
             }
         ],
         arquivo_origem="cadop_demo_202501.csv",

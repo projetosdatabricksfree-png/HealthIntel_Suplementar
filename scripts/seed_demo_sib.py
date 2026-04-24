@@ -12,7 +12,7 @@ async def main() -> None:
     await carregar_sib_operadora_bruto(
         [
             {
-                "competencia": "202501",
+                "competencia": 202501,
                 "registro_ans": "123456",
                 "beneficiario_medico": 1000,
                 "beneficiario_odonto": 100,
@@ -28,7 +28,7 @@ async def main() -> None:
     await carregar_sib_municipio_bruto(
         [
             {
-                "competencia": "202501",
+                "competencia": 202501,
                 "registro_ans": "123456",
                 "codigo_ibge": "3550308",
                 "municipio": "Sao Paulo",

@@ -10,7 +10,7 @@
 
 - [ ] Criar volume `ingestao_landing` em `infra/docker-compose.yml` mapeando para `/tmp/healthintel/landing` no container Airflow.
 - [ ] Definir variável de ambiente `INGESTAO_LANDING_PATH=/tmp/healthintel/landing` em `.env` e `ingestao/app/config.py`.
-- [ ] Criar estrutura de diretórios por dataset: `{LANDING_PATH}/{dataset}/{competencia}/` — gerado automaticamente na descarga.
+- [x] Criar estrutura de diretórios por dataset: `{LANDING_PATH}/{dataset}/{competencia}/` — gerado automaticamente na descarga.
 - [ ] Criar utilitário `ingestao/app/landing.py`:
   - `salvar_arquivo(dataset, competencia, nome_arquivo, conteudo_bytes) -> Path`
   - `calcular_hash_arquivo(path: Path) -> str` (SHA-256)
@@ -18,7 +18,7 @@
 
 ### HIS-22.2 — plataforma.lote_ingestao
 
-- [ ] Criar DDL `infra/postgres/init/021_lote_ingestao.sql`:
+- [x] Criar DDL `infra/postgres/init/021_lote_ingestao.sql`:
   ```sql
   CREATE TABLE plataforma.lote_ingestao (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,23 +47,23 @@
       ON plataforma.lote_ingestao (hash_arquivo)
       WHERE status IN ('sucesso', 'sucesso_com_alertas');
   ```
-- [ ] Atualizar `ingestao/app/carregar_postgres.py`: integrar `plataforma.lote_ingestao` — registrar início, atualizar status no final, persistir contagens e hash.
-- [ ] Verificar idempotência: antes de processar arquivo, consultar `lote_ingestao` por hash — se já existe com status `sucesso` ou `sucesso_com_alertas`, retornar `ignorado_duplicata` sem reprocessar.
+- [x] Atualizar `ingestao/app/carregar_postgres.py`: integrar `plataforma.lote_ingestao` — registrar início, atualizar status no final, persistir contagens e hash.
+- [x] Verificar idempotência: antes de processar arquivo, consultar `lote_ingestao` por hash — se já existe com status `sucesso` ou `sucesso_com_alertas`, retornar `ignorado_duplicata` sem reprocessar.
 
 ### HIS-22.3 — Contratos SIB
 
-- [ ] Criar `ingestao/app/contratos_sib.py` com:
+- [x] Criar `ingestao/app/contratos_sib.py` com:
   - `SCHEMA_SIB_OPERADORA`: campos obrigatórios, tipos esperados, domínios válidos para SIB por operadora
   - `SCHEMA_SIB_MUNICIPIO`: campos e tipos para SIB por município
   - Função `validar_linha_sib(row: dict, schema: dict) -> tuple[bool, str | None]` — retorna `(válido, motivo_rejeicao)`
-- [ ] Registrar schemas em MongoDB via `scripts/bootstrap_layout_registry_sib.py`:
+- [x] Registrar schemas em MongoDB via `scripts/bootstrap_layout_registry_sib.py`:
   - Layout `sib_operadora_v1`: campos, tipos, versão, competencia_col
   - Layout `sib_municipio_v1`: idem para SIB município
-- [ ] Adicionar target Makefile: `bootstrap-sib-layouts: python scripts/bootstrap_layout_registry_sib.py`
+- [x] Adicionar target Makefile: `bootstrap-sib-layouts: python scripts/bootstrap_layout_registry_sib.py`
 
 ### HIS-22.4 — DAG Ingestão SIB
 
-- [ ] Criar `ingestao/dags/dag_ingest_sib.py`:
+- [x] Criar `ingestao/dags/dag_ingest_sib.py`:
   - Schedule: `@monthly` (dados publicados mensalmente pela ANS)
   - Parâmetro: `competencia` (YYYYMM)
   - Tasks:
@@ -77,16 +77,16 @@
 
 ### HIS-22.5 — Contratos CADOP
 
-- [ ] Criar `ingestao/app/contratos_cadop.py`:
+- [x] Criar `ingestao/app/contratos_cadop.py`:
   - `SCHEMA_CADOP`: campos do arquivo CADOP (registro_ans, razao_social, cnpj, modalidade, uf_sede, situacao, etc.)
   - Função `validar_linha_cadop(row: dict) -> tuple[bool, str | None]`
-- [ ] Criar `scripts/bootstrap_layout_registry_cadop.py`:
+- [x] Criar `scripts/bootstrap_layout_registry_cadop.py`:
   - Layout `cadop_v1`: campos obrigatórios, mapeamento coluna → campo
-- [ ] Adicionar target Makefile: `bootstrap-cadop-layouts: python scripts/bootstrap_layout_registry_cadop.py`
+- [x] Adicionar target Makefile: `bootstrap-cadop-layouts: python scripts/bootstrap_layout_registry_cadop.py`
 
 ### HIS-22.6 — DAG Ingestão CADOP
 
-- [ ] Criar `ingestao/dags/dag_ingest_cadop.py`:
+- [x] Criar `ingestao/dags/dag_ingest_cadop.py`:
   - Schedule: `@monthly` (CADOP publicada mensalmente)
   - Parâmetro: `competencia`
   - Tasks:
@@ -98,16 +98,16 @@
 
 ### HIS-22.7 — Seed Demo SIB e CADOP
 
-- [ ] Criar `scripts/seed_demo_sib.py`: inserir registros demo em `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` para competência `202501` com hash e `lote_ingestao` preenchidos.
-- [ ] Adicionar target: `demo-data-sib: python scripts/seed_demo_sib.py`
-- [ ] Verificar que `scripts/seed_demo_core.py` já popula `bruto_ans.cadop` — se não, criar `scripts/seed_demo_cadop.py`.
-- [ ] Adicionar target: `demo-data-cadop: python scripts/seed_demo_cadop.py`
+- [x] Criar `scripts/seed_demo_sib.py`: inserir registros demo em `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` para competência `202501` com hash e `lote_ingestao` preenchidos.
+- [x] Adicionar target: `demo-data-sib: python scripts/seed_demo_sib.py`
+- [x] Verificar que `scripts/seed_demo_core.py` já popula `bruto_ans.cadop` — se não, criar `scripts/seed_demo_cadop.py`.
+- [x] Adicionar target: `demo-data-cadop: python scripts/seed_demo_cadop.py`
 
 ### HIS-22.8 — Smoke SIB e CADOP
 
-- [ ] Criar `scripts/smoke_sib.py`: validar que `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` contêm registros para `competencia=202501`; validar que `plataforma.lote_ingestao` tem entrada com status `sucesso`; validar que carga duplicada gera `ignorado_duplicata`.
-- [ ] Criar `scripts/smoke_cadop.py`: idem para CADOP.
-- [ ] Adicionar targets Makefile:
+- [x] Criar `scripts/smoke_sib.py`: validar que `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` contêm registros para `competencia=202501`; validar que `plataforma.lote_ingestao` tem entrada com status `sucesso`; validar que carga duplicada gera `ignorado_duplicata`.
+- [x] Criar `scripts/smoke_cadop.py`: idem para CADOP.
+- [x] Adicionar targets Makefile:
   ```makefile
   smoke-sib:
       python scripts/smoke_sib.py
@@ -133,29 +133,29 @@
 
 ## Entregas esperadas
 
-- [ ] DDL `infra/postgres/init/021_lote_ingestao.sql`
-- [ ] `ingestao/app/landing.py`
-- [ ] `ingestao/app/contratos_sib.py`
-- [ ] `ingestao/app/contratos_cadop.py`
-- [ ] `ingestao/dags/dag_ingest_sib.py`
-- [ ] `ingestao/dags/dag_ingest_cadop.py`
-- [ ] `scripts/bootstrap_layout_registry_sib.py`
-- [ ] `scripts/bootstrap_layout_registry_cadop.py`
-- [ ] `scripts/seed_demo_sib.py`
-- [ ] `scripts/seed_demo_cadop.py`
-- [ ] `scripts/smoke_sib.py`
-- [ ] `scripts/smoke_cadop.py`
+- [x] DDL `infra/postgres/init/021_lote_ingestao.sql`
+- [x] `ingestao/app/landing.py`
+- [x] `ingestao/app/contratos_sib.py`
+- [x] `ingestao/app/contratos_cadop.py`
+- [x] `ingestao/dags/dag_ingest_sib.py`
+- [x] `ingestao/dags/dag_ingest_cadop.py`
+- [x] `scripts/bootstrap_layout_registry_sib.py`
+- [x] `scripts/bootstrap_layout_registry_cadop.py`
+- [x] `scripts/seed_demo_sib.py`
+- [x] `scripts/seed_demo_cadop.py`
+- [x] `scripts/smoke_sib.py`
+- [x] `scripts/smoke_cadop.py`
 - [ ] `infra/docker-compose.yml` com volume `ingestao_landing`
-- [ ] Makefile com targets `bootstrap-sib-layouts`, `bootstrap-cadop-layouts`, `demo-data-sib`, `demo-data-cadop`, `smoke-sib`, `smoke-cadop`
-- [ ] `dag_mestre_mensal.py` atualizado com SIB e CADOP
+- [x] Makefile com targets `bootstrap-sib-layouts`, `bootstrap-cadop-layouts`, `demo-data-sib`, `demo-data-cadop`, `smoke-sib`, `smoke-cadop`
+- [x] `dag_mestre_mensal.py` atualizado com SIB e CADOP
 
 ## Validação esperada
 
-- [ ] `ruff check ingestao scripts`
-- [ ] `pytest ingestao/tests/` — zero falhas
+- [x] `ruff check ingestao scripts`
+- [x] `pytest ingestao/tests/` — zero falhas
 - [ ] `make dag-test DAG=dag_ingest_sib` — parsing OK
 - [ ] `make dag-test DAG=dag_ingest_cadop` — parsing OK
-- [ ] `make demo-data-sib` + `make smoke-sib` — zero falhas
-- [ ] `make demo-data-cadop` + `make smoke-cadop` — zero falhas
-- [ ] `plataforma.lote_ingestao` contém entradas com `status='sucesso'` para SIB e CADOP
+- [x] `make demo-data-sib` + `make smoke-sib` — zero falhas
+- [x] `make demo-data-cadop` + `make smoke-cadop` — zero falhas
+- [x] `plataforma.lote_ingestao` contém entradas com `status='sucesso'` para SIB e CADOP
 - [ ] Reprocessamento do mesmo arquivo resulta em `status='ignorado_duplicata'`

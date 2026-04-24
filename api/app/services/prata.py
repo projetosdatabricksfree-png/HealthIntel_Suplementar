@@ -15,7 +15,7 @@ settings = get_settings()
 PRATA_DATASETS = {
     "cadop": {
         "tabela": "api_ans.api_prata_cadop",
-        "competencia": "competencia",
+        "competencia": None,
         "fonte": "cadop",
     },
     "sib_operadora": {
@@ -206,8 +206,12 @@ async def buscar_prata(
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
-    params: dict[str, object] = {"competencia": competencia, "limit": limite, "offset": offset}
-    where_clauses = [f"{cfg['competencia']} = :competencia"]
+    params: dict[str, object] = {"limit": limite, "offset": offset}
+    where_clauses: list[str] = []
+    coluna_competencia = cfg["competencia"]
+    if coluna_competencia:
+        params["competencia"] = competencia
+        where_clauses.append(f"{coluna_competencia}::text = :competencia")
     filtros_permitidos = PRATA_FILTROS_PERMITIDOS.get(dataset, set())
     for chave, valor in filtros.items():
         if valor is None:
@@ -216,7 +220,7 @@ async def buscar_prata(
             continue
         where_clauses.append(f"{chave} = :{chave}")
         params[chave] = valor
-    where_clause = " where " + " and ".join(where_clauses)
+    where_clause = " where " + " and ".join(where_clauses) if where_clauses else ""
 
     async with SessionLocal() as session:
         total_result = await session.execute(
@@ -230,7 +234,7 @@ async def buscar_prata(
                 select *
                 from {cfg["tabela"]}
                 {where_clause}
-                order by {cfg["competencia"]} desc
+                {f"order by {coluna_competencia} desc" if coluna_competencia else ""}
                 limit :limit offset :offset
                 """
             ),

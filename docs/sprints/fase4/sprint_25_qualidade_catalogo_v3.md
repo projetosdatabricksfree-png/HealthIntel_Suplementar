@@ -26,26 +26,26 @@
   - `consumo_beneficiarios_operadora_mes.qt_beneficiarios >= 0` para todos os registros
 - [ ] `healthintel_dbt/tests/assert_staging_registro_ans_6_digitos.sql`:
   - `length(registro_ans) = 6` em todos os modelos staging — consolidar ou confirmar cobertura do assert existente
-- [ ] `healthintel_dbt/tests/assert_lote_ingestao_sem_duplicata.sql`:
+- [x] `healthintel_dbt/tests/assert_lote_ingestao_sem_duplicata.sql`:
   - `plataforma.lote_ingestao` não deve ter dois registros `sucesso` para o mesmo `hash_arquivo`
 
 ### HIS-25.3 — Catálogo de Dados para Clientes
 
-- [ ] Criar pasta `docs/catalogo_dados/`.
-- [ ] Criar `docs/catalogo_dados/README.md`:
+- [x] Criar pasta `docs/catalogo_dados/`.
+- [x] Criar `docs/catalogo_dados/README.md`:
   - Título: **Catálogo de Dados para Clientes — HealthIntel Suplementar**
   - Índice de todos os datasets por camada disponível ao cliente (Bronze API, Prata API, Gold Marts via FastAPI, consumo_ans via PostgreSQL direto)
   - Legenda de colunas (chave primária, chave de negócio, métrica, dimensão)
   - Cadência de atualização por camada
   - Instruções de acesso: como conectar ao `consumo_ans` com `healthintel_cliente_reader`
-- [ ] Criar uma página por mart Gold e modelo de consumo (6 marts + 8 modelos consumo = 14 arquivos `{modelo}.md`), cada um contendo:
+- [x] Criar uma página por mart Gold e modelo de consumo (6 marts + 8 modelos consumo = 14 arquivos `{modelo}.md`), cada um contendo:
   - Propósito e casos de uso do cliente
   - Grão (ex: "uma linha por operadora por mês")
   - Chaves primárias e chaves de negócio
   - Tabela de colunas: nome | tipo | descrição | origem | unidade
   - Métricas disponíveis com definição de negócio
   - Exemplo de query SQL analítica típica
-- [ ] Criar `docs/catalogo_dados/glossario.md`: termos-chave do domínio (registro_ans, competencia, IDSS, IGR, sinistralidade, taxa de quarentena, etc.)
+- [x] Criar `docs/catalogo_dados/glossario.md`: termos-chave do domínio (registro_ans, competencia, IDSS, IGR, sinistralidade, taxa de quarentena, etc.)
 
 ### HIS-25.4 — Exposures e dbt Docs
 
@@ -55,7 +55,7 @@
   - Exposure `airflow_ingestao`: tipo `application`, dependências de todos os `bruto_ans` sources
 - [ ] Executar `dbt docs generate` — verificar que todos os modelos têm `description` preenchida (hard gate).
 - [ ] Salvar artefatos: `docs/dbt_docs_v3.0.0/` com `manifest.json`, `catalog.json`, `index.html`.
-- [ ] Criar `docs/arquitetura/lineage_fase4.md`: diagrama textual (ou Mermaid) do lineage completo Bronze → consumo_ans.
+- [x] Criar `docs/arquitetura/lineage_fase4.md`: diagrama textual (ou Mermaid) do lineage completo Bronze → consumo_ans.
 
 ### HIS-25.5 — Documentação Column-Level na Staging
 
@@ -76,7 +76,7 @@
   - Ouro API: regressão dos endpoints principais (`/v1/operadoras`, `/v1/rankings/composto`, `/v1/operadoras/{id}/score-v3`)
   - Lote ingestão: `plataforma.lote_ingestao` tem registros SIB e CADOP com status `sucesso`
   - consumo_ans: queries diretas nos 8 modelos com role `healthintel_cliente_reader`; PERMISSION DENIED confirmado nas 5 camadas internas
-- [ ] Executar `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas (hard gate obrigatório para aceite da sprint).
+- [x] Executar `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas (hard gate obrigatório para aceite da sprint).
 
 ### HIS-25.7 — Baseline v3.0.0
 
@@ -98,23 +98,23 @@
 - [ ] `_staging.yml` com column-level docs nos 5 modelos principais
 - [ ] `_fato.yml`, `_marts_gold.yml`, `_consumo.yml` com testes completos
 - [ ] Testes singulares `assert_mart_*.sql`, `assert_consumo_*.sql`, `assert_lote_ingestao_sem_duplicata.sql`
-- [ ] `docs/catalogo_dados/README.md` + 14 páginas de modelos + `glossario.md`
-- [ ] `docs/arquitetura/lineage_fase4.md`
+- [x] `docs/catalogo_dados/README.md` + 14 páginas de modelos + `glossario.md`
+- [x] `docs/arquitetura/lineage_fase4.md`
 - [ ] `healthintel_dbt/models/exposures.yml` completo
 - [ ] `docs/dbt_docs_v3.0.0/` com artefatos gerados
-- [ ] `testes/regressao/test_endpoints_fase4.py`
+- [x] `testes/regressao/test_endpoints_fase4.py`
 - [ ] `docs/CHANGELOG.md` atualizado com entrada `v3.0.0`
 - [ ] `CLAUDE.md` atualizado
 - [ ] Tag git `v3.0.0`
 
 ## Validação esperada (hard gates)
 
-- [ ] `ruff check api ingestao scripts`
-- [ ] `dbt compile` — zero erros em toda a stack
-- [ ] `dbt test` — zero falhas em toda a stack
-- [ ] `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas
-- [ ] `make smoke-prata` — zero falhas
-- [ ] `make smoke-consumo` — zero falhas
+- [x] `ruff check api ingestao scripts`
+- [x] `dbt compile` — zero erros em toda a stack
+- [x] `dbt test` — zero falhas em toda a stack
+- [x] `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas
+- [x] `make smoke-prata` — zero falhas
+- [x] `make smoke-consumo` — zero falhas
 - [ ] `dbt docs generate` sem `description` vazia nos modelos finais
-- [ ] `docs/catalogo_dados/` contém README + 14 páginas de modelo + glossário
+- [x] `docs/catalogo_dados/` contém README + 14 páginas de modelo + glossário
 - [ ] Tag `v3.0.0` criada e apontando para commit pós-regressão aprovada

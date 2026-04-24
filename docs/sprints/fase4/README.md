@@ -60,16 +60,16 @@ api_ans (FastAPI REST)    consumo_ans (tabelas curadas para clientes)
 
 ## Critério de Saída da Fase 4
 
-- [ ] `pytest api/tests/integration/test_prata.py -v` — todos os endpoints Prata registrados em `PRATA_DATASETS` cobertos
-- [ ] `make smoke-prata` — zero falhas
-- [ ] `make smoke-sib` — zero falhas
-- [ ] `make smoke-cadop` — zero falhas
-- [ ] `make smoke-consumo` — zero falhas
-- [ ] `dbt build --select tag:prata tag:mart tag:consumo` — sem falhas
-- [ ] `dbt test` — todos os testes passando
-- [ ] `dbt docs generate` — documentação gerada sem erro
-- [ ] `plataforma.lote_ingestao` registrando lotes SIB e CADOP com hash
-- [ ] `consumo_ans` acessível via conexão PostgreSQL direta com role `healthintel_cliente_reader`
-- [ ] `healthintel_cliente_reader` recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
-- [ ] `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas
+- [x] `pytest api/tests/integration/test_prata.py -v` — todos os endpoints Prata registrados em `PRATA_DATASETS` cobertos
+- [x] `make smoke-prata` — zero falhas
+- [x] `make smoke-sib` — zero falhas
+- [x] `make smoke-cadop` — zero falhas
+- [x] `make smoke-consumo` — zero falhas
+- [x] `dbt build --select tag:prata tag:mart tag:consumo` — sem falhas
+- [x] `dbt test` — todos os testes passando
+- [x] `dbt docs generate` — documentação gerada sem erro
+- [x] `plataforma.lote_ingestao` registrando lotes SIB e CADOP com hash
+- [x] `consumo_ans` acessível via conexão PostgreSQL direta com role `healthintel_cliente_reader`
+- [x] `healthintel_cliente_reader` recebe `PERMISSION DENIED` em `bruto_ans`, `stg_ans`, `int_ans`, `nucleo_ans` e `plataforma`
+- [x] `pytest testes/regressao/test_endpoints_fase4.py -v` — zero falhas
 - [ ] Tag git `v3.0.0` criada após aprovação

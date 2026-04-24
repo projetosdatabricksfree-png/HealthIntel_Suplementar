@@ -113,6 +113,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+      PYTHONPATH: /workspace
     command: bash -lc "airflow db migrate && (airflow users create --username admin --password admin --firstname Health --lastname Intel --role Admin --email admin@healthintel.local || true)"
     volumes:
       - ../ingestao/dags:/opt/airflow/dags
@@ -130,6 +131,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-healthintel}:${POSTGRES_PASSWORD:-healthintel}@postgres:5432/${POSTGRES_DB:-healthintel}
       AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:-hQ4b5w5E4Q6v0V2D-PdD2mUP5kQb1xYgLh9M1M4l7kE=}
+      PYTHONPATH: /workspace
     ports:
       - "${AIRFLOW_EXTERNAL_PORT:-8088}:8080"
     volumes:
@@ -157,6 +159,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
       _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres==1.8.2"
+      PYTHONPATH: /workspace
     volumes:
       - ../ingestao/dags:/opt/airflow/dags
       - ..:/workspace
