@@ -3,8 +3,7 @@
         materialized='table',
         tags=['prata'],
         post_hook=[
-            "{{ criar_indice_api(this, 'registro_ans') }}",
-            "{{ criar_indice_api(this, 'competencia') }}"
+            "{{ criar_indice_api(this, 'registro_ans') }}"
         ]
     )
 }}

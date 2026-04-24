@@ -1,6 +1,13 @@
 version: 2
 
 seeds:
+  - name: ref_competencia
+    config:
+      column_types:
+        competencia: varchar(6)
+        ano: integer
+        mes: integer
+
   - name: ref_tuss
     description: Base sintética representativa de referencia TUSS para desenvolvimento e CI.
   - name: ref_rol_procedimento

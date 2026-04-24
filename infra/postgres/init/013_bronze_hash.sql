@@ -100,8 +100,5 @@ create unique index if not exists uq_glosa_competencia_hash
 create unique index if not exists uq_rede_competencia_hash
     on bruto_ans.rede_prestador_municipio (competencia, _hash_arquivo);
 
-create unique index if not exists uq_cnes_competencia_hash
-    on bruto_ans.cnes_estabelecimento (competencia, _hash_arquivo);
-
-create unique index if not exists uq_tiss_competencia_hash
-    on bruto_ans.tiss_procedimento_trimestral (trimestre, _hash_arquivo);
+-- uq_cnes_competencia_hash omitted: multi-row files share _hash_arquivo, constraint blocks bulk inserts
+-- uq_tiss_competencia_hash omitted: same reason as above

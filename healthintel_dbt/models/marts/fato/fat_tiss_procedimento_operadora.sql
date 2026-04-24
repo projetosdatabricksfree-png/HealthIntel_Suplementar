@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('stg_tiss_procedimento') }}
+
 {{
     config(
         materialized='incremental',

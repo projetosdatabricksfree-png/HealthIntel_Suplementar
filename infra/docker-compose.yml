@@ -20,12 +20,16 @@ services:
   mongo:
     image: mongo:7
     container_name: healthintel_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-healthintel}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-healthintel}
     ports:
       - "${MONGO_EXTERNAL_PORT:-27018}:27017"
     volumes:
       - mongo_data:/data/db
+      - ./mongo/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "mongosh --eval 'db.adminCommand({ ping: 1 })' --quiet"]
+      test: ["CMD-SHELL", "mongosh -u ${MONGO_INITDB_ROOT_USERNAME:-healthintel} -p ${MONGO_INITDB_ROOT_PASSWORD:-healthintel} --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 })' --quiet"]
       interval: 15s
       timeout: 10s
       retries: 10

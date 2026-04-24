@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('stg_cnes_estabelecimento') }}
+
 {{
     config(
         materialized='incremental',
