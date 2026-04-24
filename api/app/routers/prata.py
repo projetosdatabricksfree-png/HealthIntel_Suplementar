@@ -312,6 +312,79 @@ async def get_prata_financeiro_periodo(
     )
 
 
+@router.get("/cnes/municipio", dependencies=[Depends(verificar_camada("prata"))])
+async def get_prata_cnes_municipio(
+    request: Request,
+    competencia: str = Query(..., min_length=6, max_length=6),
+    cd_municipio: str | None = Query(default=None),
+    pagina: int = Query(default=1, ge=1),
+    limite: int = Query(default=50, ge=1, le=100),
+) -> dict:
+    filtros = (
+        {"cd_municipio": "".join(filter(str.isdigit, cd_municipio)).zfill(7)}
+        if cd_municipio
+        else None
+    )
+    return await _executar_prata(
+        request,
+        "cnes_municipio",
+        competencia=competencia,
+        filtros=filtros,
+        pagina=pagina,
+        limite=limite,
+    )
+
+
+@router.get("/cnes/rede-gap", dependencies=[Depends(verificar_camada("prata"))])
+async def get_prata_cnes_rede_gap(
+    request: Request,
+    competencia: str = Query(..., min_length=6, max_length=6),
+    cd_municipio: str | None = Query(default=None),
+    registro_ans: str | None = Query(default=None),
+    pagina: int = Query(default=1, ge=1),
+    limite: int = Query(default=50, ge=1, le=100),
+) -> dict:
+    filtros: dict[str, object] = {}
+    if cd_municipio:
+        filtros["cd_municipio"] = "".join(filter(str.isdigit, cd_municipio)).zfill(7)
+    if registro_ans:
+        filtros["registro_ans"] = registro_ans.zfill(6)
+    return await _executar_prata(
+        request,
+        "cnes_rede_gap",
+        competencia=competencia,
+        filtros=filtros or None,
+        pagina=pagina,
+        limite=limite,
+    )
+
+
+@router.get("/tiss/procedimento", dependencies=[Depends(verificar_camada("prata"))])
+async def get_prata_tiss_procedimento(
+    request: Request,
+    competencia: str = Query(..., min_length=5),
+    registro_ans: str | None = Query(default=None),
+    cd_procedimento_tuss: str | None = Query(default=None),
+    grupo_procedimento: str | None = Query(default=None),
+    pagina: int = Query(default=1, ge=1),
+    limite: int = Query(default=50, ge=1, le=100),
+) -> dict:
+    filtros: dict[str, object] = {}
+    if registro_ans:
+        filtros["registro_ans"] = registro_ans.zfill(6)
+    procedimento = grupo_procedimento or cd_procedimento_tuss
+    if procedimento:
+        filtros["grupo_procedimento"] = procedimento
+    return await _executar_prata(
+        request,
+        "tiss_procedimento",
+        competencia=competencia,
+        filtros=filtros or None,
+        pagina=pagina,
+        limite=limite,
+    )
+
+
 @router.get("/quarentena/resumo", dependencies=[Depends(verificar_camada("prata"))])
 async def get_prata_quarentena_resumo(
     request: Request,
@@ -323,7 +396,7 @@ async def get_prata_quarentena_resumo(
     return payload
 
 
-@router.get("/quarentena/{dataset}", dependencies=[Depends(verificar_camada("bronze"))])
+@router.get("/quarentena/{dataset}", dependencies=[Depends(verificar_camada("prata"))])
 async def get_prata_quarentena_dataset(
     dataset: str,
     request: Request,

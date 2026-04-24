@@ -105,3 +105,18 @@ exposures:
       email: api@healthintel.local
     depends_on:
       - ref('api_oportunidade_v2_municipio_mensal')
+  - name: consumo_ans_clientes
+    label: Acesso PostgreSQL direto ao schema consumo_ans
+    type: application
+    owner:
+      name: plataforma_dados
+      email: dados@healthintel.local
+    depends_on:
+      - ref('consumo_operadora_360')
+      - ref('consumo_beneficiarios_operadora_mes')
+      - ref('consumo_beneficiarios_municipio_mes')
+      - ref('consumo_financeiro_operadora_trimestre')
+      - ref('consumo_regulatorio_operadora_trimestre')
+      - ref('consumo_rede_assistencial_municipio')
+      - ref('consumo_oportunidade_municipio')
+      - ref('consumo_score_operadora_mes')

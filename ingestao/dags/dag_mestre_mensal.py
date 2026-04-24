@@ -20,6 +20,8 @@ with DAG(
 
     identificar_dataset = EmptyOperator(task_id="identificar_dataset")
     resolver_layout = EmptyOperator(task_id="resolver_layout")
+    ingest_cadop = EmptyOperator(task_id="acionar_dag_ingest_cadop")
+    ingest_sib = EmptyOperator(task_id="acionar_dag_ingest_sib")
     carregar_bruto = EmptyOperator(task_id="carregar_bruto")
     executar_dbt = EmptyOperator(task_id="executar_dbt")
 
@@ -41,6 +43,8 @@ with DAG(
         >> preparar_particoes
         >> identificar_dataset
         >> resolver_layout
+        >> ingest_cadop
+        >> ingest_sib
         >> carregar_bruto
         >> executar_dbt
         >> validar_freshness

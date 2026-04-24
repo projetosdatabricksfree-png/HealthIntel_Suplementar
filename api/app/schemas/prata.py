@@ -15,6 +15,7 @@ class PrataMetaResponse(BaseModel):
     competencia: str
     versao_dataset: str
     qualidade: PrataQualidadeMeta
+    aviso_qualidade: str | None = None
     total: int
     pagina: int
     por_pagina: int

@@ -29,3 +29,60 @@ models:
     description: Metricas municipais de mercado e concentracao.
   - name: api_prata_financeiro_periodo
     description: Consolidacao financeira por operadora e trimestre.
+  - name: api_prata_cnes_municipio
+    description: Serving API Prata para `/v1/prata/cnes/municipio`, derivado de `int_cnes_municipio_resumo`.
+    config:
+      tags: ["prata", "cnes"]
+    columns:
+      - name: competencia
+        description: Competencia mensal de referencia.
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        description: Codigo IBGE do municipio.
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        description: Tipo de unidade CNES.
+        data_tests:
+          - not_null
+      - name: taxa_aprovacao_lote
+        description: Taxa de aprovacao do lote de origem.
+  - name: api_prata_cnes_rede_gap
+    description: Serving API Prata para `/v1/prata/cnes/rede-gap`, derivado de `fat_cnes_rede_gap_municipio`.
+    config:
+      tags: ["prata", "cnes", "rede"]
+    columns:
+      - name: competencia
+        description: Competencia mensal de referencia.
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        description: Codigo IBGE do municipio.
+        data_tests:
+          - not_null
+      - name: tipo_unidade
+        description: Tipo de unidade CNES.
+        data_tests:
+          - not_null
+      - name: taxa_aprovacao_lote
+        description: Taxa de aprovacao do lote de origem.
+  - name: api_prata_tiss_procedimento
+    description: Serving API Prata para `/v1/prata/tiss/procedimento`, derivado de `int_tiss_operadora_trimestre`.
+    config:
+      tags: ["prata", "tiss"]
+    columns:
+      - name: trimestre
+        description: Trimestre de referencia.
+        data_tests:
+          - not_null
+      - name: registro_ans
+        description: Registro ANS da operadora.
+        data_tests:
+          - not_null
+      - name: grupo_procedimento
+        description: Grupo de procedimento TISS.
+        data_tests:
+          - not_null
+      - name: taxa_aprovacao_lote
+        description: Taxa de aprovacao do lote de origem.

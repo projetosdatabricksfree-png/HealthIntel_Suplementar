@@ -24,6 +24,21 @@ class Settings(BaseSettings):
         default="healthintel_layout_service_local_token_2026",
         alias="LAYOUT_SERVICE_TOKEN",
     )
+    ingestao_landing_path: str = Field(
+        default="/tmp/healthintel/landing",
+        alias="INGESTAO_LANDING_PATH",
+    )
+    ans_cadop_url: str = Field(
+        default=(
+            "https://dadosabertos.ans.gov.br/FTP/PDA/"
+            "operadoras_de_plano_de_saude_ativas/Relatorio_cadop.csv"
+        ),
+        alias="ANS_CADOP_URL",
+    )
+    ans_sib_base_url: str = Field(
+        default="https://dadosabertos.ans.gov.br/FTP/PDA/dados_de_beneficiarios_por_operadora",
+        alias="ANS_SIB_BASE_URL",
+    )
 
     @property
     def postgres_dsn(self) -> str:

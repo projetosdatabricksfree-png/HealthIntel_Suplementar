@@ -1,0 +1,452 @@
+Sim. Pensando como **engenheiro de dados + PO/QA**, o seu ELT precisa ser entendido assim:
+
+```text
+ANS / DATASUS
+   ↓
+Extração / Download / Landing
+   ↓
+Resolução de layout no MongoDB
+   ↓
+Carga Bronze / bruto_ans
+   ↓
+Padronização Silver / stg_ans
+   ↓
+Enriquecimento / int_ans
+   ↓
+Gold analítico / nucleo_ans
+   ↓
+Serving BI / bi_ans ou api_ans
+   ↓
+Power BI / Cliente / API
+```
+
+Pelo seu repositório, o projeto já está conceitualmente desenhado para isso: o README define a plataforma como SaaS/DaaS com arquitetura medalhão, governança de layout em MongoDB, ingestão, dbt e exposição via FastAPI. ([GitHub][1]) O PRD também separa claramente Bronze, Prata, Ouro Analítico e Ouro Serviço. ([GitHub][2])
+
+## O ponto principal
+
+Se você já tem **base bruta** e **prata**, o que ainda falta para disponibilizar bem para BI é principalmente:
+
+```text
+1. Consolidar a Prata com validação forte
+2. Criar a camada Ouro dimensional
+3. Criar uma camada específica de consumo para BI
+4. Automatizar refresh fim a fim
+5. Criar testes, contratos, catálogo e monitoramento
+6. Controlar acesso, performance e versionamento
+```
+
+Ou seja: **não basta ter bruto e prata**. Para BI consumir bem, você precisa criar uma camada final estável, performática e semântica.
+
+---
+
+# 1. Extração / Landing — início do ELT
+
+Essa é a etapa que pega os arquivos da ANS/DATASUS e registra o que entrou.
+
+No seu projeto, a área `ingestao` está documentada para cuidar de descoberta de arquivo, hash, resolução de layout no MongoDB, tradução origem → RAW, carga idempotente no PostgreSQL e registro operacional em `plataforma`. ([GitHub][3])
+
+## O que essa etapa precisa garantir
+
+Aqui você ainda precisa desenvolver ou reforçar:
+
+| Item                               | Precisa? | Por quê                                                            |
+| ---------------------------------- | -------: | ------------------------------------------------------------------ |
+| Download real dos arquivos ANS     |      Sim | Não depender só de seed/demo.                                      |
+| Landing zone física                |      Sim | Guardar o arquivo original antes de processar.                     |
+| Hash do arquivo                    |      Sim | Saber se o arquivo já foi processado.                              |
+| Controle de lote                   |      Sim | Cada processamento precisa ter `id_lote`, data, status e origem.   |
+| Validação de layout antes da carga |      Sim | Arquivo sem layout aprovado não pode entrar na Bronze.             |
+| Log de erro de ingestão            |      Sim | Saber se falhou por download, layout, encoding, schema ou carga.   |
+| Reprocessamento                    |      Sim | Conseguir recarregar um arquivo antigo sem sobrescrever histórico. |
+
+Minha recomendação: crie uma tabela ou estrutura operacional forte para isso:
+
+```sql
+plataforma.job_ingestao
+plataforma.arquivo_origem
+plataforma.lote_ingestao
+plataforma.erro_ingestao
+plataforma.versao_dataset
+```
+
+Essa etapa termina quando o arquivo foi baixado, identificado, validado estruturalmente e está pronto para entrar na Bronze.
+
+---
+
+# 2. Bronze / bruto_ans — carregamento auditável
+
+A Bronze é o primeiro ponto dentro do banco. Ela não deve ser bonita. Ela deve ser **auditável**.
+
+O PRD define a Bronze como `bruto_ans`, um espelho imutável dos dados após tradução física pelo motor de layout, com hash de arquivo, hash de linha, lote, layout aplicado e arquivo de origem. ([GitHub][2])
+
+## O que a Bronze deve ter
+
+Toda tabela Bronze deveria ter estes campos técnicos:
+
+```sql
+id_lote
+id_arquivo
+hash_arquivo
+hash_linha
+dataset
+competencia
+versao_layout
+arquivo_origem
+data_ingestao
+linha_origem
+status_linha
+dados_raw
+```
+
+Ou, se preferir colunas normalizadas:
+
+```sql
+registro_ans_raw
+competencia_raw
+campo_1_raw
+campo_2_raw
+...
+id_lote
+hash_linha
+```
+
+## O que ainda falta validar na Bronze
+
+Mesmo que você já tenha base bruta, precisa confirmar estes pontos:
+
+| Validação                                        | Obrigatória? |
+| ------------------------------------------------ | -----------: |
+| A Bronze nunca sobrescreve lote antigo           |          Sim |
+| O mesmo arquivo não entra duplicado sem controle |          Sim |
+| Toda linha tem rastreabilidade até arquivo/lote  |          Sim |
+| Toda tabela Bronze tem metadados técnicos        |          Sim |
+| Arquivo rejeitado vai para quarentena de arquivo |          Sim |
+| Arquivo processado parcialmente é auditável      |          Sim |
+
+A Bronze não é para BI. Ela é para auditoria, engenharia e reprocessamento.
+
+---
+
+# 3. Silver / stg_ans — padronização técnica
+
+A Silver é onde o dado começa a virar dado consumível. No seu dbt, a configuração já aponta `staging` para o schema `stg_ans`, `intermediate` para `int_ans`, marts para `nucleo_ans` e API para `api_ans`. ([GitHub][4])
+
+Você também já tem vários modelos staging, como `stg_cadop`, `stg_cnes_estabelecimento`, `stg_diops`, `stg_fip`, `stg_glosa`, `stg_idss`, `stg_igr`, `stg_nip`, `stg_rede_assistencial`, `stg_sib_municipio`, `stg_sib_operadora`, `stg_tiss_procedimento` e outros. ([GitHub][5])
+
+## O que a Silver precisa fazer
+
+Aqui você transforma:
+
+```text
+campo bruto quebrado → campo padronizado
+texto solto → tipo correto
+competência textual → competência int YYYYMM
+registro ANS variável → registro_ans com 6 dígitos
+data string → date
+valor monetário string → numeric
+UF/município divergente → código IBGE padronizado
+```
+
+## O que ainda precisa desenvolver na Silver
+
+| Item                                       | Status recomendado |
+| ------------------------------------------ | ------------------ |
+| Tipagem forte de todos os campos           | Obrigatório        |
+| Padronização de `registro_ans`             | Obrigatório        |
+| Padronização de `competencia`              | Obrigatório        |
+| Domínios válidos por coluna                | Obrigatório        |
+| Tabelas de rejeição/quarentena por dataset | Obrigatório        |
+| Taxa de aprovação por lote                 | Obrigatório        |
+| Testes dbt por coluna crítica              | Obrigatório        |
+| Freshness por source                       | Obrigatório        |
+| Data dictionary dos campos                 | Obrigatório        |
+
+A Silver pode ser consumida por BI técnico, mas ainda não é a melhor camada para usuário final. Ela ainda está próxima demais da origem.
+
+---
+
+# 4. Intermediate / int_ans — enriquecimento
+
+Essa é uma camada muito importante no seu projeto. Ela junta bases, cria métricas derivadas e prepara a Gold.
+
+Seu repositório já tem modelos intermediários como `int_operadora_canonica`, `int_operadora_competencia`, `int_financeiro_operadora_periodo`, `int_regulatorio_operadora_trimestre`, `int_score_v3_componentes`, `int_cnes_x_rede_municipio`, `int_tiss_operadora_trimestre` e outros. ([GitHub][6])
+
+## Para que serve essa camada
+
+Ela responde perguntas como:
+
+```text
+Qual é a operadora canônica?
+Qual competência está ativa?
+Qual município tem beneficiário mas não tem rede suficiente?
+Qual operadora tem piora regulatória?
+Qual operadora cresceu nos últimos 12 meses?
+Qual operadora tem sinistralidade alta?
+```
+
+## O que ainda precisa desenvolver aqui
+
+| Item                                    | Por quê                                         |
+| --------------------------------------- | ----------------------------------------------- |
+| Modelo canônico de operadora            | Evita duplicidade e inconsistência entre bases. |
+| Modelo canônico de localidade           | Fundamental para BI territorial.                |
+| Modelo de competência/calendário        | Essencial para séries temporais.                |
+| Regras de joins oficiais                | Evita cada mart cruzar de um jeito.             |
+| Métricas intermediárias reaproveitáveis | Evita duplicação de cálculo.                    |
+| Teste de integridade referencial        | Evita fato sem dimensão.                        |
+
+Aqui você não deveria criar tabela final para BI ainda. Aqui você prepara a Gold.
+
+---
+
+# 5. Gold / nucleo_ans — o que mais falta para BI
+
+Esta é a camada que mais importa para Power BI, Metabase, Superset, Looker ou qualquer ferramenta analítica.
+
+O PRD define o Ouro Analítico como `nucleo_ans`, com modelo dimensional, fatos incrementais, dimensões, score, ranking e oportunidade territorial. Ele também define que essa camada não deve ser exposta diretamente pela API pública; ela serve como base para a camada de serviço. ([GitHub][2])
+
+## Aqui está o que você ainda precisa criar de verdade
+
+Você precisa de um **modelo dimensional**.
+
+### Dimensões mínimas
+
+```text
+dim_operadora
+dim_competencia
+dim_localidade
+dim_modalidade
+dim_segmentacao
+dim_tipo_contratacao
+dim_procedimento_tuss
+dim_estabelecimento_cnes
+dim_dataset
+```
+
+### Fatos mínimas
+
+```text
+fato_beneficiario_operadora_mes
+fato_beneficiario_municipio_mes
+fato_financeiro_operadora_trimestre
+fato_regulatorio_operadora_trimestre
+fato_rede_assistencial_municipio_mes
+fato_tiss_procedimento_trimestre
+fato_glosa_operadora_mes
+fato_score_operadora_mes
+fato_oportunidade_municipio_mes
+```
+
+### Marts finais para BI
+
+```text
+mart_operadora_360
+mart_mercado_municipio
+mart_financeiro_operadora
+mart_regulatorio_operadora
+mart_rede_assistencial
+mart_score_operadora
+mart_oportunidade_territorial
+mart_tiss_procedimento
+```
+
+Essa camada precisa ser **estável, documentada e otimizada**. É ela que deve alimentar o BI.
+
+---
+
+# 6. Camada de disponibilização para BI
+
+Aqui está uma decisão importante: **não use diretamente `stg_ans` para BI final**.
+
+O ideal é criar uma camada de serving específica:
+
+```text
+bi_ans
+```
+
+Ou, se quiser simplificar no MVP, usar `api_ans` para API e criar views BI em cima de `nucleo_ans`.
+
+O seu projeto já tem uma camada `api_ans` com vários modelos dbt de API, como operadora, financeiro, market share, rankings, scores, rede, TISS, sinistralidade e oportunidade. ([GitHub][7]) O PRD também diz que a FastAPI deve ler exclusivamente `api_ans`, e não `nucleo_ans` ou `stg_ans`, para separar serviço público de transformação interna. ([GitHub][2])
+
+## Minha recomendação para BI
+
+Crie uma camada separada:
+
+```sql
+CREATE SCHEMA bi_ans;
+```
+
+E nela coloque:
+
+```text
+bi_ans.vw_operadora_360
+bi_ans.vw_beneficiarios_mensal
+bi_ans.vw_financeiro_operadora
+bi_ans.vw_regulatorio_operadora
+bi_ans.vw_rede_assistencial
+bi_ans.vw_oportunidade_municipio
+bi_ans.vw_score_operadora
+```
+
+Por quê?
+
+Porque `api_ans` deve ser otimizada para resposta de API, paginação e contratos REST. Já `bi_ans` deve ser otimizada para:
+
+```text
+Power BI
+Import mode
+Incremental refresh
+Filtros por competência
+Filtros por UF/município
+Relacionamentos estrela
+Medidas analíticas
+```
+
+---
+
+# 7. O que ainda falta no seu pipeline, em ordem prática
+
+## Prioridade 1 — fechar o fluxo mínimo fim a fim
+
+Você precisa conseguir rodar:
+
+```text
+arquivo ANS real
+↓
+landing
+↓
+layout aprovado
+↓
+bruto_ans
+↓
+stg_ans
+↓
+int_ans
+↓
+nucleo_ans
+↓
+bi_ans
+↓
+Power BI
+```
+
+Hoje, pelo repo, você tem estrutura, dbt, ingestão e comandos de build/teste. O Makefile já prevê `make up`, bootstrap de layouts, seed demo, `dbt build`, smoke test, load test e testes de DAGs. ([GitHub][8]) Mas para ficar pronto para BI, você precisa provar esse fluxo com **dados reais**, não apenas demo.
+
+## Prioridade 2 — criar Gold dimensional
+
+Esta é a maior lacuna se o objetivo é BI.
+
+A Silver responde: “o dado está limpo?”
+A Gold responde: “o dado está pronto para análise?”
+
+Você precisa modelar:
+
+```text
+dimensões
+fatos
+grãos
+chaves
+relacionamentos
+métricas
+histórico
+SCD
+incremental
+```
+
+Sem isso, o BI vai consumir tabelas técnicas demais.
+
+## Prioridade 3 — criar camada `bi_ans`
+
+Para mim, esta é a etapa que deveria entrar agora.
+
+```text
+nucleo_ans = modelo analítico interno
+api_ans    = produto via API
+bi_ans     = produto para BI
+```
+
+Essa separação deixa o projeto mais profissional.
+
+## Prioridade 4 — qualidade e contratos
+
+O PRD define contratos por camada: Bronze garante chegada e parse; Prata garante tipagem/domínio; Ouro garante semântica de negócio, score, ranking, fatos com chave única e performance. ([GitHub][2])
+
+Você precisa transformar isso em testes dbt e validações automáticas.
+
+Exemplos:
+
+```sql
+-- fato não pode duplicar
+registro_ans + competencia deve ser único
+
+-- beneficiários não pode ser negativo
+qt_beneficiarios >= 0
+
+-- competência deve ser YYYYMM
+competencia between 200001 and 209912
+
+-- registro_ans deve ter 6 dígitos
+length(registro_ans) = 6
+
+-- score deve estar entre 0 e 100
+score between 0 and 100
+```
+
+Seu repo já tem vários testes dbt, como score, beneficiário não negativo, registro ANS com seis dígitos, sinistralidade e share por competência. ([GitHub][9]) Mas você precisa expandir isso para todos os modelos finais de BI.
+
+---
+
+# 8. Visão final: o que cada camada entrega
+
+| Camada       | Schema          | Quem consome               | Finalidade                           |
+| ------------ | --------------- | -------------------------- | ------------------------------------ |
+| Landing      | arquivo/storage | Engenharia                 | Guardar arquivo original             |
+| Bronze       | `bruto_ans`     | Engenharia/auditoria       | Dado bruto rastreável                |
+| Silver       | `stg_ans`       | Engenharia/BI técnico      | Dado limpo e tipado                  |
+| Intermediate | `int_ans`       | dbt interno                | Enriquecimento e joins               |
+| Gold         | `nucleo_ans`    | Engenharia analítica       | Fatos, dimensões e regras de negócio |
+| Serving API  | `api_ans`       | FastAPI/clientes externos  | Endpoint REST performático           |
+| Serving BI   | `bi_ans`        | Power BI/Superset/Metabase | Views/tabelas finais para análise    |
+
+---
+
+# 9. Minha recomendação direta para você agora
+
+Como você disse que já tem **bruta** e **prata**, eu não focaria em criar mais coisa de API agora. Eu faria esta ordem:
+
+```text
+1. Validar se bruto_ans está realmente auditável
+2. Fortalecer stg_ans com tipagem, domínio e quarentena
+3. Criar dim_operadora, dim_competencia e dim_localidade
+4. Criar as primeiras fatos:
+   - fato_beneficiario_operadora_mes
+   - fato_beneficiario_municipio_mes
+   - fato_financeiro_operadora_trimestre
+   - fato_regulatorio_operadora_trimestre
+5. Criar mart_operadora_360
+6. Criar schema bi_ans com views finais
+7. Conectar Power BI nessas views
+8. Automatizar refresh pelo Airflow/dbt
+9. Criar testes dbt obrigatórios
+10. Documentar catálogo de campos e grão de cada tabela
+```
+
+## A resposta curta e prática
+
+O que ainda falta desenvolver é a parte que transforma seu projeto de “pipeline com dado bruto/prata” em **produto analítico consumível**:
+
+```text
+Gold dimensional + marts de BI + camada bi_ans + testes de qualidade + refresh automatizado + catálogo de dados.
+```
+
+Sem isso, o BI até consegue consumir a Prata, mas vai consumir uma base técnica, instável e difícil de modelar. Com isso, o BI passa a consumir um produto de dados profissional.
+
+[1]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar.git "GitHub - projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"
+[2]: https://raw.githubusercontent.com/projetosdatabricksfree-png/HealthIntel_Suplementar/main/docs/healthintel_suplementar_prd_final.md "raw.githubusercontent.com"
+[3]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/tree/main/ingestao "HealthIntel_Suplementar/ingestao at main · projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"
+[4]: https://raw.githubusercontent.com/projetosdatabricksfree-png/HealthIntel_Suplementar/main/healthintel_dbt/dbt_project.yml "raw.githubusercontent.com"
+[5]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/tree/main/healthintel_dbt/models/staging "HealthIntel_Suplementar/healthintel_dbt/models/staging at main · projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"
+[6]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/tree/main/healthintel_dbt/models/intermediate "HealthIntel_Suplementar/healthintel_dbt/models/intermediate at main · projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"
+[7]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/tree/main/healthintel_dbt/models/api "HealthIntel_Suplementar/healthintel_dbt/models/api at main · projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"
+[8]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/raw/refs/heads/main/Makefile "raw.githubusercontent.com"
+[9]: https://github.com/projetosdatabricksfree-png/HealthIntel_Suplementar/tree/main/healthintel_dbt/tests "HealthIntel_Suplementar/healthintel_dbt/tests at main · projetosdatabricksfree-png/HealthIntel_Suplementar · GitHub"

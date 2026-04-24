@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: mart_operadora_360
+    description: Mart mensal 360 da operadora.
+    columns:
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: competencia
+        data_tests: [not_null]
+  - name: mart_mercado_municipio
+    description: Mart mensal de mercado por municipio.
+    columns:
+      - name: cd_municipio
+        data_tests: [not_null]
+      - name: competencia
+        data_tests: [not_null]
+  - name: mart_regulatorio_operadora
+    description: Mart trimestral regulatorio por operadora.
+    columns:
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: trimestre
+        data_tests: [not_null]
+  - name: mart_rede_assistencial
+    description: Mart mensal de rede assistencial por operadora e municipio.
+    columns:
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: cd_municipio
+        data_tests: [not_null]
+      - name: competencia
+        data_tests: [not_null]
+  - name: mart_score_operadora
+    description: Mart mensal de score e componentes por operadora.
+    columns:
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: competencia
+        data_tests: [not_null]
+  - name: mart_tiss_procedimento
+    description: Mart trimestral TISS por operadora e grupo de procedimento.
+    columns:
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: cd_procedimento_tuss
+        data_tests: [not_null]
+      - name: trimestre
+        data_tests: [not_null]

@@ -2,7 +2,7 @@ SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-sib smoke-cadop smoke-consumo consumo-refresh load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
 
 up:
 	$(COMPOSE) up -d --build
@@ -63,6 +63,12 @@ demo-data-tiss:
 	python scripts/bootstrap_layout_registry_tiss.py
 	python scripts/seed_demo_tiss.py
 
+demo-data-sib:
+	python scripts/seed_demo_sib.py
+
+demo-data-cadop:
+	python scripts/seed_demo_cadop.py
+
 bootstrap-regulatorio-layouts:
 	python scripts/bootstrap_layout_registry_regulatorio.py
 
@@ -74,6 +80,12 @@ bootstrap-cnes-layouts:
 
 bootstrap-tiss-layouts:
 	python scripts/bootstrap_layout_registry_tiss.py
+
+bootstrap-sib-layouts:
+	python scripts/bootstrap_layout_registry_sib.py
+
+bootstrap-cadop-layouts:
+	python scripts/bootstrap_layout_registry_cadop.py
 
 billing-close:
 	python scripts/fechar_ciclo_billing.py --referencia $(REF)
@@ -98,6 +110,22 @@ smoke-tiss:
 	python scripts/seed_demo_rede.py
 	python scripts/seed_demo_tiss.py
 	python scripts/smoke_tiss.py
+
+smoke-prata:
+	python scripts/smoke_prata.py
+
+smoke-sib:
+	python scripts/smoke_sib.py
+
+smoke-cadop:
+	python scripts/smoke_cadop.py
+
+consumo-refresh:
+	cd healthintel_dbt && $(DBT_ENV) dbt run --select tag:mart tag:consumo
+	cd healthintel_dbt && $(DBT_ENV) dbt test --select tag:consumo
+
+smoke-consumo:
+	python scripts/smoke_consumo.py
 
 load-test:
 	bash scripts/run_load_test.sh

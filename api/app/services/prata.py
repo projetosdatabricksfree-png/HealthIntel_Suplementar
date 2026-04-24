@@ -83,6 +83,21 @@ PRATA_DATASETS = {
         "competencia": "trimestre",
         "fonte": "diops",
     },
+    "cnes_municipio": {
+        "tabela": "api_ans.api_prata_cnes_municipio",
+        "competencia": "competencia",
+        "fonte": "cnes_estabelecimento",
+    },
+    "cnes_rede_gap": {
+        "tabela": "api_ans.api_prata_cnes_rede_gap",
+        "competencia": "competencia",
+        "fonte": "cnes_estabelecimento",
+    },
+    "tiss_procedimento": {
+        "tabela": "api_ans.api_prata_tiss_procedimento",
+        "competencia": "trimestre",
+        "fonte": "tiss_procedimento",
+    },
 }
 
 PRATA_FILTROS_PERMITIDOS = {
@@ -100,6 +115,9 @@ PRATA_FILTROS_PERMITIDOS = {
     "operadora_enriquecida": {"registro_ans"},
     "municipio_metrica": {"cd_municipio"},
     "financeiro_periodo": {"registro_ans"},
+    "cnes_municipio": {"cd_municipio"},
+    "cnes_rede_gap": {"cd_municipio", "registro_ans"},
+    "tiss_procedimento": {"registro_ans", "grupo_procedimento"},
 }
 
 
@@ -225,6 +243,12 @@ async def buscar_prata(
             competencia=competencia,
             total_aprovado=total,
         )
+    aviso_qualidade = (
+        f"Qualidade abaixo do limiar: {qualidade.taxa_aprovacao:.1%} aprovado "
+        f"({qualidade.registros_quarentena} registros em quarentena)"
+        if qualidade.taxa_aprovacao < 0.95
+        else None
+    )
 
     payload = {
         "dados": rows,
@@ -233,6 +257,7 @@ async def buscar_prata(
             "competencia": competencia,
             "versao_dataset": rows[0].get("versao_dataset") if rows else f"{dataset}_v1",
             "qualidade": qualidade.model_dump(),
+            "aviso_qualidade": aviso_qualidade,
             "total": total,
             "pagina": pagina,
             "por_pagina": limite,

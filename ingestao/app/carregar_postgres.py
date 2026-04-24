@@ -378,10 +378,10 @@ async def carregar_dataset_bruto(
             text(
                 """
                 select 1
-                from plataforma.versao_dataset
+                from plataforma.lote_ingestao
                 where dataset = :dataset
                   and hash_arquivo = :hash_arquivo
-                  and coalesce(competencia, '') = coalesce(:competencia, '')
+                  and status in ('sucesso', 'sucesso_com_alertas')
                 limit 1
                 """
             ),
@@ -405,6 +405,23 @@ async def carregar_dataset_bruto(
         lote_id=lote_id,
     )
     if duplicado:
+        await registrar_lote_ingestao(
+            lote_id=lote.lote_id,
+            dataset_codigo=dataset_codigo,
+            competencia=competencia,
+            arquivo_origem=arquivo_origem,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=hash_estrutura,
+            versao_layout=layout_versao_id,
+            status="ignorado_duplicata",
+            total_linhas_raw=len(registros),
+            total_aprovadas=0,
+            total_quarentena=0,
+            origem_execucao="carregar_postgres",
+            erro_mensagem=(
+                "Lote duplicado rejeitado por hash_arquivo com carga anterior bem-sucedida."
+            ),
+        )
         await registrar_job_carga(
             dataset_codigo=dataset_codigo,
             hash_arquivo=hash_arquivo,
@@ -433,6 +450,20 @@ async def carregar_dataset_bruto(
 
     if not registros_preparados:
         total_erro = len(registros_quarentena or [])
+        await registrar_lote_ingestao(
+            lote_id=lote.lote_id,
+            dataset_codigo=dataset_codigo,
+            competencia=competencia,
+            arquivo_origem=arquivo_origem,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=hash_estrutura,
+            versao_layout=layout_versao_id,
+            status="sucesso_com_alertas" if total_erro else "sucesso",
+            total_linhas_raw=len(registros),
+            total_aprovadas=0,
+            total_quarentena=total_erro,
+            origem_execucao="carregar_postgres",
+        )
         await registrar_job_carga(
             dataset_codigo=dataset_codigo,
             hash_arquivo=hash_arquivo,
@@ -479,6 +510,21 @@ async def carregar_dataset_bruto(
             registros_brutos=registros_preparados,
             registros=lote.total_registros,
             status=status_parse,
+        )
+        await registrar_lote_ingestao_session(
+            session=session,
+            lote_id=lote.lote_id,
+            dataset_codigo=dataset_codigo,
+            competencia=competencia,
+            arquivo_origem=arquivo_origem,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=hash_estrutura,
+            versao_layout=layout_versao_id,
+            status="sucesso_com_alertas" if len(registros_quarentena or []) else "sucesso",
+            total_linhas_raw=len(registros),
+            total_aprovadas=lote.total_registros,
+            total_quarentena=len(registros_quarentena or []),
+            origem_execucao="carregar_postgres",
         )
         await session.commit()
     total_quarentena = len(registros_quarentena or [])
@@ -959,6 +1005,83 @@ async def carregar_tiss_procedimento_bruto(
         lote_id=lote_id,
         colunas_mapeadas=colunas_mapeadas,
     )
+
+
+async def registrar_lote_ingestao_session(
+    *,
+    session: AsyncSession,
+    lote_id: str,
+    dataset_codigo: str,
+    competencia: str | None,
+    arquivo_origem: str,
+    hash_arquivo: str,
+    hash_estrutura: str | None,
+    versao_layout: str | None,
+    status: str,
+    total_linhas_raw: int,
+    total_aprovadas: int,
+    total_quarentena: int,
+    origem_execucao: str,
+    erro_mensagem: str | None = None,
+) -> None:
+    await session.execute(
+        text(
+            """
+            insert into plataforma.lote_ingestao (
+                id,
+                dataset,
+                competencia,
+                arquivo_origem,
+                hash_arquivo,
+                total_linhas_raw,
+                total_aprovadas,
+                total_quarentena,
+                status,
+                erro_mensagem,
+                concluido_em,
+                versao_layout,
+                checksum_layout,
+                origem_execucao
+            ) values (
+                :id,
+                :dataset,
+                :competencia,
+                :arquivo_origem,
+                :hash_arquivo,
+                :total_linhas_raw,
+                :total_aprovadas,
+                :total_quarentena,
+                :status,
+                :erro_mensagem,
+                now(),
+                :versao_layout,
+                :checksum_layout,
+                :origem_execucao
+            )
+            """
+        ),
+        {
+            "id": lote_id,
+            "dataset": dataset_codigo,
+            "competencia": competencia,
+            "arquivo_origem": arquivo_origem,
+            "hash_arquivo": hash_arquivo,
+            "total_linhas_raw": total_linhas_raw,
+            "total_aprovadas": total_aprovadas,
+            "total_quarentena": total_quarentena,
+            "status": status,
+            "erro_mensagem": erro_mensagem,
+            "versao_layout": versao_layout,
+            "checksum_layout": hash_estrutura,
+            "origem_execucao": origem_execucao,
+        },
+    )
+
+
+async def registrar_lote_ingestao(**kwargs) -> None:
+    async with SessionLocal() as session:
+        await registrar_lote_ingestao_session(session=session, **kwargs)
+        await session.commit()
 
 
 async def registrar_quarentena(

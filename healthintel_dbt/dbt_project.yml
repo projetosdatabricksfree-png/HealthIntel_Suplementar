@@ -34,6 +34,9 @@ models:
         +materialized: view
       prata:
         +materialized: table
+    consumo:
+      +schema: consumo_ans
+      +materialized: table
 
 vars:
   score_pesos:

@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: consumo_operadora_360
+    description: Data product de operadora 360 para clientes.
+  - name: consumo_beneficiarios_operadora_mes
+    description: Data product mensal de beneficiarios por operadora.
+  - name: consumo_beneficiarios_municipio_mes
+    description: Data product mensal de beneficiarios por municipio.
+  - name: consumo_financeiro_operadora_trimestre
+    description: Data product trimestral financeiro por operadora.
+  - name: consumo_regulatorio_operadora_trimestre
+    description: Data product trimestral regulatorio por operadora.
+  - name: consumo_rede_assistencial_municipio
+    description: Data product mensal de rede assistencial por municipio.
+  - name: consumo_oportunidade_municipio
+    description: Data product mensal de oportunidade territorial.
+  - name: consumo_score_operadora_mes
+    description: Data product mensal de score por operadora.
