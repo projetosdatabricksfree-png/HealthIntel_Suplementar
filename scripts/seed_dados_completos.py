@@ -8,6 +8,7 @@ from datetime import date
 
 from ingestao.app.carregar_postgres import (
     carregar_cadop_bruto,
+    carregar_cnes_bruto,
     carregar_diops_bruto,
     carregar_fip_bruto,
     carregar_glosa_bruto,
@@ -22,6 +23,7 @@ from ingestao.app.carregar_postgres import (
     carregar_sib_municipio_bruto,
     carregar_sib_operadora_bruto,
     carregar_taxa_resolutividade_bruto,
+    carregar_tiss_procedimento_bruto,
     carregar_vda_bruto,
 )
 
@@ -195,6 +197,29 @@ MUNICIPIOS = [
     ("4316907", "Santa Maria", "RS"),
     ("4309209", "Caxias do Sul", "RS"),
     ("2910800", "Feira de Santana", "BA"),
+]
+
+TIPOS_UNIDADE = [
+    ("01", "POSTO DE SAUDE"),
+    ("02", "CENTRO DE SAUDE/UNIDADE BASICA"),
+    ("04", "POLICLINICA"),
+    ("05", "HOSPITAL GERAL"),
+    ("07", "HOSPITAL ESPECIALIZADO"),
+    ("20", "PRONTO SOCORRO GERAL"),
+    ("36", "CLINICA/CENTRO DE ESPECIALIDADE"),
+    ("39", "UNIDADE DE APOIO DIAGNOSE E TERAPIA (SADT ISOLADO)"),
+    ("62", "HOSPITAL DIA"),
+    ("73", "FARMACIA"),
+]
+ESFERAS_ADM = ["MUNICIPAL", "ESTADUAL", "FEDERAL", "PRIVADO", "FILANTROPICO"]
+GRUPOS_TISS = [
+    ("01", "CONSULTAS", "01.01"),
+    ("02", "EXAMES", "02.01"),
+    ("03", "TERAPIAS", "03.01"),
+    ("04", "CIRURGIAS", "04.01"),
+    ("05", "INTERNACOES", "05.01"),
+    ("06", "ODONTOLOGIA", "06.01"),
+    ("07", "OUTROS", "07.01"),
 ]
 
 SEGMENTOS = ["medico_hospitalar", "medico_hospitalar", "medico_hospitalar", "odontologico"]
@@ -690,6 +715,85 @@ async def seed_rede_assistencial() -> None:
     print(f"  rede_assistencial: {total} registros")
 
 
+async def seed_cnes() -> None:
+    total = 0
+    municipios_cnes = MUNICIPIOS  # todos os 30 municípios
+    for mes in MESES_RECENTES:
+        registros = []
+        for cd_mun, nm_mun, uf in municipios_cnes:
+            for tipo_cod, tipo_desc in TIPOS_UNIDADE:
+                n_unidades = r_int(1, 15)
+                for i in range(n_unidades):
+                    cnes_id = str(r_int(1000000, 9999999))
+                    vinculo_sus = RNG.choice([True, True, False])
+                    leitos = r_int(0, 500) if tipo_desc in ("HOSPITAL GERAL", "HOSPITAL ESPECIALIZADO", "HOSPITAL DIA") else 0
+                    registros.append({
+                        "competencia": mes,
+                        "cnes": cnes_id,
+                        "cnpj": f"{r_int(10000000,99999999):08d}/{r_int(1,9999):04d}-{r_int(10,99):02d}",
+                        "razao_social": f"Estabelecimento {tipo_desc} {nm_mun} {i + 1}",
+                        "nome_fantasia": f"Unidade {tipo_cod}-{nm_mun[:6]}-{i + 1}",
+                        "sg_uf": uf,
+                        "cd_municipio": cd_mun,
+                        "nm_municipio": nm_mun,
+                        "tipo_unidade": tipo_cod,
+                        "tipo_unidade_desc": tipo_desc,
+                        "esfera_administrativa": RNG.choice(ESFERAS_ADM),
+                        "vinculo_sus": vinculo_sus,
+                        "leitos_existentes": leitos,
+                        "leitos_sus": int(leitos * r_float(0.4, 0.9)) if vinculo_sus else 0,
+                        "latitude": round(r_float(-33.0, 5.0), 6),
+                        "longitude": round(r_float(-73.0, -34.0), 6),
+                        "situacao": "ATIVO",
+                        "fonte_publicacao": "ANS/cnes",
+                    })
+        meta = _layout("cnes")
+        meta["hash_arquivo"] = f"hash_cnes_{mes}_{r_int(100000, 999999)}"
+        await carregar_cnes_bruto(
+            registros,
+            arquivo_origem=f"cnes_{mes}.csv",
+            **meta,
+        )
+        total += len(registros)
+        print(f"    cnes {mes}: {len(registros)} estabelecimentos")
+    print(f"  cnes: {total} registros")
+
+
+async def seed_tiss() -> None:
+    total = 0
+    ops_med = [op for op in OPERADORAS if "odonto" not in op[3] and "administradora" not in op[3]]
+    for tri in TRIMESTRES:
+        registros = []
+        for reg_ans, _, _, modal, _, _, uf in ops_med:
+            for grupo_cod, grupo_desc, subgrupo in GRUPOS_TISS:
+                qt = r_int(10, 50_000)
+                valor = round(qt * r_float(50, 2_000, 2), 2)
+                registros.append({
+                    "trimestre": tri,
+                    "registro_ans": reg_ans,
+                    "sg_uf": uf,
+                    "grupo_procedimento": grupo_cod,
+                    "grupo_desc": grupo_desc,
+                    "subgrupo_procedimento": subgrupo,
+                    "qt_procedimentos": qt,
+                    "qt_beneficiarios_distintos": r_int(1, qt),
+                    "valor_total": valor,
+                    "modalidade": modal,
+                    "tipo_contratacao": RNG.choice(TIPOS_CONTRATACAO),
+                    "fonte_publicacao": "ANS/tiss",
+                })
+        meta = _layout("tiss")
+        meta["hash_arquivo"] = f"hash_tiss_{tri}_{r_int(100000, 999999)}"
+        await carregar_tiss_procedimento_bruto(
+            registros,
+            arquivo_origem=f"tiss_{tri.replace('T', 't')}.csv",
+            **meta,
+        )
+        total += len(registros)
+        print(f"    tiss {tri}: {len(registros)} registros")
+    print(f"  tiss: {total} registros")
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 async def main() -> None:
@@ -710,6 +814,8 @@ async def main() -> None:
     await seed_prudencial()
     await seed_taxa_resolutividade()
     await seed_rede_assistencial()
+    await seed_cnes()
+    await seed_tiss()
     print("Seed completo finalizado.")
 
 

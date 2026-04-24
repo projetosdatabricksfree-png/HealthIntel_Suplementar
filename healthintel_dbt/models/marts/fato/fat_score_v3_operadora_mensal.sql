@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('ref_competencia') }}
+
 {{
     config(
         materialized='incremental',

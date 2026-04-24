@@ -10,6 +10,14 @@ with DAG(
     schedule=None,
     catchup=False,
     tags=["healthintel", "metadata"],
+    params={
+        "dataset": "generic",
+        "competencia": "202603",
+        "versao": "1.0.0",
+        "hash_arquivo": "manual",
+        "registros": 0,
+        "status": "registrado",
+    },
 ) as dag:
     inicio = EmptyOperator(task_id="inicio")
 
@@ -18,32 +26,25 @@ with DAG(
         postgres_conn_id="postgres_default",
         sql="""
         insert into plataforma.versao_dataset (
+            id,
             dataset,
+            versao,
             competencia,
-            versao_metodologia,
-            data_inicio_vigencia,
-            data_fim_vigencia,
-            ativo,
-            _criado_em
+            hash_arquivo,
+            carregado_em,
+            registros,
+            status
         ) values (
+            gen_random_uuid(),
             '{{ params.dataset }}',
+            '{{ params.versao }}',
             '{{ params.competencia }}',
-            '{{ params.versao_metodologia }}',
-            current_date,
-            null,
-            true,
-            now()
-        )
-        on conflict (dataset, competencia) do update
-        set versao_metodologia = excluded.versao_metodologia,
-            data_fim_vigencia = null,
-            ativo = true;
+            '{{ params.hash_arquivo }}',
+            now(),
+            {{ params.registros }},
+            '{{ params.status }}'
+        );
         """,
-        params={
-            "dataset": "generic",
-            "competencia": "{{ ti.xcom_pull(key='competencia') }}",
-            "versao_metodologia": "1.0.0",
-        },
     )
 
     fim = EmptyOperator(task_id="fim")

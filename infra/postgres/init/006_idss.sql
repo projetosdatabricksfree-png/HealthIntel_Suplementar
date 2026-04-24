@@ -26,3 +26,5 @@ create index if not exists ix_idss_registro
 
 alter table if exists plataforma.versao_dataset
     add column if not exists hash_sha256 text;
+
+-- sem unique index em (dataset, competencia): tabela é append-only (log de versões)
