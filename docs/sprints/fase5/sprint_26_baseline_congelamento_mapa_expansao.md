@@ -29,7 +29,7 @@
 - [ ] Listar os fatos/marts existentes (`fat_*`, `mart_*`) que serão usados como fonte para novos produtos premium.
 - [ ] Registrar regra: nenhum modelo existente pode ser reescrito, renomeado ou alterado em sua semântica na Fase 5.
 - [ ] Registrar regra: toda melhoria deve entrar como modelo novo, com nome distinto.
-- [ ] Anexar referência cruzada para a tag git `v3.0.0` como ponto de congelamento.
+- [x] Anexar referência cruzada para a tag git `v3.0.0` como ponto de congelamento.
 
 ### HIS-06.2 — Criar matriz de lacunas comerciais
 
@@ -66,7 +66,7 @@
 
 ## Validação esperada (hard gates)
 
-- [ ] Baseline aprovado lista 100% dos modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` existentes na tag `v3.0.0`.
+- [x] Baseline aprovado lista 100% dos modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` existentes na tag `v3.0.0`.
 - [ ] Matriz de lacunas vincula cada lacuna a uma sprint da Fase 5.
 - [ ] Padrão de nomes não colide com nomes já existentes (verificação documental).
 - [ ] Nenhum arquivo SQL, YAML, Python ou de configuração fora de `docs/fase5/` é alterado nesta sprint.
