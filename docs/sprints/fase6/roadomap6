@@ -1,0 +1,370 @@
+Baseado no plano da Fase 5 anexado, este prompt pede para o Claude Code ir além da governança e desenhar a **Fase 6 — Entrega ao Cliente / Operação Comercial** sem alterar o que já passou no hardgate. 
+
+```text id="r5ll1x"
+Você está no repositório HealthIntel_Suplementar.
+
+Objetivo:
+Faça uma análise geral do sistema atual e crie a Fase 6 do projeto, focada em transformar o produto em uma entrega real para cliente: ambiente de execução, operação, API em produção, consumo sem erro, observabilidade, segurança, qualidade, MDM, carga recorrente, deploy, documentação comercial e onboarding.
+
+Contexto obrigatório:
+- O projeto já passou por hardgate nas fases anteriores.
+- Não alterar nada que já foi aprovado.
+- Não renomear tabelas existentes.
+- Não modificar lógica de modelos dbt existentes.
+- Não modificar endpoints atuais.
+- Não reescrever a arquitetura.
+- A Fase 5 já está planejada como camada aditiva de governança, qualidade, validação documental, MDM, contrato, subfatura e consumo premium.
+- Agora a Fase 6 deve responder: o que falta desenvolver depois da governança para entregar o produto ao cliente consumindo a API com confiança?
+
+Primeira etapa obrigatória:
+Analise o repositório inteiro antes de criar a backlog:
+- README.md
+- docs/
+- docs/fase5/
+- healthintel_dbt/
+- healthintel_dbt/models/
+- healthintel_dbt/tests/
+- ingestao/
+- api/
+- infra/
+- scripts/
+- testes/
+- docker-compose
+- Makefile
+- arquivos de configuração
+- qualquer documentação de arquitetura, PRD, sprints ou hardgate existente
+
+Não implemente código ainda.
+Crie apenas documentação e backlog técnica.
+
+Crie a estrutura:
+
+docs/fase6/  j ja existe
+  README.md
+  diagnostico_sistema_atual.md
+  matriz_gaps_entrega_cliente.md
+  arquitetura_operacional_producao.md
+  sizing_maquinas_ambientes.md
+  backlog_entrega_cliente.md
+  hardgate_fase6_entrega_cliente.md
+  sprint_14_diagnostico_operacional.md
+  sprint_15_infra_runtime_deploy.md
+  sprint_16_api_producao_consumo_cliente.md
+  sprint_17_orquestracao_cargas_freshness.md
+  sprint_18_observabilidade_sla_slo.md
+  sprint_19_seguranca_lgpd_tenant_billing.md
+  sprint_20_onboarding_cliente_documentacao.md
+  sprint_21_go_live_hardgate_comercial.md
+
+Regras de escrita:
+- Toda task deve estar com [ ].
+- Não usar [x].
+- Cada sprint deve ter histórias no padrão HIS-14.x, HIS-15.x, etc.
+- Cada história deve ter objetivo e tasks.
+- Cada sprint deve ter critério de aceite.
+- Cada sprint deve ter resultado esperado.
+- Separar claramente o que é obrigatório para MVP comercial e o que é evolução futura.
+- Não criar tarefas genéricas demais.
+- Toda tarefa precisa ser executável por um desenvolvedor ou agente.
+- Não prometer BI como produto principal.
+- Reforçar que o produto é Data-as-a-Service/API de dados curados de saúde suplementar.
+
+A Fase 6 deve cobrir obrigatoriamente:
+
+1. Diagnóstico geral do sistema atual:
+   - O que já existe.
+   - O que está pronto.
+   - O que ainda é risco.
+   - O que falta para cliente consumir sem erro.
+   - O que falta para operação recorrente.
+   - O que falta para suporte comercial.
+   - O que falta para segurança.
+   - O que falta para escala.
+   - O que falta para monitoramento.
+   - O que falta para billing/rate limit.
+   - O que falta para documentação de API.
+   - O que falta para onboarding.
+
+2. Matriz de gaps para entrega ao cliente:
+   Criar tabela com:
+   - Gap
+   - Área
+   - Impacto
+   - Severidade
+   - Dependência
+   - Sprint sugerida
+   - Critério de aceite
+   - Risco se não fizer
+
+3. Arquitetura operacional de produção:
+   Desenhar e documentar:
+   - Onde a API roda.
+   - Onde o banco roda.
+   - Onde os arquivos brutos ficam.
+   - Onde dbt roda.
+   - Onde os jobs de ingestão rodam.
+   - Onde os jobs de validação rodam.
+   - Onde ficam logs.
+   - Onde ficam métricas.
+   - Onde ficam backups.
+   - Como é separado ambiente local, dev, staging e produção.
+   - Como proteger secrets.
+   - Como publicar nova versão sem quebrar cliente.
+
+4. Sizing de máquinas e ambientes:
+   Avaliar e propor pelo menos 4 cenários:
+   - Local/dev barato.
+   - MVP comercial enxuto.
+   - Produção inicial com poucos clientes.
+   - Produção escalável com mais clientes.
+
+   Para cada cenário, documentar:
+   - CPU/vCPU.
+   - RAM.
+   - Disco.
+   - Tipo de disco.
+   - Rede/banda.
+   - Banco recomendado.
+   - Se API e banco podem ficar na mesma máquina.
+   - Se dbt/ingestão devem rodar separados.
+   - Risco do cenário.
+   - Custo operacional aproximado em termos qualitativos: baixo, médio, alto.
+   - Quando migrar para arquitetura maior.
+
+   Importante:
+   Não inventar números sem justificativa. Usar estimativa técnica baseada no tipo de workload do projeto: ingestão ANS, dbt, PostgreSQL, API, cache, validação, MDM e consumo por clientes.
+
+5. Infra/runtime/deploy:
+   Criar backlog para:
+   - Docker de produção.
+   - Variáveis de ambiente.
+   - Secrets.
+   - Nginx ou proxy reverso.
+   - HTTPS.
+   - Certificado.
+   - Healthcheck.
+   - Deploy rollback.
+   - Migração controlada.
+   - Backup.
+   - Restore testado.
+   - Separação dev/staging/prod.
+   - Makefile ou scripts de operação.
+   - Rotina de atualização da base.
+
+6. API pronta para cliente:
+   Criar backlog para:
+   - Autenticação por API key.
+   - Gestão de cliente/tenant.
+   - Rate limit.
+   - Quota por plano.
+   - Paginação obrigatória.
+   - Filtros padronizados.
+   - Ordenação controlada.
+   - Erros padronizados.
+   - Response contract.
+   - Versionamento de endpoint.
+   - OpenAPI/Swagger.
+   - Exemplos cURL.
+   - Exemplos Python.
+   - Exemplos Postman.
+   - Endpoint de status.
+   - Endpoint de catálogo.
+   - Endpoint de qualidade/freshness.
+   - Proteção contra endpoint pesado sem filtro.
+
+7. Orquestração de carga e freshness:
+   Criar backlog para:
+   - Carga recorrente dos datasets ANS.
+   - Controle de lote.
+   - Controle de versão de arquivo.
+   - Controle de hash.
+   - Idempotência.
+   - Reprocessamento seguro.
+   - dbt build controlado.
+   - Validação antes da publicação.
+   - Publicação somente após hardgate.
+   - Freshness por dataset.
+   - Bloqueio de dataset stale.
+   - Histórico de execuções.
+   - Tabela de auditoria de cargas.
+   - Alertas de falha.
+
+8. Qualidade e hardgate de publicação:
+   Criar backlog para:
+   - Testes dbt obrigatórios.
+   - Testes de documento.
+   - Testes de MDM.
+   - Testes de contrato/subfatura.
+   - Testes de API.
+   - Testes de volume.
+   - Testes de performance.
+   - Smoke test de endpoints.
+   - Smoke test premium.
+   - Validação de schema.
+   - Validação de quantidade esperada.
+   - Validação de duplicidade.
+   - Validação de relacionamento.
+   - Validação de freshness.
+   - Bloqueio de publicação quando houver erro crítico.
+
+9. Observabilidade, SLA e SLO:
+   Criar backlog para:
+   - Logs estruturados.
+   - Métricas da API.
+   - Métricas de banco.
+   - Métricas dos jobs.
+   - Tempo de resposta por endpoint.
+   - Erros 4xx e 5xx.
+   - Latência p95/p99.
+   - Consumo por cliente.
+   - Requests por plano.
+   - Alertas.
+   - Dashboard técnico.
+   - SLA de disponibilidade.
+   - SLO de freshness.
+   - SLO de tempo de resposta.
+   - SLO de carga.
+   - Relatório de incidentes.
+
+10. Segurança, LGPD e tenant:
+   Criar backlog para:
+   - API keys.
+   - Hash de documentos.
+   - Mascaramento de CPF/CNPJ quando necessário.
+   - Separação por tenant.
+   - Logs sem dados sensíveis.
+   - Auditoria de acesso.
+   - Rotação de secrets.
+   - Política de retenção.
+   - Política de exclusão.
+   - Termos de uso.
+   - Controle de acesso por plano.
+   - Bloqueio por inadimplência.
+   - Registro de aceite do cliente.
+   - Dados públicos x dados privados do cliente.
+   - CPF somente em fluxo privado com base legal.
+
+11. Billing, planos e monetização:
+   Criar backlog para:
+   - Plano Starter.
+   - Plano Professional.
+   - Plano Enterprise.
+   - Limite de requests.
+   - Limite por endpoint.
+   - Métrica de uso.
+   - Tabela de consumo por cliente.
+   - Bloqueio por limite.
+   - Alerta de limite próximo.
+   - Endpoint para consultar consumo.
+   - Estratégia para plano ilimitado sob contrato.
+   - Registro de billing mensal.
+
+12. Onboarding do cliente:
+   Criar backlog para:
+   - Criar cliente.
+   - Gerar API key.
+   - Definir plano.
+   - Definir pacotes liberados.
+   - Enviar documentação.
+   - Enviar exemplos de consumo.
+   - Criar ambiente sandbox.
+   - Criar checklist de homologação.
+   - Criar termo de aceite técnico.
+   - Criar validação de primeiro consumo.
+   - Criar suporte inicial.
+   - Criar FAQ técnica.
+
+13. Documentação comercial e técnica:
+   Criar backlog para:
+   - Catálogo de datasets.
+   - Dicionário de campos por endpoint.
+   - Contrato de API.
+   - Exemplos de request/response.
+   - Documentação de status/freshness.
+   - Documentação de qualidade.
+   - Documentação de MDM.
+   - Documentação de contrato/subfatura.
+   - Documentação de limites.
+   - Documentação de erros.
+   - Guia de integração.
+   - Guia de boas práticas para cliente.
+
+14. Hardgate Fase 6:
+   Criar checklist final para liberar o produto comercialmente:
+   - API responde com autenticação.
+   - API tem rate limit.
+   - API tem documentação OpenAPI.
+   - API tem paginação.
+   - API tem erros padronizados.
+   - Banco tem backup.
+   - Restore foi testado.
+   - Jobs são idempotentes.
+   - Freshness está monitorado.
+   - Logs estão ativos.
+   - Métricas estão ativas.
+   - Cliente tem API key.
+   - Cliente tem plano.
+   - Cliente tem documentação.
+   - Dataset premium só publica se passar nos testes.
+   - MDM crítico passou.
+   - CNPJ crítico passou validação técnica.
+   - Contrato/subfatura não têm exceção bloqueante.
+   - Smoke test passou.
+   - Teste de carga mínimo passou.
+   - Nenhum endpoint atual foi quebrado.
+
+Formato das sprints:
+
+# Sprint 14 — Diagnóstico Operacional e Mapa de Entrega ao Cliente
+Status: Pendente
+Objetivo:
+Fim esperado:
+Histórias:
+- HIS-14.1
+- HIS-14.2
+- HIS-14.3
+Critério de aceite:
+Resultado esperado:
+
+# Sprint 15 — Infraestrutura, Runtime e Deploy
+Status: Pendente
+...
+
+# Sprint 16 — API de Produção e Consumo do Cliente
+Status: Pendente
+...
+
+# Sprint 17 — Orquestração, Freshness e Publicação Controlada
+Status: Pendente
+...
+
+# Sprint 18 — Observabilidade, SLA e SLO
+Status: Pendente
+...
+
+# Sprint 19 — Segurança, LGPD, Tenant e Billing
+Status: Pendente
+...
+
+# Sprint 20 — Onboarding, Documentação e Sandbox do Cliente
+Status: Pendente
+...
+
+# Sprint 21 — Go-live, Hardgate Comercial e Operação Assistida
+Status: Pendente
+...
+
+Importante:
+A Fase 6 deve ser criada como backlog real de entrega ao cliente, não como texto conceitual.
+Pense como engenheiro de dados, arquiteto de plataforma, dono de produto e operador de SaaS.
+O resultado precisa mostrar claramente o caminho do estado atual até um cliente consumir a API em produção sem erro.
+
+Saída esperada:
+- Criar os arquivos Markdown em docs/fase6.
+- Criar também docs/produto/entrega_cliente.md se ainda não existir.
+- Ao final, responder com:
+  - arquivos criados
+  - principais gaps encontrados
+  - próximas prioridades
+  - confirmação de que nenhuma lógica existente foi alterada
+```

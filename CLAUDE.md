@@ -84,13 +84,24 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 | **Smoke test (SIB)** | `make smoke-sib` |
 | **Smoke test (CADOP)** | `make smoke-cadop` |
 | **Smoke test (consumo)** | `make smoke-consumo` |
+| **Smoke test (ingestão real)** | `make smoke-ingestao-real` |
 | **Load test** | `make load-test` (Locust) |
 | **Dev API server** | `make api-dev` (auto-reload on :8000) |
 | **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
 | **Full CI simulation** | `make ci-local` |
 | **Airflow connections** | `make airflow-setup` |
+| **Validate DAG parses** | `make dag-parse DAG=dag_name` |
 | **Test single DAG** | `make dag-test DAG=dag_name` |
 | **Test all DAGs** | `make dag-test-all` |
+| **Run real SIB ingestion** | `make dag-run-real-sib UFS=AC COMPETENCIA=YYYYMM` |
+| **Run real CADOP ingestion** | `make dag-run-real-cadop COMPETENCIA=YYYYMM` |
+| **ELT discover** | `make elt-discover` (catalog ANS datasets) |
+| **ELT extract** | `make elt-extract` (download raw ANS files) |
+| **ELT load** | `make elt-load` (load to bruto_ans) |
+| **ELT full pipeline** | `make elt-all` |
+| **ELT status** | `make elt-status` |
+| **ELT transform all** | `make elt-transform-all` |
+| **ELT validate all** | `make elt-validate-all` |
 
 ---
 
@@ -117,7 +128,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 
 ### Ingestao (`ingestao/`)
 
-- `dags/`: Individual `dag_ingest_{dataset}.py` per dataset (SIB, CADOP, IGR, NIP, RN623, TISS, CNES, DIOPS, FIP, Glosa, VDA, Rede, Regime Especial, Portabilidade, Prudencial, Taxa Resolutividade). Also: `dag_anual_idss.py`, `dag_criar_particao_mensal.py`, `dag_dbt_freshness.py`, `dag_dbt_consumo_refresh.py`.
+- `dags/`: Individual `dag_ingest_{dataset}.py` per dataset (SIB, CADOP, IGR, NIP, RN623, TISS, CNES, DIOPS, FIP, Glosa, VDA, Rede Assistencial, Regime Especial, Portabilidade, Prudencial, Taxa Resolutividade). Also: `dag_mestre_mensal.py` (main monthly orchestrator), `dag_anual_idss.py`, `dag_criar_particao_mensal.py`, `dag_dbt_freshness.py`, `dag_dbt_consumo_refresh.py`, `dag_registrar_versao.py`, `dag_elt_ans_catalogo.py`.
 - `app/`: Operators, hooks, utilities (file downloads, layout validation, load jobs).
 - `tests/`: DAG parsing, mock operator tests.
 
@@ -126,7 +137,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `models/staging/`: Views. Casting, normalizing, one-to-one source mapping.
 - `models/intermediate/`: Ephemeral (not materialized). Joins, aggregations, preparation.
 - `models/marts/dimensao/`: Dimension tables (dim_operadora_atual, dim_competencia, dim_localidade).
-- `models/marts/fato/`: Fact tables. Incremental merge with `unique_key` or full refresh.
+- `models/marts/fato/`: Fact tables (`fat_*`) and Gold BI marts (`mart_*`). Incremental merge with `unique_key` or full refresh. Gold marts (`mart_operadora_360`, `mart_mercado_municipio`, `mart_score_operadora`, `mart_rede_assistencial`, `mart_regulatorio_operadora`, `mart_tiss_procedimento`) live here, schema `nucleo_ans`.
 - `models/marts/derivado/`: Reserved directory (currently empty; derived models live in `fato/`).
 - `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro.
 - `models/api/bronze/`: Thin views over `bruto_ans` (11 datasets). Redis cache DISABLED — data mutable until lote closes.
@@ -138,6 +149,15 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `_sources.yml`: Source declarations with freshness checks (warn after N days).
 - `_*.yml`: Documentation (staging, intermediate, dimension, fato, api, exposures).
 
+### Frontend Portal (`frontend/healthintel_frontend_portal/healthintel_frontend/frontend/`)
+
+- React 19 + Vite 7 + TypeScript SPA. Commercial landing + developer portal.
+- Auth model: `X-API-Key` header (no email/password). Key stored in `localStorage`.
+- Dev server: `npm run dev` (port 5173). Build: `npm run build`. Preview: `npm run preview` (port 4173).
+- Vite dev proxy expects backend at `http://localhost:8080`. Override with `VITE_API_BASE_URL` in `.env`.
+- Backend CORS must include `http://localhost:5173` when calling API directly.
+- Status pages hit `/saude` and `/prontidao`. Playground exercises any router using the user's key.
+
 ### Shared Utilities (`shared/`)
 
 - Database utilities, logging (structlog), common schemas.
@@ -148,6 +168,8 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `seed_demo_*.py`: Load demo data.
 - `smoke_*.py`: End-to-end validation scripts.
 - `run_load_test.sh`: Locust perf test.
+- `admin/provisionar_cliente_postgres.py`: Provision new client — creates PostgreSQL login role, grants `healthintel_cliente_reader`, configures `consumo_ans` access.
+- `elt_*.py`: ANS catalog discovery, raw file extraction, and load scripts (used by `make elt-*`).
 
 ---
 
@@ -234,7 +256,8 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 **Fase 1 (Sprints 01–12): CONCLUÍDA** — baseline v1.0.0 taggeada.
 **Fase 2 (Sprints 13–14): CONCLUÍDA** — CNES + TISS implementados.
 **Fase 3 (Sprints 15–20): CONCLUÍDA** — baseline v2.0.0 taggeada.
-**Fase 4 (Sprints 21–25): EM ANDAMENTO** — Prata completa, ingestão real, Gold marts BI, consumo_ans, qualidade v3.
+**Fase 4 (Sprints 21–25): CONCLUÍDA** — v3.0.0 taggeada. Prata completa, ingestão real SIB/CADOP, Gold marts BI, consumo_ans, qualidade v3.
+**Fase 5 (Sprints 26–30): ROADMAP** — Piloto comercial e comercialização. Ver `docs/sprints/fase5/roadmap`.
 
 ### Fase 2 (entregue)
 - **Sprint 13**: CNES — bronze, `stg_cnes_estabelecimento`, `fat_cnes_estabelecimento_municipio`, `fat_cnes_rede_gap_municipio`, `api_cnes_municipio`, `api_cnes_rede_gap`. Router/service: `cnes`.
@@ -247,14 +270,14 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 - **Sprint 19**: Score v3 — `fat_score_v3_operadora_mensal`, `api_score_v3_operadora_mensal`, `api_ranking_composto_mensal`, `score_v3.py` service.
 - **Sprint 20**: v2.0.0 tag, 5 tiers com `camadas_permitidas`, billing por camada.
 
-### Fase 4 (em andamento)
+### Fase 4 (entregue — v3.0.0)
 - **Sprint 21**: Prata completa — CNES/TISS na Prata (17 modelos total), cobertura de testes de integração, `make smoke-prata`.
 - **Sprint 22**: Ingestão real — SIB e CADOP com DAGs individuais, `dag_ingest_sib.py` / `dag_ingest_cadop.py`, `make smoke-sib` / `make smoke-cadop`.
 - **Sprint 23**: Gold marts BI — `mart_operadora_360`, `mart_mercado_municipio`, `mart_score_operadora`, `mart_rede_assistencial`, `mart_regulatorio_operadora` em `nucleo_ans`.
 - **Sprint 24**: consumo_ans — schema `consumo_ans`, 8 modelos desnormalizados, role `healthintel_cliente_reader`, `dag_dbt_consumo_refresh.py`, `make consumo-refresh` / `make smoke-consumo`.
 - **Sprint 25**: Qualidade v3 / catálogo — freshness SLO dashboard, catálogo atualizado.
 
-Sprint docs: `docs/sprints/fase{2,3,4,5}/`. HIS-*.* stories por sprint.
+Sprint docs: `docs/sprints/fase{2,3,4,5}/`. HIS-*.* stories por sprint. Runbooks operacionais: `docs/runbooks/` (ingestão real, aprovação de layout, reprocessamento, incidente de pipeline, novo cliente enterprise, versionamento de layout).
 
 ---
 
