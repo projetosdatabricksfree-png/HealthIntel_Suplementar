@@ -3,7 +3,7 @@
 **Status:** Backlog
 **Fase:** Fase 5 — Enriquecimento, Qualidade e MDM sem quebrar o hardgate
 **Tag de saída prevista:** `v3.8.0-gov` (sprint pós-Fase 5 técnica)
-**Ordem na Fase 5:** executada após as Sprints 26–32 (Baseline → Validação → Receita → MDM → Premium → Endpoints) — a governança formaliza, em documento normativo, o que essas sprints já implementaram tecnicamente.
+**Ordem na Fase 5:** executada após as Sprints 26–32 (Baseline → Validação → Serpro CNPJ → MDM → Premium → Endpoints) — a governança formaliza, em documento normativo, o que essas sprints já implementaram tecnicamente. A governança mínima necessária para executar a Fase 5 fica na Sprint 26; esta sprint consolida, amplia e transforma essas regras em norma permanente.
 
 ## Objetivo
 
@@ -56,7 +56,7 @@ Criar o catálogo único e oficial de todas as tabelas da plataforma, com metada
   - [ ] o que é a tabela
   - [ ] de onde vem (fonte oficial)
   - [ ] para que serve
-  - [ ] camada (`bruto_ans` | `stg_ans` | `int_ans` | `nucleo_ans` | `api_ans` | `consumo_ans` | `consumo_premium` | `mdm` | `plataforma`)
+  - [ ] camada (`bruto_ans` | `stg_ans` | `int_ans` | `nucleo_ans` | `api_ans` | `consumo_ans` | `quality_ans` | `enrichment` | `mdm` | `bruto_cliente` | `stg_cliente` | `mdm_privado` | `consumo_premium_ans` | `plataforma`)
   - [ ] granularidade (uma linha por X)
   - [ ] chave natural
   - [ ] chave surrogate
@@ -221,7 +221,8 @@ Padronizar regras e scores de qualidade documental.
 
 - [ ] Criar `docs/governanca/padroes_qualidade_validacao.md`:
   - [ ] regras de validação documental: CPF, CNPJ, CNES, registro ANS, competência, contrato, subfatura, MDM
-  - [ ] validação Receita/Serpro via cache para CPF/CNPJ — contrato de cache, TTL, fallback
+  - [ ] validação Serpro via cache para CNPJ público — contrato de cache, TTL, fallback
+  - [ ] CPF apenas em fluxo privado/tenant, com hash, máscara, auditoria, justificativa e classificação LGPD
   - [ ] definição dos scores documentais:
     - [ ] `quality_score_documental` (preenchimento e consistência de campos)
     - [ ] `quality_score_mdm` (aderência ao golden record)
@@ -324,4 +325,4 @@ Criar o hardgate documental que toda implementação futura deve passar.
 
 ## Resultado Esperado
 
-Ao final da Sprint 26, a plataforma HealthIntel Suplementar passa a contar com um corpo documental normativo completo em `docs/governanca/`, composto por catálogos, dicionários, padrões de tipagem, nomenclatura, índices, chaves, constraints, competência/datas, qualidade, MDM, templates e hardgate. Toda nova tabela, coluna, índice, chave, relacionamento, constraint, função, trigger e data product passa a ser obrigatoriamente regida por estes documentos. A base física aprovada em hardgates anteriores permanece intacta — a governança aplica-se a partir das próximas implementações da Fase 5.
+Ao final da Sprint 33, a plataforma HealthIntel Suplementar passa a contar com um corpo documental normativo completo em `docs/governanca/`, composto por catálogos, dicionários, padrões de tipagem, nomenclatura, índices, chaves, constraints, competência/datas, qualidade, MDM, templates e hardgate. Toda nova tabela, coluna, índice, chave, relacionamento, constraint, função, trigger e data product passa a ser obrigatoriamente regida por estes documentos. A base física aprovada em hardgates anteriores permanece intacta — a governança formaliza e amplia as regras mínimas já exigidas desde a Sprint 26.

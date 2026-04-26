@@ -13,6 +13,7 @@
 - [ ] `dim_operadora_atual` permanece intacta.
 - [ ] Toda nova lógica vive em `healthintel_dbt/models/mdm/`.
 - [ ] Surrogate keys MDM são UUID determinístico baseado em chaves naturais validadas.
+- [ ] O diretório `mdm` deve estar configurado no `healthintel_dbt/dbt_project.yml` com `+schema: mdm`, `+materialized: table` e `+tags: ["mdm"]`.
 
 ## Histórias
 
@@ -44,6 +45,8 @@
 - [ ] Criar `modalidade_canonica`.
 - [ ] Criar `mdm_confidence_score` (regras: +30 se CNPJ válido digito, +30 se CNPJ ativo Receita, +20 se nome bate Receita, +20 se registro_ans bate CADOP).
 - [ ] Criar `mdm_status`.
+- [ ] Criar `healthintel_dbt/models/mdm/mdm_operadora_exception.sql`.
+- [ ] Criar regra de divergência por CNPJ + registro_ans + razão social.
 - [ ] Documentar no `_mdm.yml` com testes `unique` em `operadora_master_id` e `not_null` nas chaves canônicas.
 
 ### HIS-09.3 — Criar MDM de estabelecimento CNES
@@ -61,6 +64,8 @@
 - [ ] Criar `situacao_cnes_canonica`.
 - [ ] Criar `mdm_confidence_score`.
 - [ ] Criar `mdm_status`.
+- [ ] Criar `healthintel_dbt/models/mdm/mdm_estabelecimento_exception.sql`.
+- [ ] Criar regra de divergência por CNPJ + CNES + razão social.
 
 ### HIS-09.4 — Criar MDM de prestador
 
@@ -81,7 +86,7 @@
 - [ ] Pasta `healthintel_dbt/models/mdm/` + `_mdm.yml` + `docs/fase5/mdm_modelagem.md`
 - [ ] 3 modelos `mdm_*_master` (operadora, estabelecimento, prestador)
 - [ ] 3 modelos `xref_*_origem`
-- [ ] 1 modelo `mdm_prestador_exception`
+- [ ] 3 modelos `*_exception` (`mdm_operadora_exception`, `mdm_estabelecimento_exception`, `mdm_prestador_exception`)
 - [ ] Testes genéricos `unique` e `not_null` em todos os master records
 - [ ] Tag dbt `mdm` aplicada
 
@@ -92,8 +97,9 @@
 - [ ] `int_operadora_canonica.sql` e `dim_operadora_atual.sql` byte-idênticos à tag `v3.0.0`.
 - [ ] `mdm_confidence_score` ∈ [0, 100] em 100% dos registros (teste singular).
 - [ ] `mdm_status` ∈ accepted_values aprovados.
+- [ ] Todas as tabelas `*_exception` públicas têm `exception_type`, `exception_severity`, `exception_message` e `is_blocking`.
 - [ ] Cobertura: ≥ 95% das operadoras de `dim_operadora_atual` têm registro em `mdm_operadora_master`.
 
 ## Resultado Esperado
 
-Sprint 29 estabelece a camada MDM pública (operadora, estabelecimento, prestador) reaproveitando o que já existe e enriquecendo com Receita/Serpro. Os `*_master_id` se tornam a chave-âncora dos produtos premium das Sprints 30 e 31, mantendo compatibilidade total com o data warehouse existente.
+Sprint 29 estabelece a camada MDM pública (operadora, estabelecimento, prestador) reaproveitando o que já existe e enriquecendo com validação Serpro para CNPJ. Os `*_master_id` se tornam a chave-âncora dos produtos premium das Sprints 30 e 31, mantendo compatibilidade total com o data warehouse existente.

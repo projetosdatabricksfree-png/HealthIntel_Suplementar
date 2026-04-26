@@ -12,7 +12,8 @@
 - [ ] Nenhuma rota existente em `/v1/*` é alterada.
 - [ ] Toda rota nova vive sob `/v1/premium/*`.
 - [ ] Plano comercial novo `premium` controla acesso via `verificar_camada('premium')` ou `verificar_plano('premium')`.
-- [ ] Endpoints premium consomem APENAS modelos `consumo_premium_*` (Sprint 31).
+- [ ] Endpoints premium consomem APENAS modelos `api_ans.api_premium_*` (Sprint 31).
+- [ ] A FastAPI não consulta `consumo_premium_ans`, `mdm`, `mdm_privado`, `enrichment` ou `quality_ans` diretamente.
 
 ## Histórias
 
@@ -21,6 +22,7 @@
 - [ ] Criar `api/app/routers/premium.py`.
 - [ ] Criar `api/app/services/premium.py`.
 - [ ] Criar `api/app/schemas/premium.py`.
+- [ ] Implementar queries somente contra `api_ans.api_premium_*`, preservando a regra existente de FastAPI ler `api_ans`.
 - [ ] Criar rota `GET /v1/premium/operadoras`.
 - [ ] Criar rota `GET /v1/premium/cnes/estabelecimentos`.
 - [ ] Criar rota `GET /v1/premium/tiss/procedimentos`.
@@ -42,10 +44,10 @@
 - [ ] Criar teste: produto premium CNES não pode conter CNES inválido (`assert_premium_cnes_valido.sql`).
 - [ ] Criar teste: produto premium contrato não pode conter contrato divergente bloqueante (`assert_premium_contrato_sem_excecao_bloqueante.sql`).
 - [ ] Criar teste: produto premium subfatura não pode conter subfatura órfã (`assert_premium_subfatura_com_contrato.sql`).
-- [ ] Criar teste: endpoint premium não pode apontar para tabela não validada (verificação documental + smoke).
+- [ ] Criar teste: endpoint premium não pode apontar para tabela fora de `api_ans.api_premium_*` (verificação documental + smoke).
 - [ ] Criar `make smoke-premium` (script `scripts/smoke_premium.py`).
-- [ ] Criar `make dbt-build-premium` (`dbt build --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium`).
-- [ ] Criar `make dbt-test-premium` (`dbt test --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium`).
+- [ ] Criar `make dbt-build-premium` (`dbt build --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium tag:premium`).
+- [ ] Criar `make dbt-test-premium` (`dbt test --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium tag:premium`).
 - [ ] Adicionar suite de regressão `testes/regressao/test_endpoints_fase5.py`.
 
 ### HIS-12.3 — Criar documentação comercial de qualidade
@@ -56,6 +58,7 @@
 - [ ] Criar `docs/produto/validacao_cnpj_receita.md`.
 - [ ] Criar `docs/produto/tiss_tuss_premium.md`.
 - [ ] Criar exemplos de request/response (curl + Python) para cada rota `/v1/premium/*`.
+- [ ] Documentar separação entre consumo SQL direto (`consumo_premium_ans`) e API premium (`api_ans.api_premium_*`).
 - [ ] Criar descrição de valor para operadoras.
 - [ ] Criar descrição de valor para hospitais.
 - [ ] Criar descrição de valor para consultorias e grandes empresas.
@@ -79,15 +82,16 @@
 ## Validação esperada (hard gates)
 
 - [ ] `ruff check api ingestao scripts shared testes` zero erros.
-- [ ] `dbt build --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium` zero erros.
+- [ ] `dbt build --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium tag:premium` zero erros.
 - [ ] `dbt test` zero falhas em toda a stack.
 - [ ] `make smoke-premium` zero falhas.
 - [ ] `pytest api/tests/integration/test_premium.py -v` zero falhas.
 - [ ] `pytest testes/regressao/test_endpoints_fase5.py -v` zero falhas.
 - [ ] Suite de regressão das Fases 1–4 (`testes/regressao/test_endpoints_fase4.py`) continua zero falhas.
 - [ ] Verificação documental: zero alterações em rotas `/v1/{operadoras,bronze,prata,…}`.
+- [ ] Verificação documental/código: nenhum serviço premium referencia `consumo_premium_ans` diretamente.
 - [ ] Tag `v3.7.0` criada apontando para commit pós-aprovação.
 
 ## Resultado Esperado
 
-Sprint 32 fecha a Fase 5 e a entrega comercial. A plataforma passa a expor um portfólio premium completo (operadoras, CNES, TISS/TUSS, MDM, contrato e subfatura) com qualidade explícita, validação documental e Receita/Serpro como fonte de verdade. Todos os endpoints, modelos e contratos das Fases 1–4 permanecem byte-idênticos: o cliente legado não percebe mudança; o cliente premium ganha um produto de outra ordem de grandeza.
+Sprint 32 fecha a Fase 5 e a entrega comercial. A plataforma passa a expor um portfólio premium completo (operadoras, CNES, TISS/TUSS, MDM, contrato e subfatura) com qualidade explícita, validação documental e Serpro como fonte de verdade para CNPJ. Todos os endpoints, modelos e contratos das Fases 1–4 permanecem byte-idênticos: o cliente legado não percebe mudança; o cliente premium ganha um produto de outra ordem de grandeza.

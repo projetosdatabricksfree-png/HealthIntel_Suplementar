@@ -11,6 +11,8 @@
 
 - [ ] Não alterar `stg_cadop`, `stg_cnes_estabelecimento`, `stg_*` existentes nem a macro `normalizar_registro_ans.sql`.
 - [ ] Toda lógica nova entra em arquivos novos.
+- [ ] Antes de criar `healthintel_dbt/models/quality/`, configurar `quality` no `healthintel_dbt/dbt_project.yml` com `+schema: quality_ans`, `+materialized: table` e `+tags: ["quality"]`, conforme governança mínima da Sprint 26.
+- [ ] Qualquer validação de CPF criada nesta sprint é técnica e reutilizável, mas CPF não pode entrar em produto público derivado da ANS.
 
 ## Histórias
 
@@ -68,6 +70,7 @@
 - [ ] 4 modelos `dq_*` em `healthintel_dbt/models/quality/`
 - [ ] `_quality.yml` com testes genéricos
 - [ ] 6 testes singulares `assert_*` na pasta `tests/`
+- [ ] `healthintel_dbt/dbt_project.yml` atualizado para o diretório `quality`
 
 ## Validação esperada (hard gates)
 

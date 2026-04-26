@@ -1,21 +1,22 @@
-# Sprint 28 — Validação Oficial Receita/Serpro com Cache e Auditoria
+# Sprint 28 — Validação Oficial CNPJ Serpro com Cache e Auditoria
 
 **Status:** Backlog
 **Fase:** Fase 5 — Enriquecimento, Qualidade e MDM sem quebrar o hardgate
-**Tag de saída prevista:** `v3.3.0-receita`
-**Objetivo:** consultar fonte oficial (Receita/Serpro) sem quebrar dbt, sem scraping e sem chamada externa dentro do build.
-**Fim esperado:** CNPJ/CPF validados contra fonte externa via processo Python controlado, com cache persistente e auditoria.
+**Tag de saída prevista:** `v3.3.0-serpro-cnpj`
+**Objetivo:** consultar fonte oficial de CNPJ (Serpro) sem quebrar dbt, sem scraping e sem chamada externa dentro do build.
+**Fim esperado:** CNPJs públicos de CADOP/CNES validados contra fonte externa via processo Python controlado, com cache persistente e auditoria.
 **Critério de saída:** cliente Python configurável `SerproCnpjProvider` + `MockCnpjProvider` com testes; tabela `enrichment.documento_receita_cache` populada por job dedicado; modelos dbt `int_*_receita*` e `dim_documento_validado` materializados; nenhum modelo dbt invoca chamada HTTP externa.
 
 ## Contexto técnico
 
-A validação oficial de CNPJ deve ser feita por integração controlada (gov.br/Serpro). Para CPF, existe solução digital de consulta cadastral, mas CPF deve ser tratado como dado pessoal e só pode entrar em fluxo privado/tenant — nunca em produto público derivado da ANS.
+A validação oficial desta sprint cobre somente CNPJ público presente em CADOP/CNES, por integração controlada com Serpro. CPF fica fora do produto público e só pode existir em fluxo privado/tenant, com hash, máscara, auditoria, justificativa e contrato LGPD explícito.
 
 ## Regra-mãe
 
 - [ ] Nenhum modelo dbt pode chamar API externa.
-- [ ] Cache vive em schema separado `enrichment` (criar via migration nova, não alterar `plataforma` nem `bruto_ans`).
-- [ ] Logs e payloads não podem expor CPF/CNPJ completo em texto claro — apenas mascarado e hash.
+- [ ] Cache vive em schema separado `enrichment` (criar via `infra/postgres/init/026_fase5_quality_enrichment_mdm.sql`, não alterar `plataforma` nem `bruto_ans`).
+- [ ] Logs e payloads não podem expor CNPJ completo em texto claro — apenas mascarado e hash.
+- [ ] CPF não é entrada, saída, cache ou dimensão desta sprint.
 
 ## Histórias
 
@@ -32,14 +33,14 @@ A validação oficial de CNPJ deve ser feita por integração controlada (gov.br
 - [ ] Criar logs sem expor CNPJ completo (mascarar últimos 8 dígitos).
 - [ ] Criar testes em `testes/unit/test_serpro_cnpj_client.py` usando o `MockCnpjProvider`.
 
-### HIS-08.2 — Criar cache oficial de documentos
+### HIS-08.2 — Criar cache oficial de CNPJ
 
-- [ ] Criar migration nova para schema `enrichment` em `infra/migrations/`.
+- [ ] Criar/alterar bootstrap em `infra/postgres/init/026_fase5_quality_enrichment_mdm.sql` para schema `enrichment`.
 - [ ] Criar tabela `enrichment.documento_receita_cache`.
 - [ ] Criar campo `documento_hash` (PK).
-- [ ] Criar campo `documento_tipo` (CNPJ | CPF).
+- [ ] Criar campo `documento_tipo` com domínio permitido apenas `CNPJ` nesta sprint.
 - [ ] Criar campo `documento_normalizado_mascarado`.
-- [ ] Criar campo `fonte_validacao` (SERPRO | RECEITA_PUBLICA | MOCK).
+- [ ] Criar campo `fonte_validacao` (SERPRO | MOCK | MANUAL_IMPORT).
 - [ ] Criar campo `situacao_cadastral`.
 - [ ] Criar campo `razao_social_receita`.
 - [ ] Criar campo `nome_fantasia_receita`.
@@ -79,7 +80,7 @@ A validação oficial de CNPJ deve ser feita por integração controlada (gov.br
 ## Entregas esperadas
 
 - [ ] `shared/python/healthintel_quality/integrations/serpro_cnpj_client.py` + testes
-- [ ] Migration `enrichment` schema + tabela `documento_receita_cache`
+- [ ] Bootstrap `enrichment` em `infra/postgres/init/026_fase5_quality_enrichment_mdm.sql` + tabela `documento_receita_cache`
 - [ ] `scripts/enrichment/enriquecer_cnpj_receita.py` + Makefile + DAG opcional
 - [ ] 4 modelos dbt em `healthintel_dbt/models/enrichment/`
 - [ ] `_enrichment.yml` com testes genéricos
@@ -93,6 +94,7 @@ A validação oficial de CNPJ deve ser feita por integração controlada (gov.br
 - [ ] `dbt test --select tag:enrichment` zero falhas.
 - [ ] Inspeção manual: nenhum modelo dbt importa biblioteca de rede ou faz `http_get`.
 - [ ] Logs do job não contêm CNPJ em texto claro.
+- [ ] Cache `enrichment.documento_receita_cache` não contém registros com `documento_tipo = 'CPF'`.
 
 ## Resultado Esperado
 

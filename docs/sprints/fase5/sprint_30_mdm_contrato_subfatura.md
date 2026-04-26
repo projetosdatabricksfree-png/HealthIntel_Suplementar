@@ -13,17 +13,31 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 
 ## Regra-mãe
 
-- [ ] Toda tabela MDM privada vive em schema `mdm_privado` (criar via migration nova).
+- [ ] Toda tabela MDM privada vive em schema `mdm_privado` (criar via `infra/postgres/init/028_fase5_mdm_privado_rls.sql`).
 - [ ] `tenant_id` é coluna obrigatória, NOT NULL, em todos os modelos.
+- [ ] `tenant_id` nasce na entrada física privada (`bruto_cliente.*`) e não pode ser inferido tardiamente no MDM.
 - [ ] Row-level security: cliente só lê dados do próprio `tenant_id`.
 - [ ] Nenhuma tabela pública pode receber dados de contrato/subfatura.
 
 ## Histórias
 
+### HIS-10.0 — Criar entrada física privada por tenant
+
+- [ ] Criar schema `bruto_cliente` em `infra/postgres/init/028_fase5_mdm_privado_rls.sql`.
+- [ ] Criar tabela `bruto_cliente.contrato` com `tenant_id` NOT NULL, identificador de carga, hash de arquivo, payload bruto e colunas mínimas de contrato.
+- [ ] Criar tabela `bruto_cliente.subfatura` com `tenant_id` NOT NULL, identificador de carga, hash de arquivo, payload bruto e colunas mínimas de subfatura.
+- [ ] Definir layout privado por tenant para contrato e subfatura, com fingerprint, versão, score de confiança e fallback para quarentena quando o layout não for reconhecido.
+- [ ] Criar processo de carga privada idempotente, com deduplicação por `tenant_id`, fonte, competência e hash de arquivo.
+- [ ] Criar `healthintel_dbt/models/staging/cliente/stg_cliente_contrato.sql`.
+- [ ] Criar `healthintel_dbt/models/staging/cliente/stg_cliente_subfatura.sql`.
+- [ ] Criar documentação `_staging_cliente.yml` com testes `not_null` para `tenant_id`, identificador de origem e chaves mínimas.
+- [ ] Garantir que `healthintel_cliente_reader` não tem acesso a `bruto_cliente`, `stg_cliente` nem `mdm_privado`.
+
 ### HIS-10.1 — Criar contrato master
 
 - [ ] Criar `healthintel_dbt/models/mdm_privado/mdm_contrato_master.sql`.
 - [ ] Criar `healthintel_dbt/models/mdm_privado/xref_contrato_origem.sql`.
+- [ ] Usar `stg_cliente_contrato` como fonte obrigatória; não modelar contrato master sem origem física privada.
 - [ ] Criar `contrato_master_id` (UUID v5 baseado em tenant + número canônico).
 - [ ] Criar `tenant_id` (NOT NULL).
 - [ ] Criar `operadora_master_id` (FK lógica para `mdm_operadora_master`).
@@ -41,6 +55,7 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 
 - [ ] Criar `healthintel_dbt/models/mdm_privado/mdm_subfatura_master.sql`.
 - [ ] Criar `healthintel_dbt/models/mdm_privado/xref_subfatura_origem.sql`.
+- [ ] Usar `stg_cliente_subfatura` como fonte obrigatória; não modelar subfatura master sem origem física privada.
 - [ ] Criar `subfatura_master_id`.
 - [ ] Criar `contrato_master_id` (FK lógica obrigatória).
 - [ ] Criar `tenant_id` (NOT NULL).
@@ -59,7 +74,7 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 - [ ] Criar regra: subfatura não pode migrar de contrato sem evento de migração registrado.
 - [ ] Criar regra: contrato não pode apontar para duas `operadora_master_id` ativas no mesmo período.
 - [ ] Criar regra: o mesmo número de contrato não pode representar contratos diferentes no mesmo `tenant_id` sem crosswalk aprovado.
-- [ ] Criar regra: contrato com CNPJ de operadora divergente da Receita deve ir para exceção bloqueante.
+- [ ] Criar regra: contrato com CNPJ de operadora divergente da validação Serpro deve ir para exceção bloqueante.
 - [ ] Criar regra: contrato com operadora sem `operadora_master_id` deve ir para quarentena.
 - [ ] Criar regra: subfatura duplicada por contrato + competência deve ir para exceção.
 - [ ] Materializar cada regra como `assert_*.sql` em `healthintel_dbt/tests/`.
@@ -80,7 +95,9 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 
 ## Entregas esperadas
 
-- [ ] Migration de schema `mdm_privado` em `infra/migrations/`
+- [ ] Bootstrap privado em `infra/postgres/init/028_fase5_mdm_privado_rls.sql` (`bruto_cliente`, `mdm_privado`, grants, revokes e RLS)
+- [ ] Tabelas `bruto_cliente.contrato` e `bruto_cliente.subfatura`
+- [ ] Modelos `stg_cliente_contrato` e `stg_cliente_subfatura`
 - [ ] 2 modelos master (`mdm_contrato_master`, `mdm_subfatura_master`)
 - [ ] 2 modelos `xref_*_origem`
 - [ ] 4 modelos `*_exception`
@@ -93,6 +110,7 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 - [ ] `dbt build --select tag:mdm_privado` zero erros.
 - [ ] `dbt test --select tag:mdm_privado` zero falhas.
 - [ ] Toda linha de `mdm_contrato_master` e `mdm_subfatura_master` tem `tenant_id IS NOT NULL`.
+- [ ] Toda linha em `bruto_cliente.contrato`, `bruto_cliente.subfatura`, `stg_cliente_contrato` e `stg_cliente_subfatura` tem `tenant_id IS NOT NULL`.
 - [ ] Nenhuma exceção bloqueante pode existir em produto premium da Sprint 31 (validação cruzada).
 - [ ] Schema `mdm_privado` não é acessível pela role `healthintel_cliente_reader` em consultas cruzadas de tenant.
 

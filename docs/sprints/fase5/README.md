@@ -1,93 +1,58 @@
-# Fase 5 — Enriquecimento, Qualidade e MDM sem quebrar o hardgate
+# Fase 5 — Enriquecimento, Qualidade e MDM
 
-A Fase 5 deixa claro que:
+Este diretório materializa a governança mínima da Fase 5. A Fase 5 é aditiva: parte do baseline `v3.0.0`, preserva as entregas das Fases 1 a 4 e cria novas camadas para qualidade documental, enriquecimento externo controlado, MDM público, MDM privado por tenant, produtos premium e API premium.
 
-- O projeto já passou por hardgate (`v3.0.0`).
-- O que existe está pronto e **não deve ser refeito**.
-- A camada `consumo_ans` já existe.
-- A camada `api_ans` já existe.
-- A staging e Gold/fatos já possuem vários modelos importantes.
-- O que falta é **enriquecer, validar e criar produtos premium**.
-- A Fase 5 cria uma **camada superior de confiança** sem quebrar o baseline.
+## Regra de Imutabilidade do Baseline
 
-## Status da Fase 5
+- A tag git `v3.0.0` é o ponto de congelamento da Fase 4.
+- Modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*` e `consumo_*` existentes no baseline `v3.0.0` não podem ser reescritos, renomeados ou ter sua semântica alterada pela Fase 5.
+- Toda melhoria da Fase 5 deve entrar como artefato novo, com nome distinto e camada explícita.
+- A compatibilidade dos endpoints e produtos existentes deve ser preservada por regressão documental, dbt e API nas sprints posteriores.
 
-**Status:** Backlog
-**Versão de partida:** `v3.0.0` (Fase 4 concluída)
-**Versão final prevista:** `v3.7.0` (após Sprint 32) + `v3.8.0-gov` (após Sprint 33)
+## Documentos da Sprint 26
 
-## Regra-mãe da Fase 5
+- `docs/fase5/baseline_hardgate_fase4.md`: inventário congelado do baseline `v3.0.0`.
+- `docs/fase5/matriz_lacunas_produto.md`: mapa de lacunas comerciais e técnicas por domínio.
+- `docs/fase5/padrao_nomes_fase5.md`: vocabulário obrigatório para tabelas e modelos novos.
+- `docs/fase5/governanca_minima_fase5.md`: schemas, roles, contratos mínimos e regras de publicação.
 
-- Não alterar a lógica aprovada das Fases 1 a 4.
-- Não renomear tabelas existentes.
-- Não substituir `stg_*`, `int_*`, `fat_*`, `api_*` ou `consumo_*` já aprovadas.
-- Criar apenas tabelas novas, com sufixos: `_validado`, `_qualificado`, `_mdm`, `_golden`, `_exception`, `_premium`.
-- Usar os modelos existentes como fonte.
-- Publicar novos produtos de consumo apenas depois de passarem em testes próprios.
-- Manter os endpoints atuais funcionando sem mudança de contrato.
-- Criar endpoints novos para dados validados/enriquecidos.
+## Sequência da Fase 5
 
-## Sprints
+| Sprint | Escopo | Status após Sprint 26 |
+|--------|--------|-----------------------|
+| Sprint 26 | Baseline real `v3.0.0`, inventário e governança mínima | Documental |
+| Sprint 27 | Qualidade documental e modelos `dq_*` | Backlog |
+| Sprint 28 | Enriquecimento CNPJ Serpro/cache | Backlog |
+| Sprint 29 | MDM público de operadora, estabelecimento e prestador | Backlog |
+| Sprint 30 | Ingestão privada tenant e MDM contrato/subfatura | Backlog |
+| Sprint 31 | Produtos premium em SQL direto e superfície `api_premium_*` | Backlog |
+| Sprint 32 | Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5 | Backlog |
+| Sprint 33 | Governança documental formal final e release `v3.8.0-gov` | Backlog |
 
-| Sprint | Título | Status | Tag prevista |
-|--------|--------|--------|--------------|
-| [Sprint 26](sprint_26_baseline_congelamento_mapa_expansao.md) | Baseline, Congelamento e Mapa de Expansão | Backlog | `v3.1.0-baseline` |
-| [Sprint 27](sprint_27_validacao_tecnica_documentos.md) | Validação Técnica de CPF, CNPJ, CNES e Registro ANS | Backlog | `v3.2.0-dq-documental` |
-| [Sprint 28](sprint_28_validacao_receita_serpro_cache.md) | Validação Oficial Receita/Serpro com Cache e Auditoria | Backlog | `v3.3.0-receita` |
-| [Sprint 29](sprint_29_mdm_operadora_prestador_estabelecimento.md) | MDM de Operadora, Prestador e Estabelecimento | Backlog | `v3.4.0-mdm-publico` |
-| [Sprint 30](sprint_30_mdm_contrato_subfatura.md) | MDM de Contrato e Subfatura (módulo privado por tenant) | Backlog | `v3.5.0-mdm-privado` |
-| [Sprint 31](sprint_31_produtos_premium_consumo.md) | Produtos Premium Validados para Consumo | Backlog | `v3.6.0-premium` |
-| [Sprint 32](sprint_32_endpoints_smoke_hardgate_fase5.md) | Endpoints Novos, Smoke Tests e Hardgate Fase 5 | Backlog | `v3.7.0` |
-| [Sprint 33](sprint_33_governanca_documental.md) | Governança Documental, Catálogos e Padrões Normativos | Backlog | `v3.8.0-gov` |
+## Contrato Arquitetural Premium
 
-## Arquitetura Alvo (Fase 5)
+| Superfície | Papel | Consumidor | Regra |
+|------------|-------|------------|-------|
+| `consumo_ans` | Produto SQL direto legado | Clientes atuais | Mantido intacto a partir do baseline `v3.0.0`. |
+| `healthintel_cliente_reader` | Role comum | Clientes legados | Pode ler `consumo_ans`; não pode receber grants em schemas premium ou internos da Fase 5. |
+| `consumo_premium_ans` | Produto SQL direto premium | Clientes premium | Recebe apenas modelos `consumo_premium_*` aprovados na Sprint 31. |
+| `healthintel_premium_reader` | Role premium | Clientes premium | Pode ler `consumo_premium_ans` conforme contrato comercial premium. |
+| `api_ans.api_premium_*` | Camada de serviço premium | FastAPI | Única superfície de leitura permitida para endpoints premium. |
 
-```
-Fase 1–4 (congelado em v3.0.0)
-   ↓
-bruto_ans → stg_ans → int_ans → nucleo_ans → api_ans → consumo_ans
-                                                            ↓ (intacto)
-                                                            ↓
-                                                  Cliente legado (Gold/consumo)
-   ↓
-Fase 5 (aditiva, sem reescrita):
-   ↓
-dq_*                  ← validação técnica documental (Sprint 27)
-enrichment.*          ← cache Receita/Serpro (Sprint 28)
-mdm.*                 ← golden record público (Sprint 29)
-mdm_privado.*         ← golden record por tenant (Sprint 30)
-consumo_premium_*     ← produtos comerciais validados (Sprint 31)
-   ↓
-api/v1/premium/*      ← rotas premium (Sprint 32)
-   ↓
-docs/governanca/*     ← normativo formal (Sprint 33)
-```
+Regra bloqueante: a FastAPI nunca lê `consumo_premium_ans` diretamente. Rotas premium devem consultar exclusivamente `api_ans.api_premium_*`, preservando o padrão arquitetural já usado nas Fases 1 a 4.
 
-## Critério de Saída da Fase 5
+## Camadas Novas Planejadas
 
-Hardgates a serem executados ao fim da Sprint 32 (release `v3.7.0`):
+| Camada | Schema/documento | Primeira sprint de implementação | Observação |
+|--------|------------------|----------------------------------|------------|
+| Qualidade documental | `quality_ans` | Sprint 27 | Modelos `dq_*` e tabelas `*_validado`. |
+| Enriquecimento CNPJ | `enrichment` | Sprint 28 | Cache/auditoria Serpro, sem scraping. |
+| MDM público | `mdm` | Sprint 29 | Golden records públicos e crosswalks. |
+| Entrada privada tenant | `bruto_cliente`, `stg_cliente` | Sprint 30 | Contrato/subfatura privados por tenant. |
+| MDM privado | `mdm_privado` | Sprint 30 | Dados privados isolados por tenant. |
+| SQL direto premium | `consumo_premium_ans` | Sprint 31 | Produto premium para clientes SQL. |
+| Serviço API premium | `api_ans.api_premium_*` | Sprint 31/32 | Superfície exclusiva da FastAPI premium. |
 
-- [ ] `ruff check api ingestao scripts shared testes`
-- [ ] `dbt build --select tag:quality tag:enrichment tag:mdm tag:mdm_privado tag:consumo_premium`
-- [ ] `dbt test` zero falhas
-- [ ] `make smoke-premium`
-- [ ] `make dbt-build-premium`
-- [ ] `pytest api/tests/integration/test_premium.py -v`
-- [ ] `pytest testes/regressao/test_endpoints_fase5.py -v`
-- [ ] `pytest testes/regressao/test_endpoints_fase4.py -v` (regressão Fase 4 ainda zero falhas)
-- [ ] Verificação documental: zero alterações em modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` da `v3.0.0`
-- [ ] Tag git `v3.7.0`
+## Princípio de Execução
 
-## Documentos de apoio
-
-- `docs/fase5/baseline_hardgate_fase4.md` (Sprint 26)
-- `docs/fase5/matriz_lacunas_produto.md` (Sprint 26)
-- `docs/fase5/padrao_nomes_fase5.md` (Sprint 26)
-- `docs/fase5/mdm_modelagem.md` (Sprint 29)
-- `docs/fase5/mdm_contrato_subfatura.md` (Sprint 30)
-- `docs/produto/catalogo_premium.md` (Sprint 32)
-- `docs/produto/quality_scores.md` (Sprint 32)
-- `docs/produto/mdm_contrato_subfatura.md` (Sprint 32)
-- `docs/produto/validacao_cnpj_receita.md` (Sprint 32)
-- `docs/produto/tiss_tuss_premium.md` (Sprint 32)
-- `docs/governanca/*` (Sprint 33)
+A Sprint 26 não cria código, SQL, dbt, API ou infraestrutura. Ela cria a documentação mínima para que as Sprints 27 a 33 sejam executadas sem ambiguidade e sem risco de regressão contra `v3.0.0`.
