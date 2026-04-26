@@ -3,8 +3,8 @@
 ## Referência de Congelamento
 
 - Tag git: `v3.0.0`
-- Commit resolvido localmente: `1843a4794b5c46ba618d2eeaaf4406406b4b2d76`
-- Comando de validação: `git rev-parse --verify refs/tags/v3.0.0`
+- Commit resolvido localmente: `fe7b839c2f9c72e4cbab89c117d6dd692e8b0994`
+- Comando de validação: `git rev-parse v3.0.0^{}`
 - Release documentada: `docs/releases/v3.0.0.md`
 - Regra: todo artefato listado neste documento é baseline aprovado e deve permanecer imutável durante a Fase 5.
 
