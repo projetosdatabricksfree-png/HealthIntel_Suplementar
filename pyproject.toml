@@ -32,7 +32,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = [".", "shared/python"]
 testpaths = ["api/tests", "ingestao/tests", "testes"]
 
 [tool.ruff]
@@ -54,4 +54,5 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["api*", "ingestao*", "mongo_layout_service*", "shared*"]
+where = [".", "shared/python"]
+include = ["api*", "ingestao*", "mongo_layout_service*", "shared*", "healthintel_quality*"]

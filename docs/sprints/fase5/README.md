@@ -11,10 +11,10 @@ Este diretório materializa a governança mínima da Fase 5. A Fase 5 é aditiva
 
 ## Documentos da Sprint 26
 
-- `docs/fase5/baseline_hardgate_fase4.md`: inventário congelado do baseline `v3.0.0`.
-- `docs/fase5/matriz_lacunas_produto.md`: mapa de lacunas comerciais e técnicas por domínio.
-- `docs/fase5/padrao_nomes_fase5.md`: vocabulário obrigatório para tabelas e modelos novos.
-- `docs/fase5/governanca_minima_fase5.md`: schemas, roles, contratos mínimos e regras de publicação.
+- `docs/sprints/fase5/baseline_hardgate_fase4.md`: inventário congelado do baseline `v3.0.0`.
+- `docs/sprints/fase5/matriz_lacunas_produto.md`: mapa de lacunas comerciais e técnicas por domínio.
+- `docs/sprints/fase5/padrao_nomes_fase5.md`: vocabulário obrigatório para tabelas e modelos novos.
+- `docs/sprints/fase5/governanca_minima_fase5.md`: schemas, roles, contratos mínimos e regras de publicação.
 
 ## Sequência da Fase 5
 

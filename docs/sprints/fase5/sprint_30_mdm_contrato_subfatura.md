@@ -103,7 +103,7 @@ Contrato e subfatura **não vêm dos dados públicos abertos da ANS**. Devem ent
 - [ ] 4 modelos `*_exception`
 - [ ] 7 testes singulares de regra contratual
 - [ ] `_mdm_privado.yml` documentando todos os modelos
-- [ ] `docs/fase5/mdm_contrato_subfatura.md` explicando o módulo privado
+- [ ] `docs/sprints/fase5/mdm_contrato_subfatura.md` explicando o módulo privado
 
 ## Validação esperada (hard gates)
 

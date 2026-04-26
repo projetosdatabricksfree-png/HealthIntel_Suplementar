@@ -5,7 +5,7 @@
 **Tag de saída prevista:** `v3.1.0-baseline`
 **Objetivo:** congelar tudo o que já passou no hardgate da Fase 4 e mapear, com precisão, o que será adicionado na Fase 5.
 **Fim esperado:** documento de expansão com tudo que será novo, sem tocar no legado aprovado.
-**Critério de saída:** `docs/fase5/baseline_hardgate_fase4.md`, `docs/fase5/matriz_lacunas_produto.md`, `docs/fase5/padrao_nomes_fase5.md` e `docs/fase5/governanca_minima_fase5.md` publicados; lista completa de modelos congelados; padrão de nomes, schemas, roles premium e configuração dbt documentados e referenciados pelas Sprints 27–32.
+**Critério de saída:** `docs/sprints/fase5/baseline_hardgate_fase4.md`, `docs/sprints/fase5/matriz_lacunas_produto.md`, `docs/sprints/fase5/padrao_nomes_fase5.md` e `docs/sprints/fase5/governanca_minima_fase5.md` publicados; lista completa de modelos congelados; padrão de nomes, schemas, roles premium e configuração dbt documentados e referenciados pelas Sprints 27–32.
 
 ## Regra-mãe da Fase 5 (vale para esta sprint e todas as seguintes)
 
@@ -23,7 +23,7 @@
 
 ### HIS-06.1 — Congelar a base aprovada
 
-- [x] Criar `docs/fase5/baseline_hardgate_fase4.md`.
+- [x] Criar `docs/sprints/fase5/baseline_hardgate_fase4.md`.
 - [x] Registrar que os modelos atuais de `staging`, `intermediate`, `marts`, `api` e `consumo` são baseline aprovado e imutáveis na Fase 5.
 - [x] Listar todos os modelos `consumo_*` existentes no baseline `v3.0.0` do repositório.
 - [x] Listar todos os modelos existentes da camada `api_ans` (Bronze, Prata e Gold) que ainda podem virar consumo premium.
@@ -34,7 +34,7 @@
 
 ### HIS-06.2 — Criar matriz de lacunas comerciais
 
-- [x] Criar `docs/fase5/matriz_lacunas_produto.md`.
+- [x] Criar `docs/sprints/fase5/matriz_lacunas_produto.md`.
 - [x] Marcar o que já está pronto para consumo (consumo_ans atual).
 - [x] Marcar o que está apenas em staging.
 - [x] Marcar o que está em fato/mart, mas ainda não é exposto a clientes.
@@ -47,7 +47,7 @@
 
 ### HIS-06.3 — Definir padrão de nomes para novas tabelas
 
-- [x] Criar `docs/fase5/padrao_nomes_fase5.md`.
+- [x] Criar `docs/sprints/fase5/padrao_nomes_fase5.md`.
 - [x] Documentar padrão `*_validado` para tabelas com validação técnica.
 - [x] Documentar padrão `*_enriquecido` para tabelas com dados externos.
 - [x] Documentar padrão `*_mdm` para tabelas com golden record.
@@ -64,7 +64,7 @@
 
 ### HIS-06.4 — Definir governança mínima e configuração física da Fase 5
 
-- [x] Criar `docs/fase5/governanca_minima_fase5.md`.
+- [x] Criar `docs/sprints/fase5/governanca_minima_fase5.md`.
 - [x] Definir padrões mínimos de schema, nomenclatura, template de tabela, template de coluna, classificação LGPD e owner técnico/de negócio antes da criação de qualquer modelo da Fase 5.
 - [x] Definir que novas tabelas devem ter contrato mínimo: responsabilidade, granularidade, upstream, downstream, owner, sensibilidade LGPD, regra de publicação e validação.
 - [x] Definir a configuração obrigatória do `healthintel_dbt/dbt_project.yml` para novos diretórios:
@@ -110,11 +110,11 @@ models:
 
 ## Entregas esperadas
 
-- [x] `docs/fase5/baseline_hardgate_fase4.md`
-- [x] `docs/fase5/matriz_lacunas_produto.md`
-- [x] `docs/fase5/padrao_nomes_fase5.md`
-- [x] `docs/fase5/governanca_minima_fase5.md`
-- [x] `docs/fase5/README.md` introduzindo a Fase 5 e listando as Sprints 26–32 + 33
+- [x] `docs/sprints/fase5/baseline_hardgate_fase4.md`
+- [x] `docs/sprints/fase5/matriz_lacunas_produto.md`
+- [x] `docs/sprints/fase5/padrao_nomes_fase5.md`
+- [x] `docs/sprints/fase5/governanca_minima_fase5.md`
+- [x] `docs/sprints/fase5/README.md` introduzindo a Fase 5 e listando as Sprints 26–32 + 33
 
 ## Validação esperada (hard gates)
 
@@ -122,7 +122,7 @@ models:
 - [x] Matriz de lacunas vincula cada lacuna a uma sprint da Fase 5.
 - [x] Padrão de nomes não colide com nomes já existentes (verificação documental).
 - [x] Governança mínima da Sprint 26 define schemas, roles, padrões de tabela/coluna, classificação LGPD e owners antes da execução das Sprints 27–32.
-- [x] Nenhum arquivo SQL, YAML, Python ou de configuração fora de `docs/fase5/` é alterado nesta sprint.
+- [x] Nenhum arquivo SQL, YAML, Python ou de configuração fora de `docs/sprints/fase5/` é alterado nesta sprint.
 
 ## Resultado Esperado
 

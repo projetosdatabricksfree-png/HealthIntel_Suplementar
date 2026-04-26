@@ -21,7 +21,7 @@
 
 - [ ] Criar pasta `healthintel_dbt/models/mdm/`.
 - [ ] Criar `_mdm.yml` documentando todos os modelos da pasta.
-- [ ] Criar documentação `docs/fase5/mdm_modelagem.md`.
+- [ ] Criar documentação `docs/sprints/fase5/mdm_modelagem.md`.
 - [ ] Documentar padrão de surrogate key (`<entidade>_master_id`, UUID v5 determinístico).
 - [ ] Documentar padrão de natural key (CNPJ + registro_ans, CNPJ + CNES, etc.).
 - [ ] Documentar padrão de crosswalk (`xref_<entidade>_origem`).
@@ -83,7 +83,7 @@
 
 ## Entregas esperadas
 
-- [ ] Pasta `healthintel_dbt/models/mdm/` + `_mdm.yml` + `docs/fase5/mdm_modelagem.md`
+- [ ] Pasta `healthintel_dbt/models/mdm/` + `_mdm.yml` + `docs/sprints/fase5/mdm_modelagem.md`
 - [ ] 3 modelos `mdm_*_master` (operadora, estabelecimento, prestador)
 - [ ] 3 modelos `xref_*_origem`
 - [ ] 3 modelos `*_exception` (`mdm_operadora_exception`, `mdm_estabelecimento_exception`, `mdm_prestador_exception`)

@@ -17,6 +17,10 @@ models:
     staging:
       +schema: stg_ans
       +materialized: view
+    quality:
+      +schema: quality_ans
+      +materialized: table
+      +tags: ["quality"]
     intermediate:
       +schema: int_ans
       +materialized: ephemeral

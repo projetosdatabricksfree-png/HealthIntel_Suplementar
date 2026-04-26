@@ -1,0 +1,2 @@
+"""Validadores técnicos reutilizáveis."""
+

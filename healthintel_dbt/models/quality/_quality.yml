@@ -1,0 +1,245 @@
+version: 2
+
+models:
+  - name: dq_cadop_documento
+    description: >
+      Qualidade documental técnica da CADOP, derivada de stg_cadop. Responsabilidade:
+      validar formato de registro_ans e CNPJ sem enriquecer contra fonte externa. Granularidade:
+      uma linha por registro_ans aprovado no staging. Upstream: stg_cadop. Downstream:
+      Sprints 28 a 31. Owner técnico: engenharia de dados. Owner de negócio: produto
+      HealthIntel. Classificação LGPD: Pública ANS para CNPJ e Interna operacional para
+      status/motivo. Publicação: interna, sem exposição direta pela FastAPI. Rollback:
+      remover tabela quality sem impacto no baseline v3.0.0.
+    columns:
+      - name: fonte_documento
+        description: Fonte lógica da validação documental.
+      - name: registro_ans
+        description: Registro ANS original aprovado em stg_cadop.
+        data_tests:
+          - not_null
+      - name: registro_ans_normalizado
+        description: Registro ANS normalizado para seis posições.
+      - name: registro_ans_formato_valido
+        description: Indicador técnico de registro ANS com formato numérico de seis dígitos.
+      - name: nome
+        description: Razão social da operadora conforme staging aprovado.
+      - name: nome_fantasia
+        description: Nome fantasia da operadora conforme staging aprovado.
+      - name: cnpj_original
+        description: CNPJ recebido do staging aprovado antes da normalização desta camada.
+      - name: cnpj_normalizado
+        description: CNPJ somente com dígitos, sem preenchimento artificial.
+      - name: cnpj_tamanho_valido
+        description: Indica CNPJ preenchido com exatamente 14 dígitos.
+      - name: cnpj_digito_valido
+        description: Indica CNPJ com dígitos verificadores tecnicamente válidos.
+      - name: cnpj_is_sequencia_invalida
+        description: Indica CNPJ composto por sequência repetida bloqueada.
+      - name: documento_quality_status
+        description: Status técnico consolidado da validação documental.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+      - name: motivo_invalidade_documento
+        description: Motivo textual apenas quando o status não é VALIDO.
+      - name: _carregado_em
+        description: Timestamp de carga herdado do staging.
+      - name: _arquivo_origem
+        description: Arquivo de origem herdado do staging.
+      - name: _lote_id
+        description: Identificador de lote herdado do staging.
+
+  - name: dq_operadora_documento
+    description: >
+      Qualidade documental técnica da entidade operadora canônica, derivada de
+      dim_operadora_atual. Responsabilidade: validar CNPJ e registro_ans da entidade
+      curada sem alterar marts ou APIs existentes. Granularidade: uma linha por
+      operadora_id. Upstream: dim_operadora_atual. Downstream: MDM público e produtos
+      premium futuros. Classificação LGPD: Pública ANS e Interna operacional. Publicação:
+      interna em quality_ans.
+    columns:
+      - name: fonte_documento
+        description: Fonte lógica da validação documental.
+      - name: operadora_id
+        description: Chave técnica da dimensão de operadora.
+        data_tests:
+          - not_null
+      - name: registro_ans
+        description: Registro ANS da operadora.
+        data_tests:
+          - not_null
+      - name: registro_ans_normalizado
+        description: Registro ANS normalizado para seis posições.
+      - name: registro_ans_formato_valido
+        description: Indicador técnico de registro ANS com formato numérico de seis dígitos.
+      - name: nome
+        description: Razão social da operadora.
+      - name: nome_fantasia
+        description: Nome fantasia da operadora.
+      - name: cnpj_original
+        description: CNPJ antes da normalização desta camada.
+      - name: cnpj_normalizado
+        description: CNPJ somente com dígitos, sem preenchimento artificial.
+      - name: cnpj_tamanho_valido
+        description: Indica CNPJ preenchido com exatamente 14 dígitos.
+      - name: cnpj_digito_valido
+        description: Indica CNPJ com dígitos verificadores tecnicamente válidos.
+      - name: cnpj_is_sequencia_invalida
+        description: Indica CNPJ composto por sequência repetida bloqueada.
+      - name: documento_quality_status
+        description: Status técnico consolidado da validação documental.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+      - name: motivo_invalidade_documento
+        description: Motivo textual apenas quando o status não é VALIDO.
+
+  - name: dq_cnes_documento
+    description: >
+      Qualidade documental técnica de estabelecimentos CNES, derivada de
+      stg_cnes_estabelecimento. Responsabilidade: validar CNES em sete dígitos e CNPJ
+      quando presente, sem enriquecer cadastro externo. Granularidade: uma linha por
+      competencia e cnes do staging aprovado. Upstream: stg_cnes_estabelecimento.
+      Downstream: MDM de estabelecimento e produtos premium futuros. Classificação LGPD:
+      Pública DATASUS/ANS e Interna operacional.
+    columns:
+      - name: fonte_documento
+        description: Fonte lógica da validação documental.
+      - name: competencia
+        description: Competência da publicação CNES.
+        data_tests:
+          - not_null
+      - name: cnes
+        description: Código CNES recebido do staging aprovado.
+        data_tests:
+          - not_null
+      - name: cnes_normalizado
+        description: Código CNES normalizado para sete dígitos.
+      - name: cnes_formato_valido
+        description: Indica CNES com formato numérico de sete dígitos.
+      - name: cnpj_original
+        description: CNPJ recebido do staging aprovado antes da normalização desta camada.
+      - name: cnpj_normalizado
+        description: CNPJ somente com dígitos, sem preenchimento artificial.
+      - name: cnpj_tamanho_valido
+        description: Indica CNPJ preenchido com exatamente 14 dígitos.
+      - name: cnpj_digito_valido
+        description: Indica CNPJ com dígitos verificadores tecnicamente válidos.
+      - name: cnpj_is_sequencia_invalida
+        description: Indica CNPJ composto por sequência repetida bloqueada.
+      - name: documento_quality_status
+        description: Status técnico consolidado da validação documental.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+      - name: motivo_invalidade_documento
+        description: Motivo textual apenas quando o status não é VALIDO.
+      - name: razao_social
+        description: Razão social do estabelecimento conforme staging aprovado.
+      - name: nome_fantasia
+        description: Nome fantasia do estabelecimento conforme staging aprovado.
+      - name: sg_uf
+        description: UF do estabelecimento.
+      - name: cd_municipio
+        description: Código municipal do estabelecimento.
+      - name: nm_municipio
+        description: Município do estabelecimento.
+      - name: tipo_unidade
+        description: Tipo de unidade CNES.
+      - name: tipo_unidade_desc
+        description: Descrição do tipo de unidade CNES.
+      - name: _carregado_em
+        description: Timestamp de carga herdado do staging.
+      - name: _arquivo_origem
+        description: Arquivo de origem herdado do staging.
+      - name: _lote_id
+        description: Identificador de lote herdado do staging.
+      - name: _layout_id
+        description: Identificador de layout herdado do staging.
+      - name: _layout_versao_id
+        description: Versão de layout herdada do staging.
+      - name: _hash_arquivo
+        description: Hash do arquivo de origem.
+      - name: _hash_estrutura
+        description: Hash da estrutura de origem.
+      - name: _status_parse
+        description: Status de parsing herdado do staging.
+
+  - name: dq_prestador_documento
+    description: >
+      Qualidade documental técnica da rede assistencial agregada. O contrato atual de
+      stg_rede_assistencial não possui documento individual de prestador; por isso esta
+      tabela registra status NULO de forma explícita, sem inventar CNPJ/CNES ou criar mock.
+      Granularidade: competencia, registro_ans, cd_municipio, segmento e tipo_prestador.
+      Upstream: stg_rede_assistencial. Downstream: Sprint 29 para MDM de prestador e
+      exceptions. Classificação LGPD: Pública ANS e Interna operacional.
+    columns:
+      - name: fonte_documento
+        description: Fonte lógica da validação documental.
+      - name: competencia
+        description: Competência da rede assistencial.
+        data_tests:
+          - not_null
+      - name: registro_ans
+        description: Registro ANS da operadora vinculada à rede agregada.
+        data_tests:
+          - not_null
+      - name: registro_ans_normalizado
+        description: Registro ANS normalizado para seis posições.
+      - name: registro_ans_formato_valido
+        description: Indicador técnico de registro ANS com formato numérico de seis dígitos.
+      - name: cd_municipio
+        description: Código municipal da rede agregada.
+        data_tests:
+          - not_null
+      - name: nm_municipio
+        description: Município da rede agregada.
+      - name: sg_uf
+        description: UF da rede agregada.
+      - name: segmento
+        description: Segmento assistencial informado no staging aprovado.
+        data_tests:
+          - not_null
+      - name: tipo_prestador
+        description: Tipo agregado de prestador informado no staging aprovado.
+        data_tests:
+          - not_null
+      - name: qt_prestador
+        description: Quantidade agregada de prestadores.
+      - name: qt_especialidade_disponivel
+        description: Quantidade agregada de especialidades disponíveis.
+      - name: cnes
+        description: Documento CNES individual, ausente no contrato atual.
+      - name: cnes_normalizado
+        description: CNES normalizado quando houver fonte individual futura.
+      - name: cnes_formato_valido
+        description: Indicador técnico de CNES válido; false porque o contrato atual não traz CNES individual.
+      - name: cnpj_original
+        description: CNPJ individual de prestador, ausente no contrato atual.
+      - name: cnpj_normalizado
+        description: CNPJ normalizado quando houver fonte individual futura.
+      - name: cnpj_tamanho_valido
+        description: Indica CNPJ de prestador com 14 dígitos; false quando ausente.
+      - name: cnpj_digito_valido
+        description: Indica CNPJ de prestador com dígito válido; false quando ausente.
+      - name: cnpj_is_sequencia_invalida
+        description: Indica sequência repetida em CNPJ; false quando ausente.
+      - name: documento_quality_status
+        description: Status técnico consolidado da validação documental.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+      - name: motivo_invalidade_documento
+        description: Motivo textual da ausência documental no contrato atual.
+      - name: fonte_publicacao
+        description: Fonte de publicação herdada da rede assistencial.
+      - name: _carregado_em
+        description: Timestamp de carga herdado do staging.
+      - name: _arquivo_origem
+        description: Arquivo de origem herdado do staging.
+      - name: _lote_id
+        description: Identificador de lote herdado do staging.
