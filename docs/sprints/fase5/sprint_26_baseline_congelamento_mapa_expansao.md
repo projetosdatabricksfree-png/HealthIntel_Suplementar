@@ -14,9 +14,9 @@
 - [x] Não substituir `stg_*`, `int_*`, `fat_*`, `api_*` ou `consumo_*` já aprovadas.
 - [x] Criar apenas tabelas novas, com sufixos: `_validado`, `_qualificado`, `_mdm`, `_golden`, `_exception`, `_premium`.
 - [x] Usar os modelos existentes como fonte.
-- [ ] Publicar novos produtos de consumo apenas depois de passarem em testes próprios.
+- [x] Publicar novos produtos de consumo apenas depois de passarem em testes próprios.
 - [x] Manter os endpoints atuais funcionando sem mudança de contrato.
-- [ ] Criar endpoints novos para dados validados/enriquecidos.
+- [x] Criar endpoints novos para dados validados/enriquecidos.
 - [x] Garantir que a FastAPI continue consultando apenas `api_ans`; endpoints premium devem ler `api_ans.api_premium_*`, nunca `consumo_premium_ans` diretamente.
 
 ## Histórias
