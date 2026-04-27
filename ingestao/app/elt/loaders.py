@@ -184,9 +184,20 @@ async def carregar_arquivo_tabular_generico(arquivo: dict) -> dict:
 
 
 async def carregar_arquivo_ans(arquivo: dict) -> dict:
+    path = Path(str(arquivo["caminho_landing"]))
+    if not path.exists():
+        msg = f"arquivo físico ausente na landing: {path}"
+        await _marcar_status_arquivo(str(arquivo["id"]), "erro_carga", msg)
+        return {
+            "status": "erro_carga",
+            "linhas_carregadas": 0,
+            "dataset_codigo": arquivo["dataset_codigo"],
+            "familia": arquivo["familia"],
+            "erro": msg,
+        }
     extensao = str(arquivo.get("extensao") or "").lower()
     tipo_arquivo = str(arquivo.get("tipo_arquivo") or "").lower()
-    if extensao == "zip" and not _zip_tem_csv(Path(str(arquivo["caminho_landing"]))):
+    if extensao == "zip" and not _zip_tem_csv(path):
         await registrar_arquivo_generico(arquivo)
         await _marcar_status_arquivo(str(arquivo["id"]), "baixado_sem_parser")
         return {
