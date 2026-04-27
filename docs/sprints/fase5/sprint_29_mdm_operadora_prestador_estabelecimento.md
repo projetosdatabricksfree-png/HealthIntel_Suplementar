@@ -5,7 +5,7 @@ Abaixo está a **Sprint 29 completa já corrigida** para ficar compatível com a
 
 **Status:** Concluída — hard gates executados com evidência.  
 **Fase:** Fase 5 — Qualidade, Governança e MDM sem dependência externa  
-**Tag de saída candidata:** `v3.4.0-mdm-publico` — somente após hard gates verdes  
+**Vínculo de Release:** Sem tagueamento individual de sprint (a macro tag da versão v3.4.x só será gerada globalmente no fechamento da Fase 5).
 **Pré-requisito:** Sprint 28 concluída com validação determinística de CNPJ offline e hard gates verdes  
 **Objetivo:** criar a camada MDM pública/regulatória de operadoras, estabelecimentos CNES e prestadores, com golden records, crosswalk e exceções, sem substituir `int_operadora_canonica` nem `dim_operadora_atual`.  
 **Fim esperado:** entidades master públicas disponíveis como insumo técnico para os produtos premium da Sprint 31 e para o futuro MDM privado da Sprint 30, sem criar APIs, endpoints ou schemas premium nesta sprint.  
