@@ -42,6 +42,10 @@ models:
         +schema: api_ans
         +materialized: table
         +tags: ["api", "premium"]
+    mdm:
+      +schema: mdm_ans
+      +materialized: table
+      +tags: ["mdm"]
     consumo:
       +schema: consumo_ans
       +materialized: table

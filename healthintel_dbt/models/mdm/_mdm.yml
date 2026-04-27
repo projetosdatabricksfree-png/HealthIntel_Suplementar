@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: mdm_operadora_master
+    description: "Visão Master Data Management regulatória pública de Operadoras baseada puramente na qualidade local (determinística)."
+    columns:
+      - name: operadora_master_id
+        description: "Chave primária MDM (Hash determinístico)"
+        tests:
+          - unique
+          - not_null
+      - name: status_mdm
+        description: "Status de confiabilidade MDM"
+        tests:
+          - accepted_values:
+              values: ['ATIVO', 'QUARANTENA', 'REPROVADO', 'DESATIVADO']
+
+  - name: mdm_estabelecimento_master
+    description: "Visão Master Data Management regulatória pública de Estabelecimentos (CNES)."
+    columns:
+      - name: estabelecimento_master_id
+        description: "Chave primária MDM (Hash determinístico)"
+        tests:
+          - unique
+          - not_null
+      - name: status_mdm
+        tests:
+          - accepted_values:
+              values: ['ATIVO', 'QUARANTENA', 'REPROVADO', 'DESATIVADO']
+
+  - name: mdm_prestador_master
+    description: "Visão Master Data Management pública de Prestadores referenciados."
+    columns:
+      - name: prestador_master_id
+        description: "Chave primária MDM (Hash determinístico)"
+        tests:
+          - unique
+          - not_null
+      - name: status_mdm
+        tests:
+          - accepted_values:
+              values: ['ATIVO', 'QUARANTENA', 'REPROVADO', 'DESATIVADO']
