@@ -148,6 +148,23 @@ values
         5000,
         200,
         99.50
+    ),
+    (
+        '11111111-1111-1111-1111-111111111128',
+        'premium',
+        2000,
+        array['/v1/'],
+        'ativo',
+        'Plano premium com acesso a ouro, prata, bronze e produtos validados.',
+        1299000,
+        150000,
+        2200,
+        4,
+        true,
+        array['ouro', 'prata', 'bronze', 'premium'],
+        10000,
+        180,
+        99.70
     )
 on conflict (nome) do update set
     limite_rpm = excluded.limite_rpm,

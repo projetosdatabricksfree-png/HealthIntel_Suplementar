@@ -40,6 +40,14 @@
 | `GET /v1/operadoras/{registro_ans}/score-v3/historico` | sim | essencial | `api_ans.api_score_v3_operadora_mensal` | v1 |
 | `GET /v1/rankings/composto` | sim | essencial | `api_ans.api_ranking_composto_mensal` | v1 |
 
+## Fase 5
+
+| Endpoint | Auth | Plano mínimo | Dataset de origem | Versão |
+| --- | --- | --- | --- | --- |
+| `GET /v1/premium/operadoras` | sim | premium | `api_ans.api_premium_operadora_360_validado` | v1 |
+| `GET /v1/premium/cnes/estabelecimentos` | sim | premium | `api_ans.api_premium_cnes_estabelecimento_validado` | v1 |
+| `GET /v1/premium/quality/datasets` | sim | premium | `api_ans.api_premium_quality_dataset` | v1 |
+
 ## Observação
 
-O catálogo acima representa a release `v2.0.0-baseline` e deve ser mantido alinhado ao `GET /v1/meta/endpoints`.
+O catálogo acima deve ser mantido alinhado ao `GET /v1/meta/endpoints`.

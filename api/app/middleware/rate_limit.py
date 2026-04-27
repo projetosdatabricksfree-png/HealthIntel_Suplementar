@@ -20,6 +20,9 @@ async def aplicar_rate_limit(request: Request) -> None:
     elif rota.startswith("/v1/prata"):
         peso = 2
         camada = "prata"
+    elif rota.startswith("/v1/premium"):
+        peso = 2
+        camada = "premium"
     else:
         peso = 1
         camada = "ouro"

@@ -20,6 +20,7 @@ from api.app.routers import (
     meta,
     operadora,
     prata,
+    premium,
     ranking,
     rede,
     regulatorio,
@@ -57,6 +58,7 @@ app.include_router(regulatorio_v2.router, prefix=settings.app_prefixo)
 app.include_router(financeiro.router, prefix=settings.app_prefixo)
 app.include_router(bronze.router, prefix=settings.app_prefixo)
 app.include_router(prata.router, prefix=settings.app_prefixo)
+app.include_router(premium.router, prefix=settings.app_prefixo)
 app.include_router(cnes.router, prefix=settings.app_prefixo)
 app.include_router(tiss.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)

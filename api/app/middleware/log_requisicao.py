@@ -10,6 +10,8 @@ def _inferir_camada(rota: str) -> str:
         return "bronze"
     if rota.startswith("/v1/prata"):
         return "prata"
+    if rota.startswith("/v1/premium"):
+        return "premium"
     if rota.startswith("/v1"):
         return "ouro"
     return "publico"

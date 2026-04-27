@@ -155,6 +155,21 @@ CATALOGO_DATASETS = {
         "cadencia": "mensal",
         "status": "ativo",
     },
+    "api_premium_operadora_360_validado": {
+        "descricao": "Produto API premium de operadora 360 com validação documental.",
+        "cadencia": "mensal",
+        "status": "ativo",
+    },
+    "api_premium_cnes_estabelecimento_validado": {
+        "descricao": "Produto API premium de estabelecimentos CNES validados.",
+        "cadencia": "mensal",
+        "status": "ativo",
+    },
+    "api_premium_quality_dataset": {
+        "descricao": "Resumo premium de qualidade documental por fonte e status.",
+        "cadencia": "sob demanda",
+        "status": "ativo",
+    },
 }
 
 CATALOGO_ENDPOINTS = [
@@ -676,6 +691,36 @@ CATALOGO_ENDPOINTS += [
     },
 ]
 
+CATALOGO_ENDPOINTS += [
+    {
+        "metodo": "GET",
+        "rota": "/v1/premium/operadoras",
+        "descricao": "Operadora 360 premium com validação documental.",
+        "autenticacao": "sim",
+        "plano_minimo": "premium",
+        "dataset_origem": "api_ans.api_premium_operadora_360_validado",
+        "versao": "v1",
+    },
+    {
+        "metodo": "GET",
+        "rota": "/v1/premium/cnes/estabelecimentos",
+        "descricao": "Estabelecimentos CNES premium validados.",
+        "autenticacao": "sim",
+        "plano_minimo": "premium",
+        "dataset_origem": "api_ans.api_premium_cnes_estabelecimento_validado",
+        "versao": "v1",
+    },
+    {
+        "metodo": "GET",
+        "rota": "/v1/premium/quality/datasets",
+        "descricao": "Resumo premium de qualidade documental por dataset.",
+        "autenticacao": "sim",
+        "plano_minimo": "premium",
+        "dataset_origem": "api_ans.api_premium_quality_dataset",
+        "versao": "v1",
+    },
+]
+
 
 def _meta_padrao(total: int) -> dict:
     return MetaEnvelope(
@@ -788,6 +833,8 @@ async def listar_endpoints() -> dict:
             camada = "bronze"
         elif rota.startswith("/v1/prata"):
             camada = "prata"
+        elif rota.startswith("/v1/premium"):
+            camada = "premium"
         elif rota.startswith("/v1"):
             camada = "ouro"
         else:

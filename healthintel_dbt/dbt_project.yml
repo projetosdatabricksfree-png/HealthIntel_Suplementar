@@ -38,6 +38,10 @@ models:
         +materialized: view
       prata:
         +materialized: table
+      premium:
+        +schema: api_ans
+        +materialized: table
+        +tags: ["api", "premium"]
     consumo:
       +schema: consumo_ans
       +materialized: table

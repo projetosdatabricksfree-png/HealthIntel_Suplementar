@@ -1,0 +1,135 @@
+version: 2
+
+models:
+  - name: api_premium_operadora_360_validado
+    description: >
+      Produto de serviço premium para FastAPI, derivado de mart_operadora_360 e
+      dq_operadora_documento. Publica apenas operadoras com registro ANS e CNPJ
+      tecnicamente válidos. Responsabilidade: expor a visão 360 validada sem alterar
+      consumo_ans nem consultar quality_ans diretamente pela API. Granularidade:
+      competencia e registro_ans. Owner técnico: engenharia de dados HealthIntel.
+      Owner de negócio: produto HealthIntel. Classificação LGPD: Pública ANS e
+      interna operacional para score de qualidade. Regra de publicação: somente em
+      api_ans.api_premium_* e após testes próprios tag:premium.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["competencia", "registro_ans"]
+    columns:
+      - name: competencia
+        description: Competência mensal do produto premium de operadora validada.
+        data_tests:
+          - not_null
+      - name: registro_ans
+        description: Registro ANS normalizado da operadora.
+        data_tests:
+          - not_null
+      - name: cnpj_normalizado
+        description: CNPJ público normalizado e validado tecnicamente.
+        data_tests:
+          - not_null
+      - name: documento_quality_status
+        description: Status documental consolidado; neste produto publicado deve ser sempre VALIDO.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VALIDO']
+      - name: cnpj_digito_valido
+        description: Indica que o CNPJ passou na validação de dígito verificador.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: quality_score_documental
+        description: Score de qualidade documental de 0 a 100 para linhas publicadas.
+        data_tests:
+          - not_null
+
+  - name: api_premium_cnes_estabelecimento_validado
+    description: >
+      Produto de serviço premium para estabelecimentos CNES validados, derivado de
+      dq_cnes_documento e materializado apenas em api_ans para uso da FastAPI.
+      Publica somente linhas com CNES e CNPJ tecnicamente válidos. Granularidade:
+      competencia e cnes_normalizado.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["competencia", "cnes_normalizado"]
+    columns:
+      - name: competencia
+        description: Competência mensal de referência do cadastro CNES.
+        data_tests:
+          - not_null
+      - name: cnes_normalizado
+        description: Código CNES normalizado para sete dígitos.
+        data_tests:
+          - not_null
+      - name: cnpj_normalizado
+        description: CNPJ público do estabelecimento normalizado e validado tecnicamente.
+        data_tests:
+          - not_null
+      - name: cd_municipio
+        description: Código municipal do estabelecimento.
+        data_tests:
+          - not_null
+      - name: documento_quality_status
+        description: Status documental consolidado; neste produto publicado deve ser sempre VALIDO.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VALIDO']
+      - name: cnes_formato_valido
+        description: Indica CNES com formato técnico válido.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: cnpj_digito_valido
+        description: Indica CNPJ com dígito verificador válido.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: quality_score_cnes
+        description: Score de qualidade CNES de 0 a 100 para linhas publicadas.
+        data_tests:
+          - not_null
+
+  - name: api_premium_quality_dataset
+    description: >
+      Resumo premium de qualidade documental por fonte e status, derivado dos modelos
+      dq_*. Responsabilidade: oferecer evidência agregada de qualidade via api_ans sem
+      expor quality_ans diretamente pela FastAPI. Granularidade: fonte_documento e
+      documento_quality_status.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["fonte_documento", "documento_quality_status"]
+    columns:
+      - name: fonte_documento
+        description: Fonte lógica da validação documental agregada.
+        data_tests:
+          - not_null
+      - name: documento_quality_status
+        description: Status técnico agregado da validação documental.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+      - name: total_registro
+        description: Total de registros da fonte naquele status documental.
+        data_tests:
+          - not_null
+      - name: quality_score_documental
+        description: Score agregado de qualidade documental da fonte, entre 0 e 100.
+        data_tests:
+          - not_null

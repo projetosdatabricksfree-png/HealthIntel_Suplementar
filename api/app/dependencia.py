@@ -61,6 +61,8 @@ def _normalizar_camadas(camadas: Iterable[str] | None, plano_nome: str | None = 
         return ["ouro", "prata"]
     if nome in {"enterprise", "enterprise_tecnico", "enterprise_local", "admin_interno"}:
         return ["ouro", "prata", "bronze"]
+    if nome in {"premium", "premium_local"}:
+        return ["ouro", "prata", "bronze", "premium"]
     return ["ouro"]
 
 

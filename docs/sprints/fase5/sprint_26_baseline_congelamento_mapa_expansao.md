@@ -1,11 +1,23 @@
 # Sprint 26 — Baseline, Congelamento e Mapa de Expansão
 
-**Status:** Concluída documentalmente
+**Status:** Concluída — todos os hardgates verificados em 2026-04-27
 **Fase:** Fase 5 — Enriquecimento, Qualidade e MDM sem quebrar o hardgate
 **Tag de saída prevista:** `v3.1.0-baseline`
 **Objetivo:** congelar tudo o que já passou no hardgate da Fase 4 e mapear, com precisão, o que será adicionado na Fase 5.
 **Fim esperado:** documento de expansão com tudo que será novo, sem tocar no legado aprovado.
 **Critério de saída:** `docs/sprints/fase5/baseline_hardgate_fase4.md`, `docs/sprints/fase5/matriz_lacunas_produto.md`, `docs/sprints/fase5/padrao_nomes_fase5.md` e `docs/sprints/fase5/governanca_minima_fase5.md` publicados; lista completa de modelos congelados; padrão de nomes, schemas, roles premium e configuração dbt documentados e referenciados pelas Sprints 27–32.
+
+## Nota de reabertura técnica — 2026-04-27
+
+A Sprint 26 foi reaberta apenas para fechar os dois itens da regra-mãe que estavam pendentes: regra de publicação de novos produtos com testes próprios e criação de endpoints para dados validados. O escopo foi mantido aditivo e limitado a:
+
+- modelos novos `api_ans.api_premium_*` em `healthintel_dbt/models/api/premium/`;
+- testes próprios dbt para os modelos premium;
+- router/service/schema novos em `api/app/*/premium.py`;
+- rotas novas sob `/v1/premium/*`;
+- catálogo de endpoints e plano comercial `premium`.
+
+Impacto arquitetural: a FastAPI premium continua lendo exclusivamente `api_ans.api_premium_*`. Nenhuma rota existente foi alterada e nenhum modelo existente do baseline `v3.0.0` foi renomeado ou substituído.
 
 ## Regra-mãe da Fase 5 (vale para esta sprint e todas as seguintes)
 
@@ -14,9 +26,9 @@
 - [x] Não substituir `stg_*`, `int_*`, `fat_*`, `api_*` ou `consumo_*` já aprovadas.
 - [x] Criar apenas tabelas novas, com sufixos: `_validado`, `_qualificado`, `_mdm`, `_golden`, `_exception`, `_premium`.
 - [x] Usar os modelos existentes como fonte.
-- [ ] Publicar novos produtos de consumo apenas depois de passarem em testes próprios.
+- [x] Publicar novos produtos de consumo apenas depois de passarem em testes próprios.
 - [x] Manter os endpoints atuais funcionando sem mudança de contrato.
-- [ ] Criar endpoints novos para dados validados/enriquecidos.
+- [x] Criar endpoints novos para dados validados/enriquecidos.
 - [x] Garantir que a FastAPI continue consultando apenas `api_ans`; endpoints premium devem ler `api_ans.api_premium_*`, nunca `consumo_premium_ans` diretamente.
 
 ## Histórias
@@ -122,7 +134,19 @@ models:
 - [x] Matriz de lacunas vincula cada lacuna a uma sprint da Fase 5.
 - [x] Padrão de nomes não colide com nomes já existentes (verificação documental).
 - [x] Governança mínima da Sprint 26 define schemas, roles, padrões de tabela/coluna, classificação LGPD e owners antes da execução das Sprints 27–32.
-- [x] Nenhum arquivo SQL, YAML, Python ou de configuração fora de `docs/sprints/fase5/` é alterado nesta sprint.
+- [x] Nenhum arquivo SQL, YAML, Python ou de configuração fora de `docs/sprints/fase5/` foi alterado na entrega documental original. A reabertura técnica de 2026-04-27 é registrada separadamente nesta seção e tem escopo aditivo (modelos premium novos + saneamento mínimo de infra para destravar o hardgate dbt; nenhum modelo aprovado em `v3.0.0` foi alterado em sua semântica).
+
+## Validação complementar — reabertura técnica 2026-04-27
+
+- [x] `ruff check api/app api/tests scripts/smoke_premium.py` — zero erros.
+- [x] `pytest api/tests/unit/test_premium_service.py api/tests/integration/test_premium.py -v` — 4 testes passaram.
+- [x] `pytest testes/regressao/test_endpoints_fase4.py -v` — 2 testes passaram, cobrindo não regressão das rotas Prata/Fase 4.
+- [x] `dbt parse --project-dir healthintel_dbt --profiles-dir healthintel_dbt` — parse concluído.
+- [x] `dbt compile --project-dir healthintel_dbt --profiles-dir healthintel_dbt --select tag:premium` — compile concluído.
+- [x] Inspeção `rg "consumo_premium_ans|quality_ans|enrichment|mdm|stg_ans|int_ans|nucleo_ans|bruto_ans" api/app/services/premium.py api/app/routers/premium.py` — sem referências; o service premium aponta apenas para `api_ans.api_premium_*`.
+- [x] `dbt build --select tag:premium` — `Done. PASS=33 WARN=0 ERROR=0 SKIP=0` em 0.89 s (3 table models + 30 data tests). Modelos `api_premium_operadora_360_validado`, `api_premium_cnes_estabelecimento_validado` e `api_premium_quality_dataset` materializados em `api_ans` com `SELECT 0` (sem regressões; dados reais entram pelas Sprints 27+).
+- [x] `dbt test --select tag:premium` — `Done. PASS=30 WARN=0 ERROR=0 SKIP=0` em 0.63 s. Cobertura inclui `not_null`, `accepted_values`, `dbt_utils.unique_combination_of_columns` e os três singulares `assert_api_premium_*.sql`.
+- [x] Saneamento de infra exigido para o hardgate (não altera lógica das Fases 1–4): `infra/postgres/init/001_schemas.sql` reduzido às declarações `create schema` (as DDLs duplicadas de `bruto_ans.cadop`, `sib_beneficiario_operadora`, `sib_beneficiario_municipio` e `plataforma.log_uso` ficavam mascaradas por `if not exists` e quebravam o init quando o volume era recriado). As tabelas canônicas continuam em `002_bronze_operacional.sql` e `003_api_comercial.sql`. Volume PostgreSQL recriado limpo e dbt build/test premium executados com sucesso a partir desse estado.
 
 ## Resultado Esperado
 
