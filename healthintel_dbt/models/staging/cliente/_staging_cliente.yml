@@ -1,0 +1,56 @@
+version: 2
+
+sources:
+  - name: bruto_cliente
+    schema: bruto_cliente
+    description: "Schema privado por tenant. Não publicado em camadas públicas."
+    tables:
+      - name: contrato
+        description: "Contratos privados por tenant. RLS por tenant_id."
+        loaded_at_field: dt_carga
+      - name: subfatura
+        description: "Subfaturas privadas por tenant. RLS por tenant_id."
+        loaded_at_field: dt_carga
+
+models:
+  - name: stg_cliente_contrato
+    description: "Staging privada de contratos por tenant. View; nunca publicada em consumo público."
+    columns:
+      - name: tenant_id
+        description: "Identificador do tenant. Obrigatório, NOT NULL."
+        data_tests:
+          - not_null
+      - name: id_carga
+        data_tests:
+          - not_null
+      - name: hash_arquivo
+        data_tests:
+          - not_null
+      - name: numero_contrato_normalizado
+        data_tests:
+          - not_null:
+              config:
+                where: "numero_contrato_origem is not null"
+
+  - name: stg_cliente_subfatura
+    description: "Staging privada de subfaturas por tenant. View; nunca publicada em consumo público."
+    columns:
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: id_carga
+        data_tests:
+          - not_null
+      - name: hash_arquivo
+        data_tests:
+          - not_null
+      - name: numero_contrato_normalizado
+        data_tests:
+          - not_null:
+              config:
+                where: "numero_contrato_origem is not null"
+      - name: codigo_subfatura_normalizado
+        data_tests:
+          - not_null:
+              config:
+                where: "codigo_subfatura_origem is not null"

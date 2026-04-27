@@ -26,7 +26,7 @@ Este diretório materializa a governança mínima da Fase 5. A Fase 5 é aditiva
 | Sprint 29 | MDM público de operadora, estabelecimento e prestador | Backlog |
 | Sprint 30 | Ingestão privada tenant e MDM contrato/subfatura | Backlog |
 | Sprint 31 | Produtos premium em SQL direto e superfície `api_premium_*` | Backlog |
-| Sprint 32 | Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5 | Backlog |
+| Sprint 32 | Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5 | **CONCLUÍDA** |
 | Sprint 33 | Governança documental formal final e release `v3.8.0-gov` | Backlog |
 
 ## Contrato Arquitetural Premium

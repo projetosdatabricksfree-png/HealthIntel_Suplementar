@@ -24,7 +24,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - **`api/`**: FastAPI service exposing data via REST. Reads PostgreSQL `api_ans` schema exclusively (never `nucleo_ans`). X-API-Key auth + Redis caching (TTL 60s). Response envelope: `{dados: [...], meta: {...}}`.
 - **`mongo_layout_service/`**: MongoDB governance service. Stores file layout metadata, versioning, and bootstrap registries. Token-based auth.
 - **`ingestao/`**: Airflow DAGs + Python scripts. Download ANS datasets, validate structure via MongoDB layouts, load to PostgreSQL `bruto_ans` (Bronze).
-- **`healthintel_dbt/`**: dbt transformation engine. Medallion flow: `bruto_ans` (bronze) → `stg_ans` (silver views) → `int_ans` (ephemeral intermediates) → `nucleo_ans` (gold marts) → `api_ans` (gold API) → `consumo_ans` (client delivery).
+- **`healthintel_dbt/`**: dbt transformation engine. Medallion flow: `bruto_ans` (bronze) → `stg_ans` (silver views) → `int_ans` (ephemeral intermediates) → `nucleo_ans` (gold marts) → `api_ans` (gold API) → `consumo_ans` (client delivery). Fase 5 adds parallel layers: `quality_ans` (DQ models), `mdm_ans` (master data).
 
 **Key flows:**
 - **Ingest**: DAG downloads file → validate layout in MongoDB → load `bruto_ans` → record `plataforma.job`.
@@ -36,9 +36,13 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `bruto_ans`: Raw bronze tables (CADOP, SIB, IGR, NIP, RN623, IDSS, etc.). RANGE partitioned by competência or trimestre.
 - `stg_ans`: Staging views. Casting, normalization, `registro_ans` standardization.
 - `int_ans`: Ephemeral intermediates (not materialized). Enrich, join, derive metrics.
+- `quality_ans`: Fase 5 — Document quality models (`dq_*`). Validates CNPJ-DV, CNES-DV and other regulatory document checks. Tagged `quality`.
+- `mdm_ans`: Fase 5 — Public Master Data records. `mdm_operadora_master`, `mdm_estabelecimento_master`, `mdm_prestador_master` plus `xref_*_origem` crosswalks and `*_exception` lists. Tagged `mdm`.
 - `nucleo_ans`: Gold mart tables (facts: `fat_*`, dimensions: `dim_*`). Incremental or full refresh per model.
-- `api_ans`: Gold API tables. Denormalized, indexed, read-only from FastAPI.
+- `api_ans`: Gold API tables. Denormalized, indexed, read-only from FastAPI. Includes `api_premium_*` (Fase 5) — exclusive read surface for premium endpoints.
 - `consumo_ans`: Client delivery tables. Desnormalized Gold for direct BI/analyst access. Role `healthintel_cliente_reader`; each client gets individual LOGIN user. No access to internal schemas.
+- `consumo_premium_ans` (Fase 5, planned Sprint 31): Premium SQL-direct surface. Role `healthintel_premium_reader`. Cannot grant `healthintel_cliente_reader` access to this schema.
+- `bruto_cliente`, `stg_cliente`, `mdm_privado` (Fase 5, planned Sprint 30): Per-tenant private ingestion (contrato/subfatura) — isolated by tenant.
 - `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions, `lote_ingestao`).
 
 ---
@@ -84,13 +88,14 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 | **Smoke test (SIB)** | `make smoke-sib` |
 | **Smoke test (CADOP)** | `make smoke-cadop` |
 | **Smoke test (consumo)** | `make smoke-consumo` |
+| **Smoke test (premium)** | `make smoke-premium` |
 | **Smoke test (ingestão real)** | `make smoke-ingestao-real` |
 | **Load test** | `make load-test` (Locust) |
 | **Dev API server** | `make api-dev` (auto-reload on :8000) |
 | **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
 | **Full CI simulation** | `make ci-local` |
 | **Airflow connections** | `make airflow-setup` |
-| **Validate DAG parses** | `make dag-parse DAG=dag_name` |
+| **Validate all DAGs parse** | `make dag-parse` (lists `DagBag.import_errors`) |
 | **Test single DAG** | `make dag-test DAG=dag_name` |
 | **Test all DAGs** | `make dag-test-all` |
 | **Run real SIB ingestion** | `make dag-run-real-sib UFS=AC COMPETENCIA=YYYYMM` |
@@ -119,10 +124,10 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `app/main.py`: FastAPI entrypoint. Health check, CORS, auth middleware.
 - `app/core/`: Database pools, Redis client, config loading.
 - `app/middleware/`: `autenticacao.py` (X-API-Key validation + Redis cache), `rate_limit.py` (SlowAPI), `hardening.py` (security headers), `log_requisicao.py` (request timing).
-- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `financeiro_v2`, `rede`, `cnes`, `tiss`, `meta`, `admin_billing`, `admin_layout`, `bronze`, `prata`.
+- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `rede`, `cnes`, `tiss`, `meta`, `admin_billing`, `admin_layout`, `bronze`, `prata`, `premium` (Fase 5 — `/v1/premium/*` endpoints reading `api_ans.api_premium_*`).
 - `app/schemas/`: Pydantic v2 request/response models per endpoint group.
-- `app/services/`: Async query builders (never direct dbt model access, only `api_ans`). Key services: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro_v2`, `rede`, `cnes`, `tiss`, `bronze`, `prata`, `score_v3`, `billing`, `layout_admin`, `meta`, `uso`.
-- `app/dependencia.py`: Dependency injection (`validar_chave`, `verificar_plano`, `verificar_camada`). **Phase 3:** `verificar_camada(camada: str)` checks `plataforma.plano.camadas_permitidas[]` — blocks access if plan does not include the requested layer.
+- `app/services/`: Async query builders (never direct dbt model access, only `api_ans`). Key services: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro_v2`, `rede`, `cnes`, `tiss`, `bronze`, `prata`, `premium`, `score_v3`, `billing`, `layout_admin`, `meta`, `uso`.
+- `app/dependencia.py`: Dependency injection (`validar_chave`, `verificar_plano`, `verificar_camada`). **Phase 3:** `verificar_camada(camada: str)` checks `plataforma.plano.camadas_permitidas[]` — blocks access if plan does not include the requested layer. Camadas válidas: `bronze`, `prata`, `premium`.
 - `tests/unit/`: Health checks, auth, schema validation.
 - `tests/integration/`: End-to-end endpoint tests against live PostgreSQL.
 
@@ -143,6 +148,8 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `models/api/bronze/`: Thin views over `bruto_ans` (11 datasets). Redis cache DISABLED — data mutable until lote closes.
 - `models/api/prata/`: Tables from `stg_ans` + `int_ans` (17 models including CNES and TISS). Redis TTL 300s.
 - `models/consumo/`: Client delivery tables in `consumo_ans` schema (8 models, `tag: consumo`). Materialized as `table`. No API layer — direct BI access. Refreshed by `dag_dbt_consumo_refresh.py`.
+- `models/quality/`: Fase 5 — Document quality validators (`dq_*`). Schema `quality_ans`, `tag: quality`. Includes `dq_cadop_documento`, `dq_cnes_documento`, `dq_operadora_documento`, `dq_prestador_documento`, `audit_operadora_razao_social_divergente_cadop`.
+- `models/mdm/`: Fase 5 — Public MDM under `mdm_ans` schema, `tag: mdm`. Subdirs `operadora/`, `prestador/`, `estabelecimento/`. Each has `mdm_<entity>_master` (golden record, hash-deterministic key, status `ATIVO|QUARANTENA|REPROVADO|DESATIVADO`), `mdm_<entity>_exception` and `xref_<entity>_origem`.
 - `tests/`: dbt generic tests, singular SQL assertions (assert_*.sql).
 - `macros/`: `normalizar_registro_ans`, `competencia_para_data`, `competencia_para_trimestre`, `trimestre_para_competencia`, `calcular_hhi`, `normalizar_0_100`, `versao_metodologia_idss`, `classificar_rating_regulatorio`, `taxa_aprovacao_dataset`, `criar_indices`, `criar_indice_api`, `generate_schema_name`.
 - `seeds/ref_*`: Dimension data (ref_uf, ref_municipio_ibge, ref_competencia, ref_modalidade).
@@ -226,7 +233,7 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 | **API** | 8000 | PostgreSQL, Redis, MongoDB (layout lookup) | Reads only `api_ans` |
 | **Layout Service** | 8001 | MongoDB | Token-gated, no auth header |
 | **Airflow** | 8088 | PostgreSQL, MongoDB (layout validation) | DAGs load from `ingestao/dags/` |
-| **PostgreSQL** | 5432 | — | Schemas: bruto_ans, stg_ans, int_ans, nucleo_ans, api_ans, consumo_ans, plataforma, alembic |
+| **PostgreSQL** | 5432 | — | Schemas: bruto_ans, stg_ans, int_ans, quality_ans, mdm_ans, nucleo_ans, api_ans, consumo_ans, plataforma, alembic. Planejados Fase 5: bruto_cliente, stg_cliente, mdm_privado, consumo_premium_ans |
 | **MongoDB** | 27017 (27018 external) | — | DB: healthintel_layout, Collections: layout, layout_versao, etc. |
 | **Redis** | 6379 | — | Cache for API key validation (TTL 60s) |
 
@@ -257,7 +264,8 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 **Fase 2 (Sprints 13–14): CONCLUÍDA** — CNES + TISS implementados.
 **Fase 3 (Sprints 15–20): CONCLUÍDA** — baseline v2.0.0 taggeada.
 **Fase 4 (Sprints 21–25): CONCLUÍDA** — v3.0.0 taggeada. Prata completa, ingestão real SIB/CADOP, Gold marts BI, consumo_ans, qualidade v3.
-**Fase 5 (Sprints 26–30): ROADMAP** — Piloto comercial e comercialização. Ver `docs/sprints/fase5/roadmap`.
+**Fase 5 (Sprints 26–33): EM ANDAMENTO** — Enriquecimento, qualidade documental, MDM público/privado, premium. Aditiva sobre `v3.0.0`. Tag final prevista `v3.8.0-gov`.
+**Fase 6 (Sprints 14–21 do tracking comercial): BACKLOG** — Entrega ao cliente / operação comercial. Aditiva e operacional. Tag final prevista `v4.0.0`.
 
 ### Fase 2 (entregue)
 - **Sprint 13**: CNES — bronze, `stg_cnes_estabelecimento`, `fat_cnes_estabelecimento_municipio`, `fat_cnes_rede_gap_municipio`, `api_cnes_municipio`, `api_cnes_rede_gap`. Router/service: `cnes`.
@@ -277,7 +285,23 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 - **Sprint 24**: consumo_ans — schema `consumo_ans`, 8 modelos desnormalizados, role `healthintel_cliente_reader`, `dag_dbt_consumo_refresh.py`, `make consumo-refresh` / `make smoke-consumo`.
 - **Sprint 25**: Qualidade v3 / catálogo — freshness SLO dashboard, catálogo atualizado.
 
-Sprint docs: `docs/sprints/fase{2,3,4,5}/`. HIS-*.* stories por sprint. Runbooks operacionais: `docs/runbooks/` (ingestão real, aprovação de layout, reprocessamento, incidente de pipeline, novo cliente enterprise, versionamento de layout).
+### Fase 5 (em andamento)
+- **Sprint 26 (CONCLUÍDA)**: Baseline `v3.0.0` congelado. Documentos: `baseline_hardgate_fase4.md`, `matriz_lacunas_produto.md`, `padrao_nomes_fase5.md`, `governanca_minima_fase5.md`. Sem código.
+- **Sprint 27 (CONCLUÍDA)**: Qualidade documental — modelos `dq_*` em `quality_ans`, hardgates de validação documental (CNPJ-DV, etc.) com sinal `warn`.
+- **Sprint 28 (CONCLUÍDA)**: Validação determinística CNPJ offline.
+- **Sprint 29 (CONCLUÍDA)**: MDM público — `mdm_operadora_master`, `mdm_estabelecimento_master`, `mdm_prestador_master` em `mdm_ans` com `xref_*_origem` e `*_exception`. Tag de release move-se para o final da Fase 5.
+- **Sprint 30 (CONCLUÍDA)**: MDM contrato/subfatura — entrada privada por tenant (`bruto_cliente`, `stg_cliente`, `mdm_privado`). Bootstrap `028_fase5_mdm_privado_rls.sql` com RLS por `app.tenant_id`, hashes determinísticos `md5(text)`, 8 modelos `mdm_privado` + 2 staging cliente, 10 testes singulares + 23 testes YAML. Hard gates V1–V10 verdes.
+- **Sprint 31 (CONCLUÍDA)**: Produtos premium em SQL direto — `consumo_premium_ans` + `api_ans.api_premium_*`.
+- **Sprint 32 (CONCLUÍDA)**: Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5. 9 rotas premium, schemas completos, tenant obrigatório em rotas privadas, smoke 14 cenários, testes de integração 12 cenários, regressão Fase 5.
+- **Sprint 33 (backlog)**: Governança documental formal final, release `v3.8.0-gov`.
+
+**Regra-mãe da Fase 5**: aditiva. Modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline `v3.0.0` não podem ser reescritos, renomeados, nem ter semântica alterada. FastAPI premium **nunca** lê `consumo_premium_ans`, `mdm_ans`, `mdm_privado`, `quality_ans`, `bruto_cliente`, `stg_cliente` ou `enrichment` diretamente — só `api_ans.api_premium_*`. Proibido: Serpro, Receita online, BrasilAPI, enrichment, enrich-cnpj, requests externos.
+
+### Fase 6 (backlog — operação comercial)
+- Sprints 14–21 (numeração do tracking comercial). Cobre infraestrutura/runtime, API de produção, orquestração e freshness, observabilidade SLA/SLO, segurança LGPD/tenant/billing, onboarding e go-live (`v4.0.0`).
+- **Regra-mãe da Fase 6**: aditiva e operacional. Não altera lógica de modelos, não renomeia tabelas, não muda contratos de endpoints existentes.
+
+Sprint docs: `docs/sprints/fase{2,3,4,5,6}/`. HIS-*.* stories por sprint. Runbooks operacionais: `docs/runbooks/` (ingestão real, aprovação de layout, reprocessamento, incidente de pipeline, novo cliente enterprise, versionamento de layout).
 
 ---
 

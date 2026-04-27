@@ -1,0 +1,252 @@
+version: 2
+
+models:
+  - name: consumo_premium_operadora_360_validado
+    description: >
+      Produto SQL premium de operadora 360 validada, derivado de consumo_operadora_360,
+      dq_operadora_documento e mdm_operadora_master. Publica apenas linhas com documento_quality_status
+      VALIDO, registro_ans e CNPJ tecnicamente válidos, e operadora_master_id resolvido. Granularidade:
+      competencia e registro_ans. Owner: engenharia de dados HealthIntel.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["competencia", "registro_ans"]
+    columns:
+      - name: operadora_master_id
+        description: Chave master pública da operadora no MDM.
+        data_tests: [not_null]
+      - name: competencia
+        description: Competência mensal de referência.
+        data_tests: [not_null]
+      - name: registro_ans
+        description: Registro ANS normalizado da operadora.
+        data_tests: [not_null]
+      - name: cnpj_normalizado
+        description: CNPJ público normalizado e validado tecnicamente.
+        data_tests: [not_null]
+      - name: documento_quality_status
+        description: Status documental consolidado da sprint 28; neste produto sempre VALIDO.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['VALIDO']
+      - name: is_cnpj_estrutural_valido
+        description: CNPJ com tamanho 14, dígito válido e não sequência repetida.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: quality_score_documental
+        description: Score de qualidade documental entre 0 e 100.
+        data_tests: [not_null]
+      - name: quality_score_mdm
+        description: Score de qualidade MDM entre 0 e 100.
+        data_tests: [not_null]
+      - name: quality_score_publicacao
+        description: Score de qualidade de publicação entre 0 e 100.
+        data_tests: [not_null]
+
+  - name: consumo_premium_cnes_estabelecimento_validado
+    description: >
+      Produto SQL premium de estabelecimento CNES validado com identidade MDM pública
+      e prestador master resolvido. Granularidade: competência e cnes_normalizado.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["competencia", "cnes_normalizado"]
+    columns:
+      - name: estabelecimento_master_id
+        description: Chave master do estabelecimento no MDM público.
+        data_tests: [not_null]
+      - name: prestador_master_id
+        description: Chave master do prestador no MDM público. Pode ser null se prestador não resolvido.
+      - name: competencia
+        description: Competência mensal de referência do cadastro CNES.
+        data_tests: [not_null]
+      - name: cnes_normalizado
+        description: Código CNES normalizado para sete dígitos.
+        data_tests: [not_null]
+      - name: documento_quality_status
+        description: Status documental consolidado; neste produto sempre VALIDO.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['VALIDO']
+      - name: cnes_formato_valido
+        description: Indica CNES com formato de 7 dígitos.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: cnpj_digito_valido
+        description: Indica CNPJ com dígito verificador válido.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+      - name: quality_score_cnes
+        description: Score de qualidade CNES entre 0 e 100.
+        data_tests: [not_null]
+      - name: quality_score_mdm
+        description: Score de qualidade MDM entre 0 e 100.
+        data_tests: [not_null]
+      - name: quality_score_publicacao
+        description: Score de qualidade de publicação entre 0 e 100.
+        data_tests: [not_null]
+
+  - name: consumo_premium_mdm_operadora
+    description: >
+      Produto SQL premium de operadoras master públicas, filtrado por status_mdm ATIVO.
+      Granularidade: operadora_master_id.
+    columns:
+      - name: operadora_master_id
+        data_tests:
+          - not_null
+          - unique
+      - name: registro_ans_canonico
+        data_tests: [not_null]
+
+  - name: consumo_premium_mdm_prestador
+    description: >
+      Produto SQL premium de prestadores master públicos, filtrado por status_mdm ATIVO.
+      Granularidade: prestador_master_id.
+    columns:
+      - name: prestador_master_id
+        data_tests:
+          - not_null
+          - unique
+
+  - name: consumo_premium_contrato_validado
+    description: >
+      Produto SQL premium privado de contrato validado por tenant. Derivado exclusivamente
+      do mdm_contrato_master, filtrado para status GOLDEN/CANDIDATE e sem exceção bloqueante.
+      Granularidade: tenant_id e contrato_master_id.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["tenant_id", "contrato_master_id"]
+    columns:
+      - name: tenant_id
+        description: Identificador do tenant. Obrigatório para isolamento multi-tenant.
+        data_tests: [not_null]
+      - name: contrato_master_id
+        description: Chave master do contrato no MDM privado.
+        data_tests: [not_null]
+      - name: operadora_master_id
+        description: Chave master da operadora no MDM público.
+      - name: has_excecao_bloqueante
+        description: Deve ser sempre false neste produto principal.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+                quote: false
+
+  - name: consumo_premium_subfatura_validada
+    description: >
+      Produto SQL premium privado de subfatura validada por tenant. Derivado exclusivamente
+      do mdm_subfatura_master, filtrado para status GOLDEN/CANDIDATE e sem exceção bloqueante.
+      Granularidade: tenant_id, subfatura_master_id e competencia.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["tenant_id", "subfatura_master_id", "competencia"]
+    columns:
+      - name: tenant_id
+        description: Identificador do tenant. Obrigatório para isolamento multi-tenant.
+        data_tests: [not_null]
+      - name: subfatura_master_id
+        description: Chave master da subfatura no MDM privado.
+        data_tests: [not_null]
+      - name: contrato_master_id
+        description: Chave master do contrato resolvido.
+        data_tests: [not_null]
+      - name: has_excecao_bloqueante
+        description: Deve ser sempre false neste produto principal.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+                quote: false
+
+  - name: consumo_premium_contrato_subfatura_operadora
+    description: >
+      Visão integrada premium de contrato, subfatura e operadora por tenant.
+      Preserva tenant_id, não mistura tenants e não publica linhas com exceção bloqueante.
+    columns:
+      - name: tenant_id
+        description: Identificador do tenant.
+        data_tests: [not_null]
+      - name: contrato_master_id
+        data_tests: [not_null]
+      - name: operadora_master_id
+        description: Chave master da operadora no MDM público.
+
+  - name: consumo_premium_contrato_inconsistencia
+    description: >
+      Produto premium de inconsistência de contrato. Exposição controlada e separada
+      dos produtos principais. Publica apenas exceções bloqueantes (is_blocking = true).
+    columns:
+      - name: tenant_id
+        description: Identificador do tenant. Pode ser null para exceções de tenant ausente.
+      - name: contrato_master_id
+        data_tests: [not_null]
+      - name: exception_type
+        data_tests: [not_null]
+      - name: is_blocking
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true]
+                quote: false
+
+  - name: consumo_premium_tiss_procedimento_tuss_validado
+    description: >
+      Produto SQL premium TISS/TUSS por procedimento com operadora master resolvida.
+      Modo CI sintético — não comercial. Granularidade: trimestre, registro_ans e cd_procedimento_tuss.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["trimestre", "registro_ans", "cd_procedimento_tuss"]
+    columns:
+      - name: trimestre
+        data_tests: [not_null]
+      - name: registro_ans
+        data_tests: [not_null]
+      - name: operadora_master_id
+        data_tests: [not_null]
+      - name: cd_procedimento_tuss
+        data_tests: [not_null]
+
+  - name: consumo_premium_quality_dataset
+    description: >
+      Produto SQL premium agregado de qualidade documental por fonte e status.
+      Granularidade: fonte_documento e documento_quality_status.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ["fonte_documento", "documento_quality_status"]
+    columns:
+      - name: fonte_documento
+        data_tests: [not_null]
+      - name: documento_quality_status
+        data_tests: [not_null]
+      - name: quality_score_documental
+        data_tests: [not_null]
+
+  - name: xref_tiss_tuss_procedimento
+    description: >
+      Crosswalk TISS/TUSS de procedimentos. Modo CI sintético — não comercial.
+      Mapeia códigos TISS para terminologia TUSS sintética. tiss_tuss_match_status
+      indica correspondência (MATCHED/UNMATCHED/AMBIGUOUS/DEPRECATED).
+    columns:
+      - name: codigo_tuss
+        data_tests: [not_null]
+      - name: tiss_tuss_match_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['MATCHED', 'UNMATCHED', 'AMBIGUOUS', 'DEPRECATED']

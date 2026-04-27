@@ -3,7 +3,7 @@ COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 DBT_BIN := ../.venv/bin/dbt
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
 
 PYTHON ?= python
 ELT_ESCOPO ?= sector_core
@@ -43,6 +43,12 @@ dbt-build:
 
 dbt-test:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test
+
+dbt-build-premium:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:quality tag:mdm tag:mdm_privado tag:consumo_premium tag:premium
+
+dbt-test-premium:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:quality tag:mdm tag:mdm_privado tag:consumo_premium tag:premium
 
 dbt-seed:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed
@@ -101,7 +107,7 @@ lint:
 	ruff check .
 
 sql-lint:
-	$(DBT_ENV) sqlfluff lint healthintel_dbt/models healthintel_dbt/tests
+	$(DBT_ENV) $(DBT_BIN) sqlfluff lint healthintel_dbt/models healthintel_dbt/tests
 
 smoke:
 	python scripts/smoke_piloto.py

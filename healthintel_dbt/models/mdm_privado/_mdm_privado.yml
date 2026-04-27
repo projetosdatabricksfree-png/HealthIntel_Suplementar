@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: mdm_contrato_master
+    description: |
+      Master Data Management privado de contratos por tenant. Reconcilia
+      dados internos do cliente com o MDM público de operadora. Não publica
+      dados privados em schemas públicos. Validação documental local apenas.
+    columns:
+      - name: contrato_master_id
+        description: "Hash determinístico md5(text). Único por (tenant_id, numero_contrato_normalizado)."
+        data_tests:
+          - unique
+          - not_null
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: numero_contrato_normalizado
+        data_tests:
+          - not_null
+      - name: mdm_status
+        data_tests:
+          - accepted_values:
+              values: ['GOLDEN', 'CANDIDATE', 'QUARENTENA', 'DEPRECATED']
+      - name: mdm_confidence_score
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and mdm_confidence_score <= 100"
+
+  - name: mdm_subfatura_master
+    description: |
+      Master Data Management privado de subfaturas por tenant. Resolve
+      contrato_master_id pelo par (tenant_id, numero_contrato_normalizado).
+    columns:
+      - name: subfatura_master_id
+        description: "Hash determinístico md5(text). Único por (tenant_id, numero_contrato_normalizado, codigo_subfatura_normalizado)."
+        data_tests:
+          - unique
+          - not_null
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: codigo_subfatura_normalizado
+        data_tests:
+          - not_null
+      - name: mdm_status
+        data_tests:
+          - accepted_values:
+              values: ['GOLDEN', 'CANDIDATE', 'QUARENTENA', 'DEPRECATED']
+      - name: mdm_confidence_score
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 and mdm_confidence_score <= 100"
+
+  - name: xref_contrato_origem
+    description: "Crosswalk privado: liga origem do contrato ao master por tenant."
+    columns:
+      - name: xref_contrato_id
+        data_tests:
+          - not_null
+      - name: tenant_id
+        data_tests:
+          - not_null
+
+  - name: xref_subfatura_origem
+    description: "Crosswalk privado: liga origem da subfatura ao master por tenant."
+    columns:
+      - name: xref_subfatura_id
+        data_tests:
+          - not_null
+      - name: tenant_id
+        data_tests:
+          - not_null
+
+  - name: mdm_contrato_exception
+    description: "Exceções privadas de contrato. Severidade BLOCKING ou WARNING."
+    columns:
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: exception_type
+        data_tests:
+          - not_null
+      - name: exception_severity
+        data_tests:
+          - accepted_values:
+              values: ['BLOCKING', 'WARNING']
+      - name: is_blocking
+        data_tests:
+          - not_null
+
+  - name: mdm_subfatura_exception
+    description: "Exceções privadas de subfatura. Severidade BLOCKING ou WARNING."
+    columns:
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: exception_type
+        data_tests:
+          - not_null
+      - name: exception_severity
+        data_tests:
+          - accepted_values:
+              values: ['BLOCKING', 'WARNING']
+      - name: is_blocking
+        data_tests:
+          - not_null
+
+  - name: mdm_operadora_contrato_exception
+    description: "Auditoria entre operadora pública e contrato privado."
+    columns:
+      - name: tenant_id
+        data_tests:
+          - not_null
+      - name: exception_type
+        data_tests:
+          - not_null
+
+  - name: mdm_prestador_contrato_exception
+    description: |
+      Reservada. Hoje retorna estrutura vazia com colunas obrigatórias —
+      bruto_cliente.contrato não carrega prestador associado nesta sprint.

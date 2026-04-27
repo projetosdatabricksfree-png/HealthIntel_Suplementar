@@ -10,5 +10,24 @@ seeds:
 
   - name: ref_tuss
     description: Base sintética representativa de referencia TUSS para desenvolvimento e CI.
+    config:
+      column_types:
+        codigo_tuss: varchar(20)
+        descricao: text
+        grupo: varchar(100)
+        subgrupo: varchar(100)
+        capitulo: varchar(100)
+        vigencia_inicio: date
+        vigencia_fim: varchar(10)
   - name: ref_rol_procedimento
     description: Base sintética representativa de procedimentos da RN vigente para desenvolvimento e CI.
+    config:
+      column_types:
+        codigo_tuss: varchar(20)
+        descricao: text
+        segmento: varchar(50)
+        obrigatorio_medico: varchar(10)
+        obrigatorio_odonto: varchar(10)
+        carencia_dias: integer
+        vigencia_inicio: date
+        vigencia_fim: varchar(10)

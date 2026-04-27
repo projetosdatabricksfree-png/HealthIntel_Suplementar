@@ -17,6 +17,18 @@ models:
     staging:
       +schema: stg_ans
       +materialized: view
+      cliente:
+        +schema: stg_cliente
+        +materialized: view
+        +tags: ["staging", "cliente", "privado"]
+    mdm_privado:
+      +schema: mdm_privado
+      +materialized: table
+      +tags: ["mdm_privado"]
+    consumo_premium:
+      +schema: consumo_premium_ans
+      +materialized: table
+      +tags: ["consumo_premium"]
     quality:
       +schema: quality_ans
       +materialized: table
