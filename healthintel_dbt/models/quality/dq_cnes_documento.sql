@@ -69,6 +69,16 @@ qualificado as (
         end as cnpj_is_sequencia_invalida,
         {{ validar_cnpj_digito('cnpj_normalizado') }} as cnpj_digito_valido
     from documento
+),
+
+classificado as (
+    select
+        *,
+        case
+            when not cnes_formato_valido then 'INVALIDO_FORMATO'
+            else {{ validar_cnpj_completo('cnpj_normalizado') }}
+        end as documento_quality_status
+    from qualificado
 )
 
 select
@@ -82,20 +92,14 @@ select
     cnpj_tamanho_valido,
     cnpj_digito_valido,
     cnpj_is_sequencia_invalida,
-    case
-        when not cnes_formato_valido then 'INVALIDO_FORMATO'
-        when cnpj_normalizado is null then 'NULO'
-        when cnpj_is_sequencia_invalida then 'SEQUENCIA_INVALIDA'
-        when not cnpj_tamanho_valido then 'INVALIDO_FORMATO'
-        when not cnpj_digito_valido then 'INVALIDO_DIGITO'
-        else 'VALIDO'
-    end as documento_quality_status,
+    documento_quality_status,
     case
         when not cnes_formato_valido then 'CNES normalizado diferente de 7 digitos'
-        when cnpj_normalizado is null then 'CNPJ ausente na fonte CNES aprovada'
-        when cnpj_is_sequencia_invalida then 'CNPJ composto por sequencia repetida'
-        when not cnpj_tamanho_valido then 'CNPJ normalizado diferente de 14 digitos'
-        when not cnpj_digito_valido then 'CNPJ com digito verificador invalido'
+        when documento_quality_status = 'VALIDO' then null
+        when documento_quality_status = 'NULO' then 'CNPJ ausente na fonte CNES aprovada'
+        when documento_quality_status = 'INVALIDO_FORMATO' then 'CNPJ normalizado diferente de 14 digitos'
+        when documento_quality_status = 'SEQUENCIA_INVALIDA' then 'CNPJ composto por sequencia repetida'
+        when documento_quality_status = 'INVALIDO_DIGITO' then 'CNPJ com digito verificador invalido'
         else null
     end as motivo_invalidade_documento,
     razao_social,
@@ -113,5 +117,5 @@ select
     _hash_arquivo,
     _hash_estrutura,
     _status_parse
-from qualificado
+from classificado
 

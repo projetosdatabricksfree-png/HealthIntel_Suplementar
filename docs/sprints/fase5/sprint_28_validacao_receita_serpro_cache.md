@@ -1,3 +1,14 @@
+# OBSOLETO — Sprint 28 substituída
+
+Este documento foi substituído por:
+`docs/sprints/fase5/sprint_28_validacao_cnpj_offline.md`
+
+A Sprint 28 não usa Serpro, Receita online, BrasilAPI, cache externo, provider Python ou schema enrichment. A validação de CNPJ é 100% offline, determinística e sem dependência externa.
+
+---
+
+(Conteúdo original preservado como referência histórica. Nenhuma seção abaixo tem valor normativo.)
+
 # Sprint 28 — Validação Oficial CNPJ Serpro com Cache e Auditoria
 
 **Status:** Roadmap — não iniciada. Nenhum artefato físico desta sprint existe no repositório (verificado: `shared/python/healthintel_quality/integrations/` ausente; `healthintel_dbt/models/enrichment/` ausente; `infra/postgres/init/026_fase5_quality_enrichment_mdm.sql` ausente; tabela `enrichment.documento_receita_cache` inexistente).
@@ -239,9 +250,9 @@ psql -c "\\dp plataforma.log_enriquecimento"
 | `GRANT SELECT ON enrichment.* TO healthintel_cliente_reader`. | `commercial-protection-security` | Cliente nunca acessa schema interno; cache de enriquecimento não é produto. |
 | Endpoint FastAPI lendo `enrichment.documento_receita_cache` direto. | `api-serving`, `dbt-medallion-modeling` | API consome só `api_ans`. Exposição futura é via `api_premium_*` com flag derivada, sem expor `payload_resumido_json`. |
 | Reprocessar todos os CNPJs todo run, ignorando TTL. | `observability-billing-ops` | Quota Serpro é cara; `make enrich-cnpj` é idempotente por design. |
-| Reabrir `v3.0.0` para “limpar bruto_ans” enquanto adiciona `enrichment`. | `sprint-release-hardgates` | Fase 5 é aditiva; baseline congelado. |
+| Reabrir `v3.0.0` para "limpar bruto_ans" enquanto adiciona `enrichment`. | `sprint-release-hardgates` | Fase 5 é aditiva; baseline congelado. |
 | Tratar `NAO_ENCONTRADO` como `ERRO` (ou inverso). | `data-quality-contracts` | Os quatro estados (`ATIVO`/`INATIVO`/`NAO_ENCONTRADO`/`ERRO`) são distintos e contam diferente em downstream MDM. |
-| Carregar CNPJ inválido no Serpro “para confirmar que é inválido”. | `observability-billing-ops`, `data-quality-contracts` | Filtragem prévia por `quality_ans.dq_*_documento` é obrigatória. |
+| Carregar CNPJ inválido no Serpro "para confirmar que é inválido". | `observability-billing-ops`, `data-quality-contracts` | Filtragem prévia por `quality_ans.dq_*_documento` é obrigatória. |
 
 ## Pendências e riscos
 

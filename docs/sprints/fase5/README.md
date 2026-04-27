@@ -22,7 +22,7 @@ Este diretório materializa a governança mínima da Fase 5. A Fase 5 é aditiva
 |--------|--------|-----------------------|
 | Sprint 26 | Baseline real `v3.0.0`, inventário e governança mínima | Documental |
 | Sprint 27 | Qualidade documental e modelos `dq_*` | Backlog |
-| Sprint 28 | Enriquecimento CNPJ Serpro/cache | Backlog |
+| Sprint 28 | Validação Determinística de CNPJ (Offline) | Backlog |
 | Sprint 29 | MDM público de operadora, estabelecimento e prestador | Backlog |
 | Sprint 30 | Ingestão privada tenant e MDM contrato/subfatura | Backlog |
 | Sprint 31 | Produtos premium em SQL direto e superfície `api_premium_*` | Backlog |
@@ -46,7 +46,6 @@ Regra bloqueante: a FastAPI nunca lê `consumo_premium_ans` diretamente. Rotas p
 | Camada | Schema/documento | Primeira sprint de implementação | Observação |
 |--------|------------------|----------------------------------|------------|
 | Qualidade documental | `quality_ans` | Sprint 27 | Modelos `dq_*` e tabelas `*_validado`. |
-| Enriquecimento CNPJ | `enrichment` | Sprint 28 | Cache/auditoria Serpro, sem scraping. |
 | MDM público | `mdm` | Sprint 29 | Golden records públicos e crosswalks. |
 | Entrada privada tenant | `bruto_cliente`, `stg_cliente` | Sprint 30 | Contrato/subfatura privados por tenant. |
 | MDM privado | `mdm_privado` | Sprint 30 | Dados privados isolados por tenant. |

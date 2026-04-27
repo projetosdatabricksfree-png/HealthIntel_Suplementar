@@ -7,7 +7,6 @@ Este documento define a governança obrigatória antes da implementação das Sp
 | Schema | Responsabilidade | Primeira sprint de uso | Publicação |
 |--------|------------------|------------------------|------------|
 | `quality_ans` | Qualidade documental, scores, regras `dq_*` e tabelas `*_validado` técnicas | Sprint 27 | Interna/API premium apenas após derivação em `api_ans.api_premium_*` quando aplicável |
-| `enrichment` | Cache/auditoria de enriquecimento externo, principalmente CNPJ Serpro | Sprint 28 | Interna; não é superfície de cliente |
 | `mdm` | MDM público, golden records, crosswalks e exceptions | Sprint 29 | Interna/API premium apenas via `api_ans.api_premium_*` |
 | `bruto_cliente` | Entrada privada bruta por tenant para contrato/subfatura | Sprint 30 | Interna, sem grants para cliente legado |
 | `stg_cliente` | Staging privada por tenant com cast, limpeza, layout e quarentena | Sprint 30 | Interna, sem grants para cliente legado |
@@ -46,10 +45,6 @@ models:
       +schema: quality_ans
       +materialized: table
       +tags: ["quality"]
-    enrichment:
-      +schema: enrichment
-      +materialized: table
-      +tags: ["enrichment"]
     mdm:
       +schema: mdm
       +materialized: table
