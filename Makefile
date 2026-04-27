@@ -6,6 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 .PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
 
 PYTHON ?= python
+PYTEST_BIN := .venv/bin/pytest
 ELT_ESCOPO ?= sector_core
 ELT_FAMILIAS ?=
 ELT_LIMITE ?= 100
@@ -175,7 +176,7 @@ ci-local: compose-config lint sql-lint test
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps && $(DBT_ENV) $(DBT_BIN) compile
 
 test:
-	pytest
+	$(PYTEST_BIN)
 
 airflow-setup:
 	$(COMPOSE) exec airflow-scheduler airflow connections add postgres_default \
