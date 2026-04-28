@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable, Sequence
 
-from fastapi import Header, HTTPException, Request, status
+from fastapi import Header, HTTPException, Query, Request, status
 from sqlalchemy import text
 
 from api.app.core.config import get_settings
@@ -184,3 +184,58 @@ def verificar_camada(camada: str):
             )
 
     return _verificador
+
+
+async def verificar_entitlement_historico(
+    request: Request,
+    dataset_codigo: str = Query(...),
+    competencia: int = Query(...),
+    limite: int = Query(default=1000, ge=1),
+) -> None:
+    from api.app.services.historico_sob_demanda import (
+        CompetenciaHistoricaNaoAutorizadaError,
+        EntitlementHistoricoAusenteError,
+        PaginacaoHistoricaInvalidaError,
+        validar_acesso_competencia,
+        validar_paginacao_historica,
+    )
+
+    cliente_id = getattr(request.state, "cliente_id", None)
+    if not cliente_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "codigo": "entitlement_historico_ausente",
+                "mensagem": "Cliente autenticado obrigatorio para acesso historico.",
+                "dataset_codigo": dataset_codigo,
+                "competencia": competencia,
+            },
+        )
+
+    try:
+        validar_paginacao_historica(limite)
+        await validar_acesso_competencia(cliente_id, dataset_codigo, competencia)
+    except PaginacaoHistoricaInvalidaError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "codigo": "paginacao_historica_invalida",
+                "mensagem": str(exc),
+                "dataset_codigo": dataset_codigo,
+                "competencia": competencia,
+            },
+        ) from exc
+    except (EntitlementHistoricoAusenteError, CompetenciaHistoricaNaoAutorizadaError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "codigo": "entitlement_historico_ausente",
+                "mensagem": (
+                    "Cliente não possui entitlement ativo para histórico "
+                    "deste dataset/competência."
+                ),
+                "dataset_codigo": dataset_codigo,
+                "competencia": competencia,
+                "detalhe": str(exc),
+            },
+        ) from exc

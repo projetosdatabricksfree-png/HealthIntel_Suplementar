@@ -35,6 +35,7 @@ async def _limpar_demo() -> None:
                 """
                 delete from bruto_ans.tiss_procedimento_trimestral
                 where _arquivo_origem like 'tiss_demo_%'
+                   or _hash_arquivo like 'demo_hash_tiss%'
                 """
             )
         )
@@ -43,6 +44,7 @@ async def _limpar_demo() -> None:
                 """
                 delete from bruto_ans.diops_operadora_trimestral
                 where _arquivo_origem like 'tiss_demo_%'
+                   or _hash_arquivo like 'demo_hash_diops_tiss%'
                 """
             )
         )
@@ -118,22 +120,24 @@ async def main() -> None:
     await _limpar_demo()
     registros_tiss = _gerar_tiss()
     registros_diops = _gerar_diops()
-    await carregar_tiss_procedimento_bruto(
-        registros_tiss,
-        arquivo_origem="tiss_demo_2025T1.csv",
-        layout_id="layout_tiss_procedimento_csv",
-        layout_versao_id="layout_tiss_procedimento_csv:v1",
-        hash_arquivo="demo_hash_tiss",
-        hash_estrutura="demo_hash_estrutura_tiss",
-    )
-    await carregar_diops_bruto(
-        registros_diops,
-        arquivo_origem="tiss_demo_2025T1_diops.csv",
-        layout_id="layout_diops_csv",
-        layout_versao_id="layout_diops_csv:v1",
-        hash_arquivo="demo_hash_diops_tiss",
-        hash_estrutura="demo_hash_estrutura_diops_tiss",
-    )
+    for indice, registro in enumerate(registros_tiss, start=1):
+        await carregar_tiss_procedimento_bruto(
+            [registro],
+            arquivo_origem=f"tiss_demo_2025T1_{indice}.csv",
+            layout_id="layout_tiss_procedimento_csv",
+            layout_versao_id="layout_tiss_procedimento_csv:v1",
+            hash_arquivo=f"demo_hash_tiss_{indice}",
+            hash_estrutura="demo_hash_estrutura_tiss",
+        )
+    for indice, registro in enumerate(registros_diops, start=1):
+        await carregar_diops_bruto(
+            [registro],
+            arquivo_origem=f"tiss_demo_2025T1_diops_{indice}.csv",
+            layout_id="layout_diops_csv",
+            layout_versao_id="layout_diops_csv:v1",
+            hash_arquivo=f"demo_hash_diops_tiss_{indice}",
+            hash_estrutura="demo_hash_estrutura_diops_tiss",
+        )
     print(
         {
             "status": "ok",

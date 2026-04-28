@@ -3,9 +3,9 @@ COMPOSE := docker compose -f infra/docker-compose.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 DBT_BIN := ../.venv/bin/dbt
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref
+.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga
 
-PYTHON ?= python
+PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
 ELT_ESCOPO ?= sector_core
 ELT_FAMILIAS ?=
@@ -55,54 +55,54 @@ dbt-seed:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed
 
 demo-data:
-	python scripts/seed_demo_core.py
-	python scripts/seed_demo_regulatorio.py
-	python scripts/seed_demo_idss.py
+	$(PYTHON) scripts/seed_demo_core.py
+	$(PYTHON) scripts/seed_demo_regulatorio.py
+	$(PYTHON) scripts/seed_demo_idss.py
 
 demo-data-regulatorio:
-	python scripts/seed_demo_regulatorio.py
+	$(PYTHON) scripts/seed_demo_regulatorio.py
 
 demo-data-idss:
-	python scripts/seed_demo_idss.py
+	$(PYTHON) scripts/seed_demo_idss.py
 
 demo-data-rede:
-	python scripts/bootstrap_layout_registry_rede.py
-	python scripts/seed_demo_rede.py
+	$(PYTHON) scripts/bootstrap_layout_registry_rede.py
+	$(PYTHON) scripts/seed_demo_rede.py
 
 demo-data-cnes:
-	python scripts/bootstrap_layout_registry_cnes.py
-	python scripts/seed_demo_cnes.py
+	$(PYTHON) scripts/bootstrap_layout_registry_cnes.py
+	$(PYTHON) scripts/seed_demo_cnes.py
 
 demo-data-tiss:
-	python scripts/bootstrap_layout_registry_tiss.py
-	python scripts/seed_demo_tiss.py
+	$(PYTHON) scripts/bootstrap_layout_registry_tiss.py
+	$(PYTHON) scripts/seed_demo_tiss.py
 
 demo-data-sib:
-	python scripts/seed_demo_sib.py
+	$(PYTHON) scripts/seed_demo_sib.py
 
 demo-data-cadop:
-	python scripts/seed_demo_cadop.py
+	$(PYTHON) scripts/seed_demo_cadop.py
 
 bootstrap-regulatorio-layouts:
-	python scripts/bootstrap_layout_registry_regulatorio.py
+	$(PYTHON) scripts/bootstrap_layout_registry_regulatorio.py
 
 bootstrap-rede-layouts:
-	python scripts/bootstrap_layout_registry_rede.py
+	$(PYTHON) scripts/bootstrap_layout_registry_rede.py
 
 bootstrap-cnes-layouts:
-	python scripts/bootstrap_layout_registry_cnes.py
+	$(PYTHON) scripts/bootstrap_layout_registry_cnes.py
 
 bootstrap-tiss-layouts:
-	python scripts/bootstrap_layout_registry_tiss.py
+	$(PYTHON) scripts/bootstrap_layout_registry_tiss.py
 
 bootstrap-sib-layouts:
-	python scripts/bootstrap_layout_registry_sib.py
+	$(PYTHON) scripts/bootstrap_layout_registry_sib.py
 
 bootstrap-cadop-layouts:
-	python scripts/bootstrap_layout_registry_cadop.py
+	$(PYTHON) scripts/bootstrap_layout_registry_cadop.py
 
 billing-close:
-	python scripts/fechar_ciclo_billing.py --referencia $(REF)
+	$(PYTHON) scripts/fechar_ciclo_billing.py --referencia $(REF)
 
 lint:
 	ruff check .
@@ -111,38 +111,47 @@ sql-lint:
 	$(DBT_ENV) $(DBT_BIN) sqlfluff lint healthintel_dbt/models healthintel_dbt/tests
 
 smoke:
-	python scripts/smoke_piloto.py
+	$(PYTHON) scripts/smoke_piloto.py
 
 smoke-rede:
-	python scripts/smoke_rede.py
+	$(PYTHON) scripts/smoke_rede.py
 
 smoke-cnes:
-	python scripts/seed_demo_cnes.py
-	python scripts/smoke_cnes.py
+	$(PYTHON) scripts/seed_demo_cnes.py
+	$(PYTHON) scripts/smoke_cnes.py
 
 smoke-tiss:
-	python scripts/seed_demo_rede.py
-	python scripts/seed_demo_tiss.py
-	python scripts/smoke_tiss.py
+	$(PYTHON) scripts/seed_demo_rede.py
+	$(PYTHON) scripts/seed_demo_tiss.py
+	$(PYTHON) scripts/smoke_tiss.py
 
 smoke-prata:
-	python scripts/smoke_prata.py
+	$(PYTHON) scripts/smoke_prata.py
 
 smoke-premium:
-	python scripts/smoke_premium.py
+	$(PYTHON) scripts/smoke_premium.py
 
 smoke-sib:
-	python scripts/smoke_sib.py
+	$(PYTHON) scripts/smoke_sib.py
+
+smoke-janela-carga-sib:
+	$(PYTHON) scripts/smoke_janela_carga_sib.py
+
+smoke-versao-vigente-tuss:
+	$(PYTHON) scripts/smoke_versao_vigente_tuss.py
+
+smoke-historico-sob-demanda:
+	$(PYTHON) scripts/smoke_historico_sob_demanda.py
 
 smoke-cadop:
-	python scripts/smoke_cadop.py
+	$(PYTHON) scripts/smoke_cadop.py
 
 consumo-refresh:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) run --select tag:mart tag:consumo
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:consumo
 
 smoke-consumo:
-	python scripts/smoke_consumo.py
+	$(PYTHON) scripts/smoke_consumo.py
 
 elt-discover:
 	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_discover_ans.py --escopo $(ELT_ESCOPO) --max-depth $(ELT_MAX_DEPTH)
@@ -164,9 +173,9 @@ elt-transform-all:
 
 elt-validate-all:
 	ruff check ingestao scripts healthintel_dbt
-	pytest ingestao/tests/test_elt_discovery.py -v
-	pytest ingestao/tests/test_elt_catalogo.py -v
-	pytest ingestao/tests/test_elt_loaders.py -v
+	$(PYTEST_BIN) ingestao/tests/test_elt_discovery.py -v
+	$(PYTEST_BIN) ingestao/tests/test_elt_catalogo.py -v
+	$(PYTEST_BIN) ingestao/tests/test_elt_loaders.py -v
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) compile --select tag:staging
 
 load-test:
@@ -185,13 +194,14 @@ airflow-setup:
 	$(COMPOSE) exec airflow-scheduler airflow connections add mongo_default \
 		--conn-type mongo --conn-host mongo --conn-login healthintel \
 		--conn-password healthintel --conn-schema healthintel_layout --conn-port 27017 || true
+	$(COMPOSE) exec airflow-scheduler airflow variables set ANS_ANOS_CARGA_HOT 2 || true
 
 dag-test:
 	@if [ -z "$(DAG)" ]; then echo "Usage: make dag-test DAG=dag_name"; exit 1; fi
 	$(COMPOSE) exec airflow-scheduler airflow dags test $(DAG) 2026-04-22
 
 seed-dados-completos:
-	python scripts/seed_dados_completos.py
+	$(PYTHON) scripts/seed_dados_completos.py
 
 dbt-seed-ref:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed --select ref_tuss ref_rol_procedimento
@@ -219,10 +229,13 @@ dag-parse:
 	$(COMPOSE) exec airflow-scheduler python -c 'from airflow.models import DagBag; d = DagBag(); print("Errors:", d.import_errors)'
 
 dag-run-real-cadop:
-	python scripts/run_ingestao_real_cadop.py
+	$(PYTHON) scripts/run_ingestao_real_cadop.py
 
 dag-run-real-sib:
-	python scripts/run_ingestao_real_sib.py "$(UFS)" "$(COMPETENCIA)"
+	$(PYTHON) scripts/run_ingestao_real_sib.py "$(UFS)" "$(COMPETENCIA)"
 
 smoke-ingestao-real:
-	python scripts/smoke_ingestao_real.py
+	$(PYTHON) scripts/smoke_ingestao_real.py
+
+hardgate-sem-ano-hardcoded-janelacarga:
+	bash tests/hardgates/assert_sem_ano_hardcoded_janela.sh

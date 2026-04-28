@@ -43,7 +43,7 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `consumo_ans`: Client delivery tables. Desnormalized Gold for direct BI/analyst access. Role `healthintel_cliente_reader`; each client gets individual LOGIN user. No access to internal schemas.
 - `consumo_premium_ans` (Fase 5, planned Sprint 31): Premium SQL-direct surface. Role `healthintel_premium_reader`. Cannot grant `healthintel_cliente_reader` access to this schema.
 - `bruto_cliente`, `stg_cliente`, `mdm_privado` (Fase 5, planned Sprint 30): Per-tenant private ingestion (contrato/subfatura) — isolated by tenant.
-- `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions, `lote_ingestao`).
+- `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions, `lote_ingestao`). Fase 7 adds: `politica_dataset` (load class/strategy per dataset — 5 classes: `grande_temporal`, `pequena_full_ate_5gb`, `referencia_versionada`, `snapshot_atual`, `historico_sob_demanda`), `retencao_particao_log` (partition retention audit, triggered by default partition inserts), `ingestao_janela_decisao` (per-competência load decision audit: `carregado`/`ignorado_fora_janela`/`rejeitado_historico_sem_flag`). Planned: `cliente_dataset_acesso`, `solicitacao_historico`, `versao_dataset`, `backup_execucao`. SQL functions (Sprint 35): `calcular_janela_carga_anual`, `criar_particao_anual_competencia`, `preparar_particoes_janela_atual`.
 
 ---
 
@@ -90,6 +90,9 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 | **Smoke test (consumo)** | `make smoke-consumo` |
 | **Smoke test (premium)** | `make smoke-premium` |
 | **Smoke test (ingestão real)** | `make smoke-ingestao-real` |
+| **Smoke test (restore)** | `make smoke-restore` (Fase 7 — validate restore+PITR) |
+| **Smoke test (janela carga SIB)** | `make smoke-janela-carga-sib` (Fase 7 — validate dynamic load window) |
+| **Hardgate sem ano hardcoded** | `make hardgate-sem-ano-hardcoded-janelacarga` (asserts no hardcoded year in load window logic) |
 | **Load test** | `make load-test` (Locust) |
 | **Dev API server** | `make api-dev` (auto-reload on :8000) |
 | **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
@@ -246,7 +249,8 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 - **Registro ANS**: Always normalized to exactly 6 digits (with leading zeros). Use macro `normalizar_registro_ans()`.
 - **API response**: Always wrap in envelope. Do NOT return raw JSON.
 - **Incremental models**: Reprocess last 3–4 competencies per run (ANS often republishes corrections).
-- **Partition strategy**: RANGE by competência (monthly) or trimestre (quarterly); no LIST or HASH.
+- **Partition strategy**: RANGE by competência or trimestre; no LIST or HASH. SIB tables (`bruto_ans.sib_beneficiario_operadora`, `bruto_ans.sib_beneficiario_municipio`) migrated in Sprint 35 to **annual** partitions (`_YYYY` suffix, `FOR VALUES FROM (YYYY01) TO ((YYYY+1)01)`). All other tables remain monthly. Never create monthly SIB partitions.
+- **Load window**: Fase 7 enforces dynamic load window via `plataforma.calcular_janela_carga_anual(ANS_ANOS_CARGA_HOT)`. Default `ANS_ANOS_CARGA_HOT=2` (current year + prior year). Helper: `ingestao/app/janela_carga.py` — `obter_janela(dataset_codigo)` returns `JanelaCarga(competencia_minima, competencia_maxima_exclusiva, ano_inicial, ano_final, ano_preparado)`. Competências outside the window are logged to `plataforma.ingestao_janela_decisao` with `acao='ignorado_fora_janela'`, never silently dropped. Hardgate `tests/hardgates/assert_sem_ano_hardcoded_janela.sh` enforces no hardcoded year in production load logic.
 - **Freshness**: Entry in `_sources.yml` required for every bronze table.
 - **venv isolation**: Each service (`api/`, `healthintel_dbt/`, `ingestao/`) has isolated `.venv` if running outside containers.
 - **Layer access control**: `plataforma.plano` has `camadas_permitidas TEXT[]`. Use `verificar_camada('bronze'|'prata')` dependency for Bronze/Prata endpoints. Gold endpoints use existing `verificar_plano`.
@@ -264,8 +268,9 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 **Fase 2 (Sprints 13–14): CONCLUÍDA** — CNES + TISS implementados.
 **Fase 3 (Sprints 15–20): CONCLUÍDA** — baseline v2.0.0 taggeada.
 **Fase 4 (Sprints 21–25): CONCLUÍDA** — v3.0.0 taggeada. Prata completa, ingestão real SIB/CADOP, Gold marts BI, consumo_ans, qualidade v3.
-**Fase 5 (Sprints 26–33): EM ANDAMENTO** — Enriquecimento, qualidade documental, MDM público/privado, premium. Aditiva sobre `v3.0.0`. Tag final prevista `v3.8.0-gov`.
+**Fase 5 (Sprints 26–33): CONCLUÍDA (Sprint 33 pendente tag)** — Qualidade documental, MDM público/privado, premium. Tag final prevista `v3.8.0-gov`.
 **Fase 6 (Sprints 14–21 do tracking comercial): BACKLOG** — Entrega ao cliente / operação comercial. Aditiva e operacional. Tag final prevista `v4.0.0`.
+**Fase 7 (Sprints 34–40): EM ANDAMENTO** — Storage dinâmico, particionamento anual, retenção e backup. Aditiva. Tag final prevista `v4.2.0-dataops`.
 
 ### Fase 2 (entregue)
 - **Sprint 13**: CNES — bronze, `stg_cnes_estabelecimento`, `fat_cnes_estabelecimento_municipio`, `fat_cnes_rede_gap_municipio`, `api_cnes_municipio`, `api_cnes_rede_gap`. Router/service: `cnes`.
@@ -294,6 +299,17 @@ Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
 - **Sprint 31 (CONCLUÍDA)**: Produtos premium em SQL direto — `consumo_premium_ans` + `api_ans.api_premium_*`.
 - **Sprint 32 (CONCLUÍDA)**: Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5. 9 rotas premium, schemas completos, tenant obrigatório em rotas privadas, smoke 14 cenários, testes de integração 12 cenários, regressão Fase 5.
 - **Sprint 33 (backlog)**: Governança documental formal final, release `v3.8.0-gov`.
+
+### Fase 7 (em andamento — v4.2.0-dataops)
+- **Sprint 34 (CONCLUÍDA)**: Política dinâmica de carga — `plataforma.politica_dataset` criada via `029_fase7_politica_dataset.sql`; 5 classes de dataset classificadas; doc `docs/arquitetura/politica_carga_dataset.md`.
+- **Sprint 35 (implementada localmente)**: Particionamento anual SIB — 3 funções novas (`calcular_janela_carga_anual`, `criar_particao_anual_competencia`, `preparar_particoes_janela_atual`) via `030_fase7_particionamento_anual.sql`; `bruto_ans.sib_beneficiario_operadora` e `sib_beneficiario_municipio` migrados para partições anuais `_YYYY`; `plataforma.retencao_particao_log` para auditoria de default partition; doc `docs/arquitetura/particionamento_anual_postgres.md`.
+- **Sprint 36 (implementada localmente)**: Janela dinâmica de ingestão — `ingestao/app/janela_carga.py` com `JanelaCarga` dataclass; `ANS_ANOS_CARGA_HOT=2` via `.env`/Airflow Variable; `plataforma.ingestao_janela_decisao` via `031_fase7_janela_carga.sql`; módulos SIB filtram por janela; hardgate `tests/hardgates/assert_sem_ano_hardcoded_janela.sh`; smoke `make smoke-janela-carga-sib`.
+- **Sprint 37 (backlog)**: Última versão vigente TUSS/prestadores.
+- **Sprint 38 (backlog)**: Histórico sob demanda por cliente (`dag_historico_sob_demanda.py`).
+- **Sprint 39 (backlog)**: Backup pgBackRest — full diário, diferencial 4×/dia, WAL archive, `plataforma.backup_execucao`.
+- **Sprint 40 (backlog)**: Restore + PITR + `smoke-restore` + release `v4.2.0-dataops`.
+
+**Regra-mãe da Fase 7**: aditiva e não destrutiva. Nenhum modelo dbt, contrato de API, DAG aprovada, coluna `competencia` ou tabela-mãe `bruto_ans.sib_*` pode ser alterada. Toda lógica nova entra em artefato novo (bootstrap SQL numerado, helper Python novo, documento novo). Nenhum ano hardcoded em lógica produtiva de janela. Histórico completo só pode ser carregado pela DAG da Sprint 38.
 
 **Regra-mãe da Fase 5**: aditiva. Modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline `v3.0.0` não podem ser reescritos, renomeados, nem ter semântica alterada. FastAPI premium **nunca** lê `consumo_premium_ans`, `mdm_ans`, `mdm_privado`, `quality_ans`, `bruto_cliente`, `stg_cliente` ou `enrichment` diretamente — só `api_ans.api_premium_*`. Proibido: Serpro, Receita online, BrasilAPI, enrichment, enrich-cnpj, requests externos.
 

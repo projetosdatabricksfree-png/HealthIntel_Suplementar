@@ -39,26 +39,49 @@ def _coletar(client: TestClient, metodo: str, url: str, **kwargs):
 async def main() -> None:
     dbt_executavel = Path(".venv/bin/dbt")
     comando_base = str(dbt_executavel) if dbt_executavel.exists() else "dbt"
-    env = {**os.environ, "DBT_PROFILES_DIR": str(Path("healthintel_dbt").resolve())}
-    resultado_build = subprocess.run(
+    env = {
+        **os.environ,
+        "DBT_PROFILES_DIR": str(Path("healthintel_dbt").resolve()),
+        "DBT_LOG_PATH": "/tmp/healthintel_dbt_logs",
+        "DBT_TARGET_PATH": "/tmp/healthintel_dbt_target",
+    }
+    comandos = [
         [
             comando_base,
-            "build",
+            "seed",
+            "--project-dir",
+            "healthintel_dbt",
+            "--select",
+            "ref_tuss",
+            "ref_rol_procedimento",
+            "ref_municipio_ibge",
+            "ref_competencia",
+            "ref_uf",
+            "ref_populacao_municipio",
+            "ref_parametro_rede",
+        ],
+        [
+            comando_base,
+            "run",
             "--project-dir",
             "healthintel_dbt",
             "--select",
             "+tag:tiss",
             "+tag:rede",
         ],
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if resultado_build.returncode != 0:
-        print(resultado_build.stdout)
-        print(resultado_build.stderr)
-        raise SystemExit(resultado_build.returncode)
+    ]
+    for comando in comandos:
+        resultado_dbt = subprocess.run(
+            comando,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if resultado_dbt.returncode != 0:
+            print(resultado_dbt.stdout)
+            print(resultado_dbt.stderr)
+            raise SystemExit(resultado_dbt.returncode)
 
     app.dependency_overrides[validar_api_key] = _fake_auth
     try:

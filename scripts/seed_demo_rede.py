@@ -14,6 +14,7 @@ async def limpar_registros_demo() -> None:
                 """
                 delete from bruto_ans.rede_prestador_municipio
                 where _arquivo_origem like 'rede_demo_%'
+                   or _hash_arquivo like 'demo_hash_rede%'
                 """
             )
         )
@@ -81,7 +82,7 @@ async def seed_demo_rede() -> None:
 
     registros = [
         {
-            "competencia": "202603",
+            "competencia": 202603,
             "registro_ans": "123456",
             "cd_municipio": "3550308",
             "nm_municipio": "Sao Paulo",
@@ -93,7 +94,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202603",
         },
         {
-            "competencia": "202603",
+            "competencia": 202603,
             "registro_ans": "654321",
             "cd_municipio": "3550308",
             "nm_municipio": "Sao Paulo",
@@ -105,7 +106,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202603",
         },
         {
-            "competencia": "202604",
+            "competencia": 202604,
             "registro_ans": "123456",
             "cd_municipio": "3106200",
             "nm_municipio": "Belo Horizonte",
@@ -117,7 +118,7 @@ async def seed_demo_rede() -> None:
             "fonte_publicacao": "rede_demo_202604",
         },
         {
-            "competencia": "202604",
+            "competencia": 202604,
             "registro_ans": "654321",
             "cd_municipio": "2611606",
             "nm_municipio": "Recife",
@@ -130,14 +131,15 @@ async def seed_demo_rede() -> None:
         },
     ]
 
-    await carregar_rede_assistencial_bruto(
-        registros,
-        arquivo_origem="rede_demo.csv",
-        layout_id="layout_rede_assistencial_csv",
-        layout_versao_id="layout_rede_assistencial_csv:v1",
-        hash_arquivo="demo_hash_rede",
-        hash_estrutura="demo_hash_estrutura_rede",
-    )
+    for indice, registro in enumerate(registros, start=1):
+        await carregar_rede_assistencial_bruto(
+            [registro],
+            arquivo_origem=f"rede_demo_{indice}.csv",
+            layout_id="layout_rede_assistencial_csv",
+            layout_versao_id="layout_rede_assistencial_csv:v1",
+            hash_arquivo=f"demo_hash_rede_{indice}",
+            hash_estrutura="demo_hash_estrutura_rede",
+        )
 
     async with SessionLocal() as session:
         await session.execute(
@@ -174,8 +176,8 @@ async def seed_demo_rede() -> None:
                     f"{datetime.now(tz=UTC).strftime('%Y%m%d%H%M%S')}"
                 ),
                 "competencia": "202604",
-                "hash_arquivo": "demo_hash_rede",
-                "hash_sha256": "demo_hash_rede",
+                "hash_arquivo": "demo_hash_rede_manifesto",
+                "hash_sha256": "demo_hash_rede_manifesto",
                 "hash_estrutura": "demo_hash_estrutura_rede",
                 "registros": len(registros),
             },

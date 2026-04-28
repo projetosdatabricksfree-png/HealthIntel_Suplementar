@@ -56,6 +56,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-healthintel}
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+      ANS_ANOS_CARGA_HOT: ${ANS_ANOS_CARGA_HOT:-2}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MONGO_HOST: mongo
@@ -158,6 +159,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-healthintel}
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+      ANS_ANOS_CARGA_HOT: ${ANS_ANOS_CARGA_HOT:-2}
       _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres==1.8.2"
       PYTHONPATH: /workspace
     volumes:

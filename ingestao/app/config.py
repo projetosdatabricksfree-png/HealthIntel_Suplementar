@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     ans_sib_ufs_teste: str = Field(default="AC", alias="ANS_SIB_UFS_TESTE")
     ans_sib_max_memory_safe_mode: bool = Field(default=True, alias="ANS_SIB_MAX_MEMORY_SAFE_MODE")
     ans_download_timeout_seconds: int = Field(default=180, alias="ANS_DOWNLOAD_TIMEOUT_SECONDS")
+    ans_anos_carga_hot: int = Field(default=2, alias="ANS_ANOS_CARGA_HOT")
 
     # HTTP resilience settings
     ans_http_connect_timeout_seconds: int = Field(

@@ -88,6 +88,7 @@ async def processar_arquivo_bruto_streaming(
     total_linhas_raw = 0
     total_aprovadas = 0
     total_quarentena = 0
+    competencia_carregada: int | None = None
 
     for batch in iterador_batches:
         total_linhas_raw += len(batch)
@@ -104,6 +105,12 @@ async def processar_arquivo_bruto_streaming(
         ]
 
         if aprovados:
+            if competencia_carregada is None:
+                from ingestao.app.janela_carga import normalizar_competencia
+
+                valor_competencia = aprovados[0].get("competencia")
+                if valor_competencia is not None:
+                    competencia_carregada = normalizar_competencia(valor_competencia)
             inseridos = await carregar_dataset_bruto_em_batches(
                 dataset_codigo,
                 aprovados,
@@ -142,6 +149,26 @@ async def processar_arquivo_bruto_streaming(
         total_quarentena=total_quarentena,
         origem_execucao="streaming_pipeline",
     )
+    if competencia_carregada is not None:
+        from ingestao.app.janela_carga import (
+            DatasetNaoTemporalError,
+            PoliticaDatasetNaoEncontradaError,
+            obter_janela,
+            registrar_decisao,
+        )
+
+        try:
+            janela = await obter_janela(dataset_codigo)
+        except (DatasetNaoTemporalError, PoliticaDatasetNaoEncontradaError):
+            janela = None
+        if janela is not None:
+            await registrar_decisao(
+                dataset_codigo,
+                competencia_carregada,
+                "carregado",
+                janela,
+                "Carga streaming concluida dentro da janela dinamica.",
+            )
 
     return {
         "status": status,

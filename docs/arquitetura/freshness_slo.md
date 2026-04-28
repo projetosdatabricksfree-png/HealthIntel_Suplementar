@@ -1,6 +1,6 @@
 # Freshness SLO
 
-Baseline de monitoramento de frescor para os datasets fonte da plataforma. A data exata da última carga deve ser consultada em `plataforma.versao_dataset.carregado_em`; o SLO abaixo é o compromisso operacional usado para `warn_after` e `error_after`.
+Baseline de monitoramento de frescor para os datasets fonte da plataforma. A data exata da última carga deve ser consultada em `plataforma.versao_dataset.carregado_em` para logs per-carga legados e em `plataforma.versao_dataset_vigente.carregado_em` para datasets de versão vigente; o SLO abaixo é o compromisso operacional usado para `warn_after` e `error_after`.
 
 | Dataset | Publicação ANS / fonte | Frequência | `warn_after` | `error_after` | Observação |
 | --- | --- | --- | --- | --- | --- |
@@ -22,4 +22,3 @@ Baseline de monitoramento de frescor para os datasets fonte da plataforma. A dat
 | `rede_assistencial` | ANS / rede assistencial | Mensal | 45d | 90d | Prestadores e cobertura |
 | `cnes_estabelecimento` | DATASUS / CNES | Mensal | 60d | 90d | Base estrutural de rede |
 | `tiss_procedimento` | ANS / TISS | Trimestral | 95d | 120d | Procedimentos e sinistralidade |
-

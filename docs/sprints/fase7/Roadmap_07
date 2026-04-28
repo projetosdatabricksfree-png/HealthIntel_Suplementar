@@ -1,0 +1,846 @@
+Perfeito. A Fase 7 precisa ser ajustada para uma regra mais inteligente: **não carregar “tudo da ANS” na VPS**, mas também não fazer gambiarra manual. A regra deve ser dinâmica por dataset, por ano vigente e, no futuro, por cliente.
+
+A correção principal é esta:
+
+> `competencia` continua sendo `YYYYMM`, por exemplo `202601`, `202602`, `202603`.
+> Mas o **particionamento no PostgreSQL será anual**, não mensal.
+> A partição de 2026 cobre de `202601` até antes de `202701`.
+
+O seu PRD já trata SIB como fonte mensal por competência e menciona particionamento `RANGE (competencia)`, mas ainda havia referência a partições mensais como `2024_01`. Essa Fase 7 deve substituir esse padrão por **partições anuais**. 
+
+---
+
+# Fase 7 — Storage Dinâmico, Particionamento Anual, Retenção e Backup
+
+## Objetivo da Fase 7
+
+Preparar o HealthIntel para rodar inicialmente em **VPS**, com controle forte de volume, particionamento anual no PostgreSQL, política de retenção e backup profissional.
+
+A Fase 7 passa a ter quatro decisões centrais:
+
+1. **Tabelas grandes temporais:** carregar inicialmente apenas **2 anos calendário**: ano vigente + ano anterior.
+2. **Particionamento:** sempre anual por `competencia YYYYMM`, nunca por mês.
+3. **Tabelas pequenas:** carregar full enquanto a tabela física ficar até **5 GB**.
+4. **Tabelas de referência/atualização vigente:** carregar apenas a **última versão vigente**, como TUSS/procedimentos e cadastros de prestadores, salvo quando o histórico for vendido sob demanda.
+
+---
+
+# 1. Política de carga por classe de dataset
+
+## Classe A — Tabelas grandes temporais
+
+Regra inicial para VPS:
+
+```text
+Carregar apenas ano vigente + ano anterior.
+```
+
+Em 2026:
+
+```text
+Carregar 2025 e 2026.
+Criar também a partição 2027 vazia/preparada.
+```
+
+Em 2027:
+
+```text
+Carregar 2026 e 2027.
+Parar de carregar 2025.
+Criar também a partição 2028.
+Remover/destacar partição 2025 apenas após backup válido.
+```
+
+Datasets candidatos:
+
+| Dataset                               |                           Regra inicial |
+| ------------------------------------- | --------------------------------------: |
+| SIB operadora                         |              ano vigente + ano anterior |
+| SIB município                         |              ano vigente + ano anterior |
+| D-TISS / produção assistencial        |              ano vigente + ano anterior |
+| VDA                                   |              ano vigente + ano anterior |
+| glosa                                 | ano vigente + ano anterior, se volumoso |
+| portabilidade / movimentações grandes |              ano vigente + ano anterior |
+| logs detalhados de API                |   retenção própria, geralmente 12 meses |
+
+A ANS publica informações do SIB em base mensal e os próprios dados gerais da ANS indicam atualização por competência, por exemplo dados atualizados até `02/2026` no painel consultado em abril de 2026. ([Serviços e Informações do Brasil][1])
+
+---
+
+## Classe B — Tabelas pequenas
+
+Regra:
+
+```text
+Carregar full até 5 GB físicos no PostgreSQL.
+```
+
+Se passar de 5 GB, deixa de ser “pequena” e entra na política de janela temporal.
+
+Datasets candidatos:
+
+| Dataset                       | Regra                                       |
+| ----------------------------- | ------------------------------------------- |
+| CADOP                         | full / snapshot atual                       |
+| IDSS                          | full                                        |
+| IGR                           | full enquanto pequeno                       |
+| NIP agregado                  | full enquanto pequeno                       |
+| regime especial               | full ou snapshot histórico, por ser crítico |
+| prudencial                    | full enquanto pequeno                       |
+| lista de excelência / redução | full enquanto pequeno                       |
+| dimensões IBGE/UF/município   | full                                        |
+| seeds/ref                     | full                                        |
+
+---
+
+## Classe C — Tabelas de referência/versionadas
+
+Aqui entra o ponto que você levantou sobre procedimentos médicos.
+
+Para TUSS/procedimentos, faz sentido carregar **apenas a versão vigente** como tabela principal, porque o uso comercial padrão é consultar a terminologia atual. A página vigente do Padrão TISS em março/2026 mostra o componente de Representação de Conceitos em Saúde/TUSS na versão `202603`. ([Serviços e Informações do Brasil][2])
+
+A ANS também informa que, a cada atualização da Tabela 22 da TUSS, a Tabela DE-PARA SIP-TUSS é atualizada para incorporar alterações de códigos e termos. Isso confirma que há lógica de versão vigente/atualização, e não faz sentido operacional carregar versões antigas como produto padrão em VPS. ([Serviços e Informações do Brasil][3])
+
+Regra proposta:
+
+| Dataset                                    | Regra inicial                                         |
+| ------------------------------------------ | ----------------------------------------------------- |
+| TUSS procedimentos / tabela 22             | carregar somente última versão vigente                |
+| TUSS materiais / OPME                      | carregar somente última versão vigente                |
+| TUSS medicamentos                          | carregar somente última versão vigente                |
+| DE-PARA SIP-TUSS                           | carregar somente última versão vigente                |
+| ROL de procedimentos                       | carregar somente versão vigente                       |
+| prestadores / rede atual / QUALISS         | carregar snapshot atual/última publicação             |
+| CNES/prestadores, se for cadastro corrente | carregar última atualização                           |
+| versões antigas                            | não carregar por padrão; vender histórico sob demanda |
+
+Atenção: eu confirmo com segurança para **TUSS/TISS**. Para “prestadores”, a regra precisa ser por tipo de fonte. Se for cadastro/rede vigente, o snapshot atual é suficiente. Se for fato histórico de movimentação de rede, aí entra na Classe A com janela temporal.
+
+---
+
+# 2. Particionamento anual por `competencia YYYYMM`
+
+## Regra obrigatória
+
+Nada de partição mensal como:
+
+```sql
+sib_beneficiario_operadora_2026_01
+sib_beneficiario_operadora_2026_02
+```
+
+O correto passa a ser:
+
+```sql
+sib_beneficiario_operadora_2025
+sib_beneficiario_operadora_2026
+sib_beneficiario_operadora_2027
+```
+
+Exemplo:
+
+```sql
+create table if not exists bruto_ans.sib_beneficiario_operadora_2026
+partition of bruto_ans.sib_beneficiario_operadora
+for values from (202601) to (202701);
+```
+
+O PostgreSQL usa particionamento declarativo por `RANGE`, e os limites de range são inclusivos no início e exclusivos no fim. Portanto, `from (202601) to (202701)` cobre todas as competências de 2026. ([PostgreSQL][4])
+
+---
+
+# 3. Regra dinâmica de ano vigente
+
+A Fase 7 não deve ter ano fixo no código.
+
+A regra deve calcular dinamicamente:
+
+```text
+ano_vigente = ano atual do sistema
+ano_inicial_carga = ano_vigente - 1
+ano_final_carga = ano_vigente
+ano_preparado = ano_vigente + 1
+```
+
+Em 28/04/2026:
+
+```text
+ano_vigente = 2026
+ano_inicial_carga = 2025
+ano_final_carga = 2026
+ano_preparado = 2027
+competencia_minima = 202501
+competencia_maxima_exclusiva = 202701
+```
+
+No primeiro ciclo de 2027:
+
+```text
+ano_vigente = 2027
+ano_inicial_carga = 2026
+ano_final_carga = 2027
+ano_preparado = 2028
+competencia_minima = 202601
+competencia_maxima_exclusiva = 202801
+```
+
+Ou seja: o processo naturalmente deixa 2025 para trás e passa a trabalhar com 2026/2027.
+
+---
+
+# 4. Funções SQL da Fase 7
+
+## Função para calcular janela anual
+
+```sql
+create schema if not exists plataforma;
+
+create or replace function plataforma.calcular_janela_carga_anual(
+    p_anos_carga integer default 2,
+    p_data_referencia date default current_date
+)
+returns table (
+    ano_vigente integer,
+    ano_inicial integer,
+    ano_final integer,
+    ano_preparado integer,
+    competencia_minima integer,
+    competencia_maxima_exclusiva integer
+)
+language sql
+stable
+as $$
+    select
+        extract(year from p_data_referencia)::integer as ano_vigente,
+        extract(year from p_data_referencia)::integer - (p_anos_carga - 1) as ano_inicial,
+        extract(year from p_data_referencia)::integer as ano_final,
+        extract(year from p_data_referencia)::integer + 1 as ano_preparado,
+        ((extract(year from p_data_referencia)::integer - (p_anos_carga - 1)) * 100 + 1) as competencia_minima,
+        ((extract(year from p_data_referencia)::integer + 1) * 100 + 1) as competencia_maxima_exclusiva;
+$$;
+```
+
+## Função para criar partição anual
+
+```sql
+create or replace function plataforma.criar_particao_anual_competencia(
+    p_schema text,
+    p_tabela text,
+    p_ano integer
+)
+returns void
+language plpgsql
+as $$
+declare
+    v_particao text;
+    v_inicio integer;
+    v_fim integer;
+begin
+    v_particao := format('%I.%I_%s', p_schema, p_tabela, p_ano);
+    v_inicio := (p_ano * 100) + 1;
+    v_fim := ((p_ano + 1) * 100) + 1;
+
+    execute format(
+        'create table if not exists %s partition of %I.%I for values from (%s) to (%s)',
+        v_particao,
+        p_schema,
+        p_tabela,
+        v_inicio,
+        v_fim
+    );
+end;
+$$;
+```
+
+## Função para preparar janela atual
+
+```sql
+create or replace function plataforma.preparar_particoes_janela_atual(
+    p_schema text,
+    p_tabela text,
+    p_anos_carga integer default 2
+)
+returns void
+language plpgsql
+as $$
+declare
+    r record;
+    v_ano integer;
+begin
+    select *
+    into r
+    from plataforma.calcular_janela_carga_anual(p_anos_carga);
+
+    for v_ano in r.ano_inicial..r.ano_preparado loop
+        perform plataforma.criar_particao_anual_competencia(
+            p_schema,
+            p_tabela,
+            v_ano
+        );
+    end loop;
+end;
+$$;
+```
+
+Uso:
+
+```sql
+select plataforma.preparar_particoes_janela_atual(
+    'bruto_ans',
+    'sib_beneficiario_operadora',
+    2
+);
+
+select plataforma.preparar_particoes_janela_atual(
+    'bruto_ans',
+    'sib_beneficiario_municipio',
+    2
+);
+```
+
+---
+
+# 5. Filtro de carga dinâmica
+
+Toda tabela grande temporal deve respeitar a janela:
+
+```sql
+where competencia >= (
+    select competencia_minima
+    from plataforma.calcular_janela_carga_anual(2)
+)
+and competencia < (
+    select competencia_maxima_exclusiva
+    from plataforma.calcular_janela_carga_anual(2)
+)
+```
+
+Para 2026, isso vira:
+
+```sql
+where competencia >= 202501
+  and competencia < 202701
+```
+
+Não é “últimos 24 meses corridos”. É **ano vigente + ano anterior**, porque o seu particionamento é anual e a operação fica muito mais simples na VPS.
+
+---
+
+# 6. Política de tabelas por tamanho
+
+Criar uma tabela de governança:
+
+```sql
+create table if not exists plataforma.politica_dataset (
+    dataset_codigo text primary key,
+    descricao text not null,
+    classe_dataset text not null,
+    estrategia_carga text not null,
+    schema_destino text not null,
+    tabela_destino text not null,
+    coluna_competencia text,
+    anos_carga_hot integer,
+    limite_full_gb numeric(10,2),
+    particionar_por_ano boolean not null default false,
+    carregar_apenas_ultima_versao boolean not null default false,
+    historico_sob_demanda boolean not null default true,
+    ativo boolean not null default true,
+    criado_em timestamptz not null default now(),
+    atualizado_em timestamptz not null default now()
+);
+```
+
+Exemplos de configuração:
+
+```sql
+insert into plataforma.politica_dataset (
+    dataset_codigo,
+    descricao,
+    classe_dataset,
+    estrategia_carga,
+    schema_destino,
+    tabela_destino,
+    coluna_competencia,
+    anos_carga_hot,
+    limite_full_gb,
+    particionar_por_ano,
+    carregar_apenas_ultima_versao,
+    historico_sob_demanda
+)
+values
+(
+    'sib_operadora',
+    'SIB beneficiários por operadora',
+    'grande_temporal',
+    'ano_vigente_mais_ano_anterior',
+    'bruto_ans',
+    'sib_beneficiario_operadora',
+    'competencia',
+    2,
+    null,
+    true,
+    false,
+    true
+),
+(
+    'tuss_procedimento',
+    'Terminologia TUSS de procedimentos e eventos em saúde',
+    'referencia_versionada',
+    'ultima_versao_vigente',
+    'bruto_ans',
+    'tuss_procedimento',
+    null,
+    null,
+    5,
+    false,
+    true,
+    true
+),
+(
+    'cadop',
+    'Cadastro de operadoras',
+    'pequena_referencia',
+    'full_ate_5gb',
+    'bruto_ans',
+    'cadop',
+    null,
+    null,
+    5,
+    false,
+    false,
+    false
+);
+```
+
+---
+
+# 7. Política para clientes pagantes e histórico sob demanda
+
+Aqui está a parte mais importante para escalar de forma fácil.
+
+Você não deve duplicar tudo por cliente. O correto é ter:
+
+1. **base hot compartilhada** no PostgreSQL;
+2. **entitlement por cliente** dizendo o que ele pode consultar;
+3. **histórico sob demanda** como job controlado;
+4. **views/API filtradas por contrato**, não cópia integral por cliente.
+
+## Tabela de direito de acesso por cliente
+
+```sql
+create table if not exists plataforma.cliente_dataset_acesso (
+    id bigserial primary key,
+    cliente_id bigint not null,
+    dataset_codigo text not null references plataforma.politica_dataset(dataset_codigo),
+    plano text not null,
+    acesso_historico boolean not null default false,
+    competencia_inicio integer,
+    competencia_fim integer,
+    anos_historico integer,
+    limite_requisicao_mensal bigint,
+    permite_exportacao boolean not null default false,
+    ativo boolean not null default true,
+    criado_em timestamptz not null default now(),
+    atualizado_em timestamptz not null default now()
+);
+```
+
+## Tabela de solicitação de histórico
+
+```sql
+create table if not exists plataforma.solicitacao_historico (
+    id bigserial primary key,
+    cliente_id bigint not null,
+    dataset_codigo text not null references plataforma.politica_dataset(dataset_codigo),
+    competencia_inicio integer not null,
+    competencia_fim integer not null,
+    status text not null default 'pendente',
+    motivo text,
+    solicitado_em timestamptz not null default now(),
+    iniciado_em timestamptz,
+    finalizado_em timestamptz,
+    erro text
+);
+```
+
+## Como funciona comercialmente
+
+Plano padrão:
+
+```text
+SIB = ano vigente + ano anterior
+TUSS = última versão vigente
+Prestadores = última atualização
+CADOP/IDSS = full se pequeno
+```
+
+Cliente pagante pede histórico:
+
+```text
+“Quero SIB desde 2020.”
+```
+
+O sistema registra:
+
+```text
+cliente_id = 10
+dataset = sib_operadora
+competencia_inicio = 202001
+competencia_fim = 202612
+status = pendente
+```
+
+O pipeline roda backfill controlado, cria partições adicionais necessárias e libera esse intervalo apenas para aquele cliente.
+
+---
+
+# 8. Backup da VPS
+
+A sua política de backup continua válida:
+
+| Backup                        |                                 Frequência |
+| ----------------------------- | -----------------------------------------: |
+| Full                          |                                     diário |
+| Diferencial                   |                                  a cada 6h |
+| WAL archive / “backup de log” | contínuo, com fechamento forçado a cada 1h |
+| Restore test                  |                                obrigatório |
+
+No PostgreSQL, o equivalente ao “backup de log” é o **WAL archive**. Para recuperação point-in-time, o PostgreSQL precisa de uma sequência contínua de WAL arquivados desde o início do backup base. ([PostgreSQL][5])
+
+Para garantir que mesmo com pouco movimento o WAL seja arquivado dentro de uma janela previsível, usar:
+
+```conf
+archive_timeout = 3600
+```
+
+O PostgreSQL documenta que `archive_timeout` força a troca de segmento WAL quando há pouco tráfego, mas também alerta que valores muito curtos aumentam o volume de arquivos arquivados. ([PostgreSQL][5])
+
+Para ferramenta, manteria **pgBackRest**. Ele suporta backup diferencial, em que copia arquivos alterados desde o último full, e a restauração diferencial depende do full correspondente. ([pgBackRest][6])
+
+---
+
+# 9. Retenção de backup ajustada para VPS
+
+## MVP em VPS
+
+| Item                 |               Retenção |
+| -------------------- | ---------------------: |
+| Full local na VPS    |                 2 dias |
+| Diff local na VPS    |                 2 dias |
+| WAL local            | 48h ou limite de disco |
+| Full externo         |                35 dias |
+| Diff externo         |                 7 dias |
+| WAL externo / PITR   |                35 dias |
+| Full mensal          |               12 meses |
+| Full anual           |                 3 anos |
+| Evidência de restore |                90 dias |
+
+Ponto crítico: **backup somente dentro da mesma VPS não é disaster recovery**. Ele protege contra erro lógico, mas não contra perda da máquina. Mesmo começando em VPS, eu colocaria pelo menos o repositório externo em Cloudflare R2, S3, Backblaze B2 ou outro storage S3-compatible barato.
+
+---
+
+# 10. Fase 7 revisada em sprints
+
+## Sprint 34 — Política dinâmica de carga por dataset
+
+Entregas:
+
+* [ ] Criar `docs/arquitetura/politica_carga_dataset.md`.
+* [ ] Classificar datasets em:
+
+  * `grande_temporal`;
+  * `pequena_full_ate_5gb`;
+  * `referencia_versionada`;
+  * `snapshot_atual`;
+  * `historico_sob_demanda`.
+* [ ] Criar `plataforma.politica_dataset`.
+* [ ] Definir SIB como `ano_vigente_mais_ano_anterior`.
+* [ ] Definir TUSS/procedimentos como `ultima_versao_vigente`.
+* [ ] Definir prestadores/rede vigente como `snapshot_atual`, salvo fonte histórica.
+* [ ] Definir tabelas pequenas como full até 5 GB.
+* [ ] Criar documentação de exceções.
+
+Critério de aceite:
+
+* [ ] Nenhum dataset grande fica sem política.
+* [ ] Nenhum dataset versionado carrega histórico antigo por padrão.
+* [ ] Existe matriz clara de carga, retenção e histórico sob demanda.
+
+---
+
+## Sprint 35 — Particionamento anual por `competencia YYYYMM`
+
+Entregas:
+
+* [ ] Remover conceito de partição mensal para SIB.
+* [ ] Criar função `plataforma.calcular_janela_carga_anual`.
+* [ ] Criar função `plataforma.criar_particao_anual_competencia`.
+* [ ] Criar função `plataforma.preparar_particoes_janela_atual`.
+* [ ] Criar partições anuais para SIB operadora.
+* [ ] Criar partições anuais para SIB município.
+* [ ] Criar partição default apenas para erro controlado.
+* [ ] Criar monitoramento de registros caindo na partição default.
+* [ ] Criar `EXPLAIN` de validação de partition pruning.
+
+Critério de aceite:
+
+* [ ] `2026` cobre `202601` até antes de `202701`.
+* [ ] Não existe criação automática mensal.
+* [ ] Em 2026, o sistema prepara 2025, 2026 e 2027.
+* [ ] Em 2027, o sistema prepara 2026, 2027 e 2028.
+
+---
+
+## Sprint 36 — Janela dinâmica de carga na ingestão
+
+Entregas:
+
+* [ ] Adicionar parâmetro global `ANS_ANOS_CARGA_HOT=2`.
+* [ ] Adicionar parâmetro por dataset em `plataforma.politica_dataset`.
+* [ ] Fazer o ELT consultar a política antes de baixar/carregar.
+* [ ] Bloquear carga de SIB fora da janela vigente.
+* [ ] Registrar arquivos ignorados por estarem fora da janela.
+* [ ] Criar logs de decisão de carga.
+* [ ] Criar hardgate para impedir carga acidental de histórico inteiro.
+
+Critério de aceite:
+
+* [ ] SIB carrega somente ano vigente + ano anterior.
+* [ ] O processo muda automaticamente na virada de ano.
+* [ ] O usuário não precisa editar código em janeiro.
+* [ ] Arquivos fora da janela são ignorados com log, não erro silencioso.
+
+---
+
+## Sprint 37 — Última versão para TUSS, procedimentos e prestadores
+
+Entregas:
+
+* [ ] Criar política `ultima_versao_vigente`.
+* [x] Criar manifesto de versão para TUSS/ROL/DE-PARA/prestadores/QUALISS.
+* [x] Criar tabela `plataforma.versao_dataset_vigente` (`plataforma.versao_dataset` permanece log per-carga legado).
+* [x] Carregar TUSS procedimentos apenas da última versão detectada.
+* [x] Carregar DE-PARA SIP-TUSS apenas da última versão vigente.
+* [x] Carregar prestadores/rede cadastral como snapshot atual quando a fonte for cadastral.
+* [x] Guardar hash, URL, data de publicação e versão da fonte.
+* [x] Não carregar versões antigas por padrão.
+* [x] Documentar que histórico TUSS/rede é premium/sob demanda.
+
+Critério de aceite:
+
+* [ ] Existe apenas uma versão vigente nas tabelas principais.
+* [ ] Versões antigas não entram na carga padrão da VPS.
+* [ ] O histórico pode ser reprocessado sob demanda se houver cliente pagando.
+
+---
+
+## Sprint 38 — Histórico sob demanda por cliente
+
+Entregas:
+
+* [x] Criar `plataforma.cliente_dataset_acesso`.
+* [x] Criar `plataforma.solicitacao_historico`.
+* [x] Criar DAG `dag_historico_sob_demanda.py`.
+* [x] Permitir backfill por dataset e intervalo de competência via solicitação aprovada.
+* [x] Criar partições anuais adicionais somente quando necessário.
+* [x] Liberar acesso histórico por contrato/plano via entitlement.
+* [x] Bloquear exportação completa por padrão no MVP.
+* [x] Criar paginação obrigatória para histórico no service.
+* [ ] Criar rate limit avançado dedicado para histórico.
+* [ ] Criar cobrança diferenciada por histórico.
+
+Critério de aceite:
+
+* [ ] Cliente padrão vê apenas janela hot.
+* [ ] Cliente premium pode receber janela histórica contratada.
+* [ ] Histórico não é carregado para todos sem necessidade.
+* [ ] A base não é duplicada integralmente por cliente.
+
+---
+
+## Sprint 39 — Backup full, diff e WAL archive
+
+Entregas:
+
+* [ ] Instalar/configurar pgBackRest.
+* [ ] Full diário.
+* [ ] Diff a cada 6h.
+* [ ] WAL archive contínuo.
+* [ ] `archive_timeout = 3600`.
+* [ ] Repositório local temporário.
+* [ ] Repositório externo S3-compatible recomendado.
+* [ ] Criptografia do backup.
+* [ ] `pgbackrest check`.
+* [ ] `pgbackrest info`.
+* [ ] Registro de execução em tabela de auditoria.
+
+Critério de aceite:
+
+* [ ] Full executa diariamente.
+* [ ] Diff executa 4 vezes ao dia.
+* [ ] WAL não fica atrasado mais de 1h.
+* [ ] Existe alerta se `pg_wal` crescer demais.
+* [ ] Existe backup fora da VPS antes de cliente pagante.
+
+---
+
+## Sprint 40 — Restore, PITR e release operacional
+
+Entregas:
+
+* [ ] Criar runbook de restore.
+* [ ] Testar restore full.
+* [ ] Testar restore diferencial.
+* [ ] Testar PITR para horário específico.
+* [ ] Rodar `dbt test` pós-restore.
+* [ ] Rodar smoke API pós-restore.
+* [ ] Documentar RPO/RTO.
+* [ ] Criar hardgate de backup/restore.
+* [ ] Criar release `v4.2.0-dataops`.
+
+Critério de aceite:
+
+* [ ] Restore funciona.
+* [ ] PITR funciona.
+* [ ] API sobe após restore.
+* [ ] dbt passa após restore.
+* [ ] Backup deixa de ser “teórico” e vira operacional.
+
+---
+
+# Prompt para Codex ajustar a Fase 7
+
+```text
+Crie/ajuste a Fase 7 do projeto HealthIntel Suplementar com foco em storage dinâmico para VPS, particionamento anual PostgreSQL por competencia YYYYMM, retenção por classe de dataset, backup com pgBackRest e histórico sob demanda por cliente.
+
+Regras obrigatórias:
+
+1. Competência:
+- O campo competencia usa formato inteiro YYYYMM.
+- Exemplo: 202601, 202602, 202603.
+- O particionamento deve ser anual, nunca mensal.
+- A partição de 2026 deve cobrir:
+  FOR VALUES FROM (202601) TO (202701).
+- Não criar partições como 2026_01, 2026_02 etc.
+
+2. Janela inicial de carga em VPS:
+- Para tabelas grandes temporais, carregar apenas ano vigente + ano anterior.
+- Em 2026, carregar 2025 e 2026.
+- Criar também a partição do próximo ano, exemplo 2027.
+- Em 2027, a janela deve mudar automaticamente para 2026 e 2027, criando 2028.
+- Não pode existir ano fixo hardcoded.
+
+3. Tabelas grandes:
+- SIB operadora e SIB município devem ser classificados como grandes temporais.
+- D-TISS, VDA, glosa e outros fatos volumosos também devem seguir a política quando aplicável.
+- Devem usar politica_dataset.anos_carga_hot = 2.
+
+4. Tabelas pequenas:
+- Tabelas pequenas devem carregar full enquanto tiverem até 5 GB físicos no PostgreSQL.
+- Se ultrapassarem 5 GB, devem ser reclassificadas para política temporal ou snapshot.
+- Exemplos: CADOP, IDSS, IGR, dimensões, seeds e referências pequenas.
+
+5. Procedimentos médicos / TUSS / prestadores:
+- TUSS/procedimentos deve carregar apenas a última versão vigente por padrão.
+- DE-PARA SIP-TUSS deve carregar apenas a última versão vigente por padrão.
+- ROL/procedimentos deve carregar apenas a última versão vigente por padrão.
+- Prestadores/rede/QUALISS devem carregar snapshot atual quando a fonte for cadastral.
+- Não carregar versões antigas de 2023 se a versão vigente de 2025/2026 já contém a referência atual.
+- Histórico antigo deve ser premium/sob demanda, não carga padrão da VPS.
+- Guardar metadados de versão, hash, URL, data de publicação e data de carga.
+
+6. Governança:
+Criar a tabela plataforma.politica_dataset com:
+- dataset_codigo
+- descricao
+- classe_dataset
+- estrategia_carga
+- schema_destino
+- tabela_destino
+- coluna_competencia
+- anos_carga_hot
+- limite_full_gb
+- particionar_por_ano
+- carregar_apenas_ultima_versao
+- historico_sob_demanda
+- ativo
+- criado_em
+- atualizado_em
+
+Criar também:
+- plataforma.cliente_dataset_acesso
+- plataforma.solicitacao_historico
+- plataforma.versao_dataset_vigente
+- plataforma.retencao_particao_log
+- plataforma.backup_execucao
+
+7. Funções SQL:
+Criar:
+- plataforma.calcular_janela_carga_anual(p_anos_carga integer default 2, p_data_referencia date default current_date)
+- plataforma.criar_particao_anual_competencia(p_schema text, p_tabela text, p_ano integer)
+- plataforma.preparar_particoes_janela_atual(p_schema text, p_tabela text, p_anos_carga integer default 2)
+
+8. Histórico sob demanda por cliente:
+- Cliente padrão acessa apenas a janela hot.
+- Cliente pagante pode solicitar histórico por dataset e faixa de competência.
+- O backfill deve ser controlado por DAG.
+- Não duplicar a base inteira por cliente.
+- Usar entitlement por cliente para liberar dados históricos.
+- Criar DAG dag_historico_sob_demanda.py.
+
+9. Backup:
+- Usar pgBackRest.
+- Full diário.
+- Diferencial a cada 6h.
+- WAL archive contínuo.
+- archive_timeout = 3600.
+- RPO alvo: 1h.
+- RTO alvo MVP: até 8h.
+- Retenção:
+  - full local: 2 dias;
+  - diff local: 2 dias;
+  - WAL local: 48h ou limite de disco;
+  - full externo: 35 dias;
+  - diff externo: 7 dias;
+  - WAL/PITR externo: 35 dias;
+  - full mensal: 12 meses;
+  - full anual: 3 anos;
+  - evidências de restore: 90 dias.
+- Documentar que backup somente na mesma VPS não é disaster recovery; recomendar storage externo S3-compatible antes de cliente pagante.
+
+10. Documentos a criar:
+- docs/sprints/fase7/README.md
+- docs/sprints/fase7/sprint_34_politica_dinamica_dataset.md
+- docs/sprints/fase7/sprint_35_particionamento_anual_competencia.md
+- docs/sprints/fase7/sprint_36_janela_dinamica_ingestao.md
+- docs/sprints/fase7/sprint_37_ultima_versao_tuss_prestadores.md
+- docs/sprints/fase7/sprint_38_historico_sob_demanda_cliente.md
+- docs/sprints/fase7/sprint_39_backup_pgbackrest_wal.md
+- docs/sprints/fase7/sprint_40_restore_pitr_release.md
+- docs/arquitetura/politica_carga_dataset.md
+- docs/arquitetura/particionamento_anual_postgres.md
+- docs/arquitetura/historico_sob_demanda_cliente.md
+- docs/operacao/backup_retencao_postgres.md
+- docs/operacao/disaster_recovery.md
+- docs/runbooks/backup_postgres.md
+- docs/runbooks/restore_postgres.md
+- docs/releases/v4.2.0-dataops.md
+
+11. Restrições:
+- Não alterar contrato de API.
+- Não alterar semântica dos modelos dbt existentes.
+- Não renomear tabelas existentes sem plano de migração.
+- Não marcar tarefas como concluídas; usar somente checklist [ ].
+- Português-Brasil.
+- Documentação objetiva, executável e alinhada à VPS inicial.
+```
+
+Conclusão: essa nova Fase 7 ficou mais correta para o seu momento. Você reduz drasticamente o volume inicial da VPS, mantém o PostgreSQL organizado por ano, evita carregar histórico inútil de referência, e ainda prepara o produto para vender histórico como add-on premium por cliente.
+
+[1]: https://www.gov.br/ans/pt-br/acesso-a-informacao/perfil-do-setor/dados-gerais "Dados Gerais — Agência Nacional de Saúde Suplementar"
+[2]: https://www.gov.br/ans/pt-br/assuntos/prestadores/padrao-para-troca-de-informacao-de-saude-suplementar-2013-tiss/padrao-tiss-marco-2026 "Padrão TISS – Março/2026 — Agência Nacional de Saúde Suplementar"
+[3]: https://www.gov.br/ans/pt-br/assuntos/operadoras/avisos-para-operadoras/ans-atualiza-a-tabela-de-compatibilizacao-tuss-sip-2024 "ANS atualiza a Tabela de Compatibilização TUSS-SIP 2024 — Agência Nacional de Saúde Suplementar"
+[4]: https://www.postgresql.org/docs/current/ddl-partitioning.html "PostgreSQL: Documentation: 18: 5.12. Table Partitioning"
+[5]: https://www.postgresql.org/docs/current/continuous-archiving.html "PostgreSQL: Documentation: 18: 25.3. Continuous Archiving and Point-in-Time Recovery (PITR)"
+[6]: https://pgbackrest.org/user-guide.html "pgBackRest User Guide - Debian & Ubuntu
+"

@@ -57,6 +57,21 @@ async def executar_ingestao_cadop(competencia: str) -> dict:
 
 
 async def executar_ingestao_sib_uf(competencia: str, uf: str) -> dict:
+    from ingestao.app.janela_carga import (
+        assegurar_dentro_da_janela_ou_falhar,
+        garantir_particoes_dataset,
+        normalizar_competencia,
+        obter_janela,
+    )
+
+    janela = await obter_janela("sib_operadora")
+    competencia_normalizada = normalizar_competencia(competencia)
+    await garantir_particoes_dataset(janela)
+    await assegurar_dentro_da_janela_ou_falhar(
+        competencia_normalizada,
+        janela,
+        permitir_historico=False,
+    )
     settings = get_settings()
     url = f"{settings.ans_sib_base_url.rstrip('/')}/sib_ativo_{uf.upper()}.zip"
     arquivo = await baixar_arquivo("sib_operadora", competencia, url)
@@ -153,6 +168,21 @@ async def executar_ingestao_sib_uf_streaming(
     - fecha o lote com contadores acumulados;
     - segunda execução deve virar ignorado_duplicata.
     """
+    from ingestao.app.janela_carga import (
+        assegurar_dentro_da_janela_ou_falhar,
+        garantir_particoes_dataset,
+        normalizar_competencia,
+        obter_janela,
+    )
+
+    janela = await obter_janela("sib_operadora")
+    competencia_normalizada = normalizar_competencia(competencia)
+    await garantir_particoes_dataset(janela)
+    await assegurar_dentro_da_janela_ou_falhar(
+        competencia_normalizada,
+        janela,
+        permitir_historico=False,
+    )
     settings = get_settings()
     bs = batch_size or settings.ans_sib_batch_size
     url = f"{settings.ans_sib_base_url.rstrip('/')}/sib_ativo_{uf.upper()}.zip"

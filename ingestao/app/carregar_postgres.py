@@ -13,6 +13,10 @@ settings = get_settings()
 engine = create_async_engine(settings.postgres_dsn, pool_pre_ping=True)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
+POLITICA_DATASET_ALIAS = {
+    "rede_assistencial": "rede_prestador",
+}
+
 
 @dataclass(slots=True)
 class LoteCarga:
@@ -50,6 +54,48 @@ def _extrair_competencia(registros: list[dict]) -> str | None:
         if valor is not None:
             return str(valor)
     return None
+
+
+async def _obter_janela_temporal_se_aplicavel(dataset_codigo: str):
+    from ingestao.app.janela_carga import (
+        DatasetNaoTemporalError,
+        PoliticaDatasetNaoEncontradaError,
+        obter_janela,
+    )
+
+    politica_dataset_codigo = POLITICA_DATASET_ALIAS.get(dataset_codigo, dataset_codigo)
+    try:
+        return await obter_janela(politica_dataset_codigo)
+    except (DatasetNaoTemporalError, PoliticaDatasetNaoEncontradaError):
+        return None
+
+
+async def _validar_janela_temporal(
+    dataset_codigo: str,
+    competencia: str | None,
+):
+    from ingestao.app.janela_carga import (
+        ConfiguracaoJanelaInvalidaError,
+        assegurar_dentro_da_janela_ou_falhar,
+        garantir_particoes_dataset,
+        normalizar_competencia,
+    )
+
+    janela = await _obter_janela_temporal_se_aplicavel(dataset_codigo)
+    if janela is None:
+        return None, None
+    if competencia is None:
+        raise ConfiguracaoJanelaInvalidaError(
+            f"Dataset temporal {dataset_codigo} sem competencia derivavel para validar janela."
+        )
+    competencia_normalizada = normalizar_competencia(competencia)
+    await garantir_particoes_dataset(janela)
+    await assegurar_dentro_da_janela_ou_falhar(
+        competencia_normalizada,
+        janela,
+        permitir_historico=False,
+    )
+    return janela, competencia_normalizada
 
 
 DATASET_CONFIG = {
@@ -373,6 +419,10 @@ async def carregar_dataset_bruto(
     registros_quarentena: list[dict] | None = None,
 ) -> LoteCarga:
     competencia = _extrair_competencia(registros)
+    janela_carga, competencia_janela = await _validar_janela_temporal(
+        dataset_codigo,
+        competencia,
+    )
     async with SessionLocal() as session:
         resultado_dup = await session.execute(
             text(
@@ -536,6 +586,16 @@ async def carregar_dataset_bruto(
         total_erro=total_quarentena,
         camada="bronze",
     )
+    if janela_carga is not None and competencia_janela is not None:
+        from ingestao.app.janela_carga import registrar_decisao
+
+        await registrar_decisao(
+            janela_carga.dataset_codigo,
+            competencia_janela,
+            "carregado",
+            janela_carga,
+            "Carga concluida dentro da janela dinamica.",
+        )
     return lote
 
 
@@ -557,6 +617,9 @@ async def carregar_dataset_bruto_em_batches(
 
     if dataset_codigo not in DATASET_CONFIG:
         raise ValueError(f"Dataset nao suportado para carga bronze: {dataset_codigo}")
+
+    competencia = _extrair_competencia(batch)
+    await _validar_janela_temporal(dataset_codigo, competencia)
 
     config = DATASET_CONFIG[dataset_codigo]
     carregado_em = datetime.now(tz=UTC)
