@@ -1,0 +1,27 @@
+# Sprint 39 / HIS-39.5 — Timer systemd para backup diferencial 4×/dia pgBackRest
+#
+# Dispara pgbackrest-diff.service quatro vezes por dia: 00:00, 06:00, 12:00, 18:00.
+# Com full diário às 03:00, o RPO máximo entre disparos do diferencial é 6h.
+# Persistent=true: re-executa na próxima inicialização se o horário foi perdido.
+#
+# CONFLITO full × diff:
+#   O timer full (03:00) coincide com a janela entre os diferenciais (00:00 e 06:00).
+#   O full será baseado no último full anterior; os diffs das 06:00 em diante já
+#   serão diferenciais do full recém-criado. Não há conflito técnico — o pgBackRest
+#   serializa as execuções se ambos dispararem próximos; o systemd não paraleliza
+#   serviços com Requires sobrepostos no mesmo PostgreSQL. Para garantia, o timer diff
+#   das 00:00 é 3h antes do full (03:00) — sem sobreposição.
+#
+# INSTALAÇÃO NA VPS (ver pgbackrest-diff.service para passos completos):
+#   systemctl enable --now pgbackrest-diff.timer
+
+[Unit]
+Description=Timer para pgBackRest Differential Backup 4×/dia — healthintel
+
+[Timer]
+OnCalendar=*-*-* 00,06,12,18:00:00
+Persistent=true
+Unit=pgbackrest-diff.service
+
+[Install]
+WantedBy=timers.target

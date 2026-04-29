@@ -29,11 +29,34 @@ async def aplicar_rate_limit(request: Request) -> None:
     chave = f"rate_limit:{identificador}"
     try:
         total = await redis_client.incrby(chave, peso)
-    except Exception:
-        return
+    except Exception as exc:
+        if settings.rate_limit_falha_aberta:
+            request.state.rate_limit_status = "indisponivel_fail_open"
+            return
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "codigo": "RATE_LIMIT_INDISPONIVEL",
+                "mensagem": "Protecao de rate limit indisponivel.",
+            },
+        ) from exc
 
-    if total == peso:
-        await redis_client.expire(chave, 60)
+    request.state.rate_limit_status = "ok"
+
+    try:
+        if total == peso:
+            await redis_client.expire(chave, 60)
+    except Exception as exc:
+        if settings.rate_limit_falha_aberta:
+            request.state.rate_limit_status = "expire_indisponivel_fail_open"
+            return
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "codigo": "RATE_LIMIT_INDISPONIVEL",
+                "mensagem": "Protecao de rate limit indisponivel.",
+            },
+        ) from exc
 
     if total > limite_rpm:
         raise HTTPException(

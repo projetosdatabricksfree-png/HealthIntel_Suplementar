@@ -1,0 +1,49 @@
+# Sprint 39 / HIS-39.5 — Serviço systemd para backup diferencial 4×/dia pgBackRest
+#
+# INSTALAÇÃO NA VPS:
+#   cp infra/systemd/pgbackrest-diff.service /etc/systemd/system/pgbackrest-diff.service
+#   cp infra/systemd/pgbackrest-diff.timer   /etc/systemd/system/pgbackrest-diff.timer
+#   systemctl daemon-reload
+#   systemctl enable --now pgbackrest-diff.timer
+#
+# VERIFICAR STATUS:
+#   systemctl status pgbackrest-diff.timer
+#   systemctl list-timers pgbackrest-diff.timer
+#   journalctl -u pgbackrest-diff.service -n 50
+#
+# EXECUTAR MANUALMENTE (para teste ou recuperação):
+#   systemctl start pgbackrest-diff.service
+#
+# DESATIVAR (rollback):
+#   systemctl disable --now pgbackrest-diff.timer
+#   # PostgreSQL e full backup continuam operando independentemente
+#   # plataforma.backup_execucao preserva histórico para auditoria
+#
+# ATENÇÃO: pgbackrest archive-push NÃO é chamado por este serviço.
+#   O archive-push é invocado pelo PostgreSQL via archive_command
+#   configurado em infra/postgres/conf/postgresql.fase7.conf.
+#   Registro de tipo='wal' em plataforma.backup_execucao é responsabilidade
+#   do script de monitoramento (HIS-39.6).
+#
+# CAMINHO DO SCRIPT NA VPS:
+#   /opt/healthintel/scripts/backup/pgbackrest_run.sh
+#   Ajuste ExecStart se o repositório estiver em outro diretório.
+
+[Unit]
+Description=pgBackRest Differential Backup — healthintel
+Documentation=file:/opt/healthintel/docs/operacao/backup_retencao_postgres.md
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+ExecStart=/bin/bash /opt/healthintel/scripts/backup/pgbackrest_run.sh --type=diff
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pgbackrest-diff
+# 2h: diferencial é incremental; tende a ser menor que o full
+TimeoutStartSec=7200
+
+[Install]
+WantedBy=multi-user.target

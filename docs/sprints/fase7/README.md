@@ -88,12 +88,12 @@ RPO alvo: 1h. RTO alvo MVP: até 8h.
 
 ## Documentos planejados pela Fase 7
 
-- `docs/arquitetura/politica_carga_dataset.md` — política declarativa da Sprint 34, matriz dataset x classe x objeto físico x DAG/modelo downstream.
-- `docs/arquitetura/particionamento_anual_postgres.md`
-- `docs/arquitetura/historico_sob_demanda_cliente.md`
-- `docs/operacao/backup_retencao_postgres.md`
-- `docs/operacao/disaster_recovery.md`
-- `docs/runbooks/backup_postgres.md`
+- [docs/arquitetura/politica_carga_dataset.md](../../arquitetura/politica_carga_dataset.md) — política declarativa da Sprint 34, matriz dataset x classe x objeto físico x DAG/modelo downstream.
+- [docs/arquitetura/particionamento_anual_postgres.md](../../arquitetura/particionamento_anual_postgres.md)
+- [docs/arquitetura/historico_sob_demanda_cliente.md](../../arquitetura/historico_sob_demanda_cliente.md)
+- [docs/operacao/backup_retencao_postgres.md](../../operacao/backup_retencao_postgres.md)
+- [docs/operacao/disaster_recovery.md](../../operacao/disaster_recovery.md)
+- [docs/runbooks/backup_postgres.md](../../runbooks/backup_postgres.md)
 - `docs/runbooks/restore_postgres.md`
 - `docs/releases/v4.2.0-dataops.md`
 

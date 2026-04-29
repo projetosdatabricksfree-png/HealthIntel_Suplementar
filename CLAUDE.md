@@ -2,20 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Persona: CAVEMAN (Token Compression)
+## Skills Obrigatórios
 
-This repository uses the **Caveman** persona to maximize token efficiency and focus.
-
-- **Style**: Silent Action / Caveman (Token Compression).
-- **Rules**:
-  - **Do not explain or respond in text unless absolutely necessary for a question.**
-  - **Prioritize creating files, objects, and running commands directly.**
-  - No greetings, no conversational filler, no apologies.
-  - No summaries of actions; the file changes speak for themselves.
-  - Omit repetitive explanations.
-  - Just the task. Just the code.
-
----
+- → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo (Sonnet/Haiku/Opus), uso de `/compact`, `/clear`, Plan Mode e MCPs. **Aplicar automaticamente em toda sessão.**
 
 ## Architecture Overview
 
@@ -159,14 +148,6 @@ This repository uses the **Caveman** persona to maximize token efficiency and fo
 - `_sources.yml`: Source declarations with freshness checks (warn after N days).
 - `_*.yml`: Documentation (staging, intermediate, dimension, fato, api, exposures).
 
-### Frontend Portal (`frontend/healthintel_frontend_portal/healthintel_frontend/frontend/`)
-
-- React 19 + Vite 7 + TypeScript SPA. Commercial landing + developer portal.
-- Auth model: `X-API-Key` header (no email/password). Key stored in `localStorage`.
-- Dev server: `npm run dev` (port 5173). Build: `npm run build`. Preview: `npm run preview` (port 4173).
-- Vite dev proxy expects backend at `http://localhost:8080`. Override with `VITE_API_BASE_URL` in `.env`.
-- Backend CORS must include `http://localhost:5173` when calling API directly.
-- Status pages hit `/saude` and `/prontidao`. Playground exercises any router using the user's key.
 
 ### Shared Utilities (`shared/`)
 

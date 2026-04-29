@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 
+from api.app import dependencia
 from api.app.main import app
 
 client = TestClient(app)
@@ -31,6 +32,19 @@ def test_operadoras_sem_api_key_deve_padronizar_401() -> None:
     body = response.json()
     assert body["codigo"] == "CHAVE_INVALIDA"
     assert "X-Request-ID" in response.headers
+
+
+def test_chave_local_padrao_deve_ser_bloqueada_fora_de_local(monkeypatch) -> None:
+    monkeypatch.setattr(dependencia.settings, "app_env", "hml")
+
+    response = client.get(
+        "/v1/operadoras",
+        headers={"X-API-Key": "hi_local_dev_2026_api_key"},
+    )
+
+    assert response.status_code == 403
+    body = response.json()
+    assert body["codigo"] == "CHAVE_LOCAL_BLOQUEADA"
 
 
 @patch("api.app.main.obter_prontidao", new_callable=AsyncMock)

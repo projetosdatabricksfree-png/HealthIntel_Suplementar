@@ -13,6 +13,14 @@ from api.app.core.security import gerar_hash_sha256
 
 settings = get_settings()
 
+CHAVES_LOCAIS_PADRAO = frozenset(
+    {
+        "hi_local_dev_2026_api_key",
+        "hi_local_admin_2026_api_key",
+    }
+)
+AMBIENTES_CHAVE_LOCAL = frozenset({"local", "dev", "test", "ci"})
+
 
 async def _obter_cache_chave(hash_chave: str) -> dict | None:
     try:
@@ -74,6 +82,15 @@ async def validar_chave(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"codigo": "CHAVE_INVALIDA", "mensagem": "Header X-API-Key ausente."},
+        )
+
+    if x_api_key in CHAVES_LOCAIS_PADRAO and settings.app_env.lower() not in AMBIENTES_CHAVE_LOCAL:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "codigo": "CHAVE_LOCAL_BLOQUEADA",
+                "mensagem": "Chave local de smoke bloqueada fora de ambiente local.",
+            },
         )
 
     hash_chave = gerar_hash_sha256(x_api_key)

@@ -1,8 +1,15 @@
 from datetime import datetime
 
 from airflow import DAG
-from airflow.operators.empty import EmptyOperator
-from airflow.utils.task_group import TaskGroup
+from airflow.operators.bash import BashOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+DBT_ENV = (
+    "DBT_PROFILES_DIR=/workspace/healthintel_dbt "
+    "DBT_LOG_PATH=/tmp/healthintel_dbt_logs "
+    "DBT_TARGET_PATH=/tmp/healthintel_dbt_target"
+)
 
 with DAG(
     dag_id="dag_mestre_mensal",
@@ -11,44 +18,82 @@ with DAG(
     catchup=False,
     tags=["healthintel", "mensal"],
 ) as dag:
-    inicio = EmptyOperator(task_id="inicio")
+    preparar_particoes = PostgresOperator(
+        task_id="preparar_particoes_sib",
+        postgres_conn_id="postgres_default",
+        sql="""
+        select plataforma.preparar_particoes_janela_atual(
+            'bruto_ans',
+            'sib_beneficiario_operadora',
+            2
+        );
 
-    with TaskGroup(group_id="preparar_particoes") as preparar_particoes:
-        preparar_particoes_inicio = EmptyOperator(task_id="inicio")
-        preparar_particoes_fim = EmptyOperator(task_id="fim")
-        preparar_particoes_inicio >> preparar_particoes_fim
-
-    identificar_dataset = EmptyOperator(task_id="identificar_dataset")
-    resolver_layout = EmptyOperator(task_id="resolver_layout")
-    ingest_cadop = EmptyOperator(task_id="acionar_dag_ingest_cadop")
-    ingest_sib = EmptyOperator(task_id="acionar_dag_ingest_sib")
-    carregar_bruto = EmptyOperator(task_id="carregar_bruto")
-    executar_dbt = EmptyOperator(task_id="executar_dbt")
-
-    with TaskGroup(group_id="validar_freshness") as validar_freshness:
-        validar_freshness_inicio = EmptyOperator(task_id="inicio")
-        validar_freshness_fim = EmptyOperator(task_id="fim")
-        validar_freshness_inicio >> validar_freshness_fim
-
-    with TaskGroup(group_id="registrar_versao") as registrar_versao:
-        registrar_versao_inicio = EmptyOperator(task_id="inicio")
-        registrar_versao_fim = EmptyOperator(task_id="fim")
-        registrar_versao_inicio >> registrar_versao_fim
-
-    publicar_api = EmptyOperator(task_id="publicar_api")
-    fim = EmptyOperator(task_id="fim")
-
-    (
-        inicio
-        >> preparar_particoes
-        >> identificar_dataset
-        >> resolver_layout
-        >> ingest_cadop
-        >> ingest_sib
-        >> carregar_bruto
-        >> executar_dbt
-        >> validar_freshness
-        >> registrar_versao
-        >> publicar_api
-        >> fim
+        select plataforma.preparar_particoes_janela_atual(
+            'bruto_ans',
+            'sib_beneficiario_municipio',
+            2
+        );
+        """,
     )
+
+    ingest_cadop = TriggerDagRunOperator(
+        task_id="acionar_dag_ingest_cadop",
+        trigger_dag_id="dag_ingest_cadop",
+        wait_for_completion=True,
+        reset_dag_run=True,
+        conf={"competencia": "{{ dag_run.conf.get('competencia', ds_nodash[:6]) }}"},
+    )
+
+    ingest_sib = TriggerDagRunOperator(
+        task_id="acionar_dag_ingest_sib",
+        trigger_dag_id="dag_ingest_sib",
+        wait_for_completion=True,
+        reset_dag_run=True,
+        conf={
+            "competencia": "{{ dag_run.conf.get('competencia', ds_nodash[:6]) }}",
+            "ufs": "{{ dag_run.conf.get('ufs', 'SP') }}",
+        },
+    )
+
+    executar_dbt_servico = BashOperator(
+        task_id="executar_dbt_servico",
+        cwd="/workspace/healthintel_dbt",
+        bash_command=(
+            f"{DBT_ENV} dbt build --select "
+            "api_operadora api_score_operadora_mensal "
+            "api_regulatorio_operadora_trimestral api_rn623_lista_trimestral"
+        ),
+    )
+
+    registrar_evidencia = BashOperator(
+        task_id="registrar_evidencia_mensal",
+        cwd="/workspace",
+        bash_command=r"""
+        PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
+import asyncio
+from uuid import uuid4
+from sqlalchemy import text
+from ingestao.app.carregar_postgres import SessionLocal
+
+async def main():
+    async with SessionLocal() as session:
+        await session.execute(
+            text('''
+            insert into plataforma.job (
+                id, dag_id, nome_job, fonte_ans, status, iniciado_em, finalizado_em,
+                registro_processado, registro_com_falha, mensagem_erro
+            ) values (
+                :id, 'dag_mestre_mensal', 'orquestracao_mensal_minima', 'ans',
+                'sucesso', now(), now(), 0, 0, null
+            )
+            '''),
+            {'id': str(uuid4())},
+        )
+        await session.commit()
+
+asyncio.run(main())
+"
+        """,
+    )
+
+    preparar_particoes >> ingest_cadop >> ingest_sib >> executar_dbt_servico >> registrar_evidencia

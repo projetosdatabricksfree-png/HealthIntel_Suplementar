@@ -12,7 +12,49 @@ from ingestao.app.carregar_postgres import (
 )
 
 
+async def limpar_registros_demo() -> None:
+    async with SessionLocal() as session:
+        await session.execute(
+            text(
+                """
+                delete from bruto_ans.cadop
+                where _arquivo_origem = 'cadop_demo.csv'
+                   or _hash_arquivo = 'hash_demo_cadop'
+                """
+            )
+        )
+        await session.execute(
+            text(
+                """
+                delete from bruto_ans.sib_beneficiario_operadora
+                where _arquivo_origem like 'sib_operadora_demo_%'
+                   or _hash_arquivo like 'hash_demo_sib_operadora_%'
+                """
+            )
+        )
+        await session.execute(
+            text(
+                """
+                delete from bruto_ans.sib_beneficiario_municipio
+                where _arquivo_origem = 'sib_municipio_demo.csv'
+                   or _hash_arquivo = 'hash_demo_sib_municipio'
+                """
+            )
+        )
+        await session.execute(
+            text(
+                """
+                delete from plataforma.job
+                where nome_job = 'seed_demo_core'
+                """
+            )
+        )
+        await session.commit()
+
+
 async def seed_demo() -> None:
+    await limpar_registros_demo()
+
     await carregar_cadop_bruto(
         [
             {
@@ -23,7 +65,7 @@ async def seed_demo() -> None:
                 "modalidade": "medicina_de_grupo",
                 "cidade": "Sao Paulo",
                 "uf": "SP",
-                "competencia": "202603",
+                "competencia": 202603,
             },
             {
                 "registro_ans": "654321",
@@ -33,7 +75,7 @@ async def seed_demo() -> None:
                 "modalidade": "cooperativa_medica",
                 "cidade": "Belo Horizonte",
                 "uf": "MG",
-                "competencia": "202603",
+                "competencia": 202603,
             },
         ],
         arquivo_origem="cadop_demo.csv",
@@ -46,14 +88,14 @@ async def seed_demo() -> None:
     await carregar_sib_operadora_bruto(
         [
             {
-                "competencia": "202602",
+                "competencia": 202602,
                 "registro_ans": "123456",
                 "beneficiario_medico": 1000,
                 "beneficiario_odonto": 150,
                 "beneficiario_total": 1150,
             },
             {
-                "competencia": "202602",
+                "competencia": 202602,
                 "registro_ans": "654321",
                 "beneficiario_medico": 700,
                 "beneficiario_odonto": 120,
@@ -70,14 +112,14 @@ async def seed_demo() -> None:
     await carregar_sib_operadora_bruto(
         [
             {
-                "competencia": "202603",
+                "competencia": 202603,
                 "registro_ans": "123456",
                 "beneficiario_medico": 1050,
                 "beneficiario_odonto": 180,
                 "beneficiario_total": 1230,
             },
             {
-                "competencia": "202603",
+                "competencia": 202603,
                 "registro_ans": "654321",
                 "beneficiario_medico": 710,
                 "beneficiario_odonto": 130,
@@ -94,7 +136,7 @@ async def seed_demo() -> None:
     await carregar_sib_municipio_bruto(
         [
             {
-                "competencia": "202603",
+                "competencia": 202603,
                 "registro_ans": "123456",
                 "codigo_ibge": "3550308",
                 "municipio": "Sao Paulo",
@@ -104,7 +146,7 @@ async def seed_demo() -> None:
                 "beneficiario_total": 1040,
             },
             {
-                "competencia": "202603",
+                "competencia": 202603,
                 "registro_ans": "654321",
                 "codigo_ibge": "3106200",
                 "municipio": "Belo Horizonte",

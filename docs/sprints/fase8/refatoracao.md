@@ -342,3 +342,51 @@ Critério mínimo para piloto pago: endpoints da demo sem `500`, chave por clien
 | Prontidão para enterprise | 24/100 | Ainda não há evidência de operação, segurança, DR, observabilidade e governança no nível enterprise. | Estabilizar VPS, formalizar SLO/alertas, auditar secrets/roles, validar DR e criar trilha de consumo por cliente. |
 
 A próxima ação recomendada é corrigir o hard gate mínimo de homologação: materializar o dbt mínimo, fazer `make smoke` passar, corrigir `make sql-lint`, criar compose/env hml e validar backup/restore. Esse caminho prioriza capacidade de operar e vender antes de refatorações estruturais maiores.
+
+## 11. Atualização pós-ajustes — 2026-04-29
+
+Esta seção registra o estado após o primeiro ciclo de ajustes executado a partir
+deste relatório. O diagnóstico original acima permanece como fotografia do
+worktree antes da correção.
+
+| Item | Estado pós-ajuste | Evidência |
+| --- | --- | --- |
+| `make dbt-build` | Sem erro; 1 warning de qualidade documental/CNPJ. | `PASS=557 WARN=1 ERROR=0 SKIP=0 NO-OP=14 TOTAL=572`. |
+| `make dbt-test` | Sem erro; 1 warning de qualidade documental/CNPJ. | `PASS=383 WARN=1 ERROR=0 SKIP=0 NO-OP=0 TOTAL=384`. |
+| `make smoke` | Verde após materialização dbt e restart da API. | `total_checks=12`, `falhas=0`. |
+| `make lint` | Verde. | `All checks passed!`. |
+| `make test` | Verde. | `184 passed`. |
+| `make dag-parse` | Verde. | `Errors: {}`. |
+| Compose hml | Renderiza com `.env.hml.exemplo`. | `docker compose --env-file .env.hml.exemplo -f infra/docker-compose.yml -f infra/docker-compose.hml.yml config`. |
+| `make sql-lint` | O alvo executa o SQLFluff correto, mas falha por dívida SQL real. | Falhas em regras como `ST09`, `RF03`, `LT09`, `LT12`, `AL01` e `AM03`. |
+| `make smoke-pgbackrest` | Continua pendente para VPS. | Ambiente local sem `pgbackrest` e `psql`. |
+
+Principais correções aplicadas:
+
+- API admin passou a aplicar rate limit.
+- Rate limit agora pode falhar fechado fora de ambientes locais via
+  `API_RATE_LIMIT_FAIL_OPEN=false`.
+- Chaves locais padrão de smoke são bloqueadas fora de `local`, `dev`, `test`
+  e `ci`.
+- Criado overlay de homologação com segredos obrigatórios em
+  `infra/docker-compose.hml.yml` e exemplo `.env.hml.exemplo`.
+- `make sql-lint` deixou de chamar comando inexistente `dbt sqlfluff`; a falha
+  remanescente é dívida SQL, não erro de alvo.
+- DDL Bronze deixou de impor unicidade por `_hash_arquivo` em tabelas
+  multi-linha; idempotência por arquivo permanece em `plataforma.lote_ingestao`.
+- `scripts/seed_demo_core.py` ficou reexecutável para demo local.
+- DAG mestre mensal deixou de ser apenas desenho e passou a orquestrar
+  partições, CADOP, SIB, dbt de serviço e registro de evidência.
+- Criadas políticas operacionais para alertas mínimos e artefatos gerados.
+
+Pendências que continuam abertas:
+
+- Corrigir a dívida ampla de SQLFluff por domínio de modelos, sem mascarar o
+  gate.
+- Validar `make smoke-pgbackrest`, repo2 e restore/PITR em VPS ou ambiente
+  equivalente.
+- Decidir em commit próprio se a remoção do `frontend/` será assumida como
+  exclusão definitiva do MVP API-first ou se haverá reconstrução comercial
+  mínima.
+- Definir destino dos snapshots históricos `docs/dbt_*`: manter como release
+  auditável ou remover em limpeza dedicada.

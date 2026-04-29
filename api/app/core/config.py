@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     app_host: str = Field(default="0.0.0.0", alias="API_HOST")
     app_port: int = Field(default=8000, alias="API_PORT")
     app_rate_limit_rpm: int = Field(default=60, alias="API_RATE_LIMIT_RPM")
+    app_rate_limit_fail_open: bool = Field(default=True, alias="API_RATE_LIMIT_FAIL_OPEN")
     app_cache_ttl_segundos: int = Field(default=60, alias="API_CACHE_TTL_SEGUNDOS")
     app_allowed_hosts: str = Field(
         default="localhost,127.0.0.1,testserver,api,healthintel_api",
@@ -83,6 +84,11 @@ class Settings(BaseSettings):
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [item.strip() for item in self.app_cors_allowed_origins.split(",") if item.strip()]
+
+    @property
+    def rate_limit_falha_aberta(self) -> bool:
+        ambientes_tolerantes = {"local", "dev", "test", "ci"}
+        return self.app_rate_limit_fail_open and self.app_env.lower() in ambientes_tolerantes
 
     def validar_configuracao(self) -> None:
         if self.app_env.lower() == "local":

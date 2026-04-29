@@ -2,9 +2,11 @@
 
 ## Objetivo
 
-Subir o stack local ou staging repetível da Sprint 06 com validação mínima de dependências.
+Subir o stack local ou o ambiente de homologação em VPS com validação mínima de dependências.
 
 ## Passos
+
+### Ambiente local
 
 1. Copiar `.env.exemplo` para `.env` ou `.env.local`.
 2. Ajustar `*_EXTERNAL_PORT` se já existir serviço local ocupando `5432`, `6379`, `27018`, `8080`, `8081` ou `8088`.
@@ -39,6 +41,49 @@ docker compose -f infra/docker-compose.yml run --rm --entrypoint sh dbt -lc "dbt
 python scripts/smoke_piloto.py
 ```
 
+### Homologação em VPS
+
+1. Copiar `.env.hml.exemplo` para `.env.hml`.
+2. Preencher todos os segredos com valores reais:
+   - `POSTGRES_PASSWORD`
+   - `MONGO_INITDB_ROOT_PASSWORD`
+   - `API_JWT_ADMIN_SECRET`
+   - `LAYOUT_SERVICE_TOKEN`
+   - `AIRFLOW_FERNET_KEY`
+   - `AIRFLOW_ADMIN_PASSWORD`
+3. Manter `API_RATE_LIMIT_FAIL_OPEN=false`.
+4. Nunca usar as chaves locais `hi_local_dev_2026_api_key` ou
+   `hi_local_admin_2026_api_key` em hml/prod. A API bloqueia essas chaves fora
+   de ambientes locais, mesmo se elas existirem no banco para smoke de dev.
+5. Renderizar o compose de homologação:
+
+```bash
+make compose-config-hml
+```
+
+6. Confirmar que `/tmp/healthintel-compose-hml.rendered.yml` não contém senhas default como `healthintel`, `admin/admin`, `trocar_em_producao` ou `healthintel_layout_service_local_token_2026`.
+7. Subir a stack hml:
+
+```bash
+make up-hml
+```
+
+8. Materializar dados mínimos e camada de serviço:
+
+```bash
+make demo-data
+make dbt-seed
+make dbt-build
+make dbt-test
+make smoke
+```
+
+9. Validar backup/DR na VPS:
+
+```bash
+make smoke-pgbackrest
+```
+
 ## Critério de sucesso
 
 - `/saude` retorna `200`;
@@ -47,3 +92,5 @@ python scripts/smoke_piloto.py
 - `/v1/operadoras/{registro_ans}/regulatorio` responde com `X-API-Key`;
 - `dbt build` conclui sem erro;
 - smoke não registra falhas.
+- Em hml, `make compose-config-hml` renderiza sem segredos default.
+- Em hml, `make smoke-pgbackrest` passa com repo2 configurado.

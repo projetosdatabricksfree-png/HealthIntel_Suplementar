@@ -6,7 +6,7 @@ Conduzir o primeiro piloto com design partners sem reabrir a arquitetura da plat
 
 ## Checklist de readiness
 
-- [x] CI com `ruff`, `pytest`, `sqlfluff` e `dbt compile`.
+- [ ] CI com `ruff`, `pytest`, `sqlfluff` e `dbt compile`.
 - [x] `docker compose config` validado.
 - [x] smoke script fim a fim disponível.
 - [x] teste de carga Locust versionado.
@@ -33,3 +33,10 @@ Conduzir o primeiro piloto com design partners sem reabrir a arquitetura da plat
 - `sqlfluff`, `ruff` e `pytest` sem erro;
 - `p95` dentro do SLO definido;
 - nenhuma dependência crítica indisponível em `/prontidao`.
+
+## Pendência aberta em 2026-04-29
+
+O alvo `make sql-lint` executa o SQLFluff do ambiente versionado, mas ainda
+falha por dívida de estilo em modelos e testes dbt existentes. O piloto pago
+assistido só deve ser marcado como pronto quando esse gate estiver verde ou
+quando houver exceção formal documentada por release.

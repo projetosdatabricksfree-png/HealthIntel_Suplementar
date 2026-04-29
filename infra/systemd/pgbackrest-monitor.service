@@ -1,0 +1,50 @@
+# Sprint 39 / HIS-39.6 — Serviço systemd para monitoramento de backup pgBackRest
+#
+# INSTALAÇÃO NA VPS:
+#   cp infra/systemd/pgbackrest-monitor.service /etc/systemd/system/pgbackrest-monitor.service
+#   cp infra/systemd/pgbackrest-monitor.timer   /etc/systemd/system/pgbackrest-monitor.timer
+#   systemctl daemon-reload
+#   systemctl enable --now pgbackrest-monitor.timer
+#
+# VERIFICAR STATUS:
+#   systemctl status pgbackrest-monitor.timer
+#   systemctl list-timers pgbackrest-monitor.timer
+#   journalctl -u pgbackrest-monitor.service -n 50
+#
+# EXECUTAR MANUALMENTE (para teste ou recuperação):
+#   systemctl start pgbackrest-monitor.service
+#   # Ou diretamente:
+#   sudo -u postgres bash /opt/healthintel/scripts/backup/pgbackrest_monitor.sh
+#
+# VARIÁVEIS OPCIONAIS (passar via Environment= ou EnvironmentFile=):
+#   PG_WAL_DIR=/var/lib/postgresql/16/main/pg_wal
+#   PG_WAL_LIMIT_GB=5
+#   PROMETHEUS_PUSHGATEWAY_URL=http://localhost:9091  (se pushgateway disponível)
+#
+# DESATIVAR (rollback):
+#   systemctl disable --now pgbackrest-monitor.timer
+#   # backups e archive_command continuam operando independentemente
+#   # plataforma.backup_alerta preserva histórico para auditoria
+#
+# CAMINHO DO SCRIPT NA VPS:
+#   /opt/healthintel/scripts/backup/pgbackrest_monitor.sh
+#   Ajuste ExecStart se o repositório estiver em outro diretório.
+
+[Unit]
+Description=pgBackRest Monitor de Backup — healthintel
+Documentation=file:/opt/healthintel/docs/runbooks/backup_postgres.md
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+ExecStart=/bin/bash /opt/healthintel/scripts/backup/pgbackrest_monitor.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pgbackrest-monitor
+# 2 min: operação de leitura; deve concluir rápido
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

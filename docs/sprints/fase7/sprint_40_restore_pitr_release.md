@@ -82,9 +82,9 @@
 - [ ] Criar `tests/hardgates/assert_backup_e_restore_validos.sh` que valida:
   - `pgbackrest --stanza=healthintel check` zero erros.
   - Último full em `plataforma.backup_execucao` tem `status='sucesso'`.
-  - Último diff em `plataforma.backup_execucao` tem `status='sucesso'` e `executado_em > now() - interval '7 hours'`.
-  - Último `tipo='wal'` tem `executado_em > now() - interval '1 hour'`.
-  - Último `tipo='restore_test'` tem `status='sucesso'` e `executado_em > now() - interval '8 days'` (smoke semanal).
+  - Último diff em `plataforma.backup_execucao` tem `status='sucesso'` e `iniciado_em > now() - interval '7 hours'`.
+  - Último `tipo='wal'` tem `iniciado_em > now() - interval '1 hour'`.
+  - Último `tipo='restore_test'` tem `status='sucesso'` e `iniciado_em > now() - interval '8 days'` (smoke semanal).
 - [ ] Integrar ao `make ci-local` como passo final.
 
 ### HIS-40.5 — Documentação de DR final
@@ -148,7 +148,7 @@
 - [ ] `pytest api/tests/integration/ -q` zero falhas no cluster restaurado.
 - [ ] `pytest testes/regressao/test_endpoints_fase4.py testes/regressao/test_endpoints_fase5.py -q` zero falhas (não regressão).
 - [ ] `tests/hardgates/assert_backup_e_restore_validos.sh` zero falhas.
-- [ ] `select count(*) from plataforma.backup_execucao where tipo='restore_test' and status='sucesso' and executado_em > now() - interval '8 days'` >= 1.
+- [ ] `select count(*) from plataforma.backup_execucao where tipo='restore_test' and status='sucesso' and iniciado_em > now() - interval '8 days'` >= 1.
 - [ ] `make ci-local` zero falhas.
 - [ ] Documento `docs/operacao/disaster_recovery.md` declara explicitamente RPO=1h e RTO MVP=8h.
 - [ ] Tag `v4.2.0-dataops` criada **somente após** todos os itens acima verdes.

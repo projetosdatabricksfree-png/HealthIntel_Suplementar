@@ -1,0 +1,98 @@
+services:
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:?POSTGRES_EXTERNAL_PORT obrigatorio em hml}:5432"
+
+  mongo:
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?MONGO_INITDB_ROOT_USERNAME obrigatorio em hml}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD obrigatorio em hml}
+    ports:
+      - "${MONGO_EXTERNAL_PORT:?MONGO_EXTERNAL_PORT obrigatorio em hml}:27017"
+
+  redis:
+    restart: unless-stopped
+    ports:
+      - "${REDIS_EXTERNAL_PORT:?REDIS_EXTERNAL_PORT obrigatorio em hml}:6379"
+
+  api:
+    restart: unless-stopped
+    environment:
+      API_ENV: hml
+      API_RATE_LIMIT_RPM: ${API_RATE_LIMIT_RPM:?API_RATE_LIMIT_RPM obrigatorio em hml}
+      API_RATE_LIMIT_FAIL_OPEN: ${API_RATE_LIMIT_FAIL_OPEN:?API_RATE_LIMIT_FAIL_OPEN obrigatorio em hml}
+      API_JWT_ADMIN_SECRET: ${API_JWT_ADMIN_SECRET:?API_JWT_ADMIN_SECRET obrigatorio em hml}
+      API_ALLOWED_HOSTS: ${API_ALLOWED_HOSTS:?API_ALLOWED_HOSTS obrigatorio em hml}
+      API_CORS_ALLOWED_ORIGINS: ${API_CORS_ALLOWED_ORIGINS:?API_CORS_ALLOWED_ORIGINS obrigatorio em hml}
+      API_MAX_REQUEST_SIZE_BYTES: ${API_MAX_REQUEST_SIZE_BYTES:?API_MAX_REQUEST_SIZE_BYTES obrigatorio em hml}
+      LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:?LAYOUT_SERVICE_TOKEN obrigatorio em hml}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}
+      MONGO_DB: ${MONGO_DB:?MONGO_DB obrigatorio em hml}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?MONGO_INITDB_ROOT_USERNAME obrigatorio em hml}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD obrigatorio em hml}
+
+  mongo_layout_service:
+    restart: unless-stopped
+    environment:
+      LAYOUT_SERVICE_ENV: hml
+      LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:?LAYOUT_SERVICE_TOKEN obrigatorio em hml}
+      LAYOUT_SERVICE_ALLOWED_HOSTS: ${LAYOUT_SERVICE_ALLOWED_HOSTS:?LAYOUT_SERVICE_ALLOWED_HOSTS obrigatorio em hml}
+      LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES: ${LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES:?LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES obrigatorio em hml}
+      MONGO_DB: ${MONGO_DB:?MONGO_DB obrigatorio em hml}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:?MONGO_INITDB_ROOT_USERNAME obrigatorio em hml}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD obrigatorio em hml}
+
+  airflow-init:
+    restart: "no"
+    environment:
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:?AIRFLOW_FERNET_KEY obrigatorio em hml}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      AIRFLOW_ADMIN_USERNAME: ${AIRFLOW_ADMIN_USERNAME:?AIRFLOW_ADMIN_USERNAME obrigatorio em hml}
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:?AIRFLOW_ADMIN_PASSWORD obrigatorio em hml}
+      AIRFLOW_ADMIN_EMAIL: ${AIRFLOW_ADMIN_EMAIL:?AIRFLOW_ADMIN_EMAIL obrigatorio em hml}
+    command: >
+      bash -lc "airflow db migrate &&
+      (airflow users create
+      --username \"$${AIRFLOW_ADMIN_USERNAME}\"
+      --password \"$${AIRFLOW_ADMIN_PASSWORD}\"
+      --firstname Health
+      --lastname Intel
+      --role Admin
+      --email \"$${AIRFLOW_ADMIN_EMAIL}\" || true)"
+
+  airflow-webserver:
+    restart: unless-stopped
+    environment:
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:?AIRFLOW_FERNET_KEY obrigatorio em hml}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+    ports:
+      - "${AIRFLOW_EXTERNAL_PORT:?AIRFLOW_EXTERNAL_PORT obrigatorio em hml}:8080"
+
+  airflow-scheduler:
+    restart: unless-stopped
+    environment:
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY:?AIRFLOW_FERNET_KEY obrigatorio em hml}
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}
+
+  dbt:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB obrigatorio em hml}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER obrigatorio em hml}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatorio em hml}
+
+  nginx:
+    restart: unless-stopped
+    ports:
+      - "${API_EXTERNAL_PORT:?API_EXTERNAL_PORT obrigatorio em hml}:8080"
+      - "${LAYOUT_EXTERNAL_PORT:?LAYOUT_EXTERNAL_PORT obrigatorio em hml}:8081"

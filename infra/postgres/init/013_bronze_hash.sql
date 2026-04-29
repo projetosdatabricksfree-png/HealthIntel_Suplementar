@@ -52,52 +52,71 @@ alter table if exists bruto_ans.cnes_estabelecimento
 alter table if exists bruto_ans.tiss_procedimento_trimestral
     add column if not exists _hash_linha text;
 
-create unique index if not exists uq_cadop_competencia_hash
+-- A idempotencia por arquivo fica em plataforma.lote_ingestao.
+-- Bronze armazena varias linhas por arquivo, portanto _hash_arquivo nao pode ser unique.
+drop index if exists bruto_ans.uq_cadop_competencia_hash;
+drop index if exists bruto_ans.uq_sib_operadora_competencia_hash;
+drop index if exists bruto_ans.uq_sib_municipio_competencia_hash;
+drop index if exists bruto_ans.uq_igr_competencia_hash;
+drop index if exists bruto_ans.uq_nip_competencia_hash;
+drop index if exists bruto_ans.uq_rn623_competencia_hash;
+drop index if exists bruto_ans.uq_idss_competencia_hash;
+drop index if exists bruto_ans.uq_regime_especial_competencia_hash;
+drop index if exists bruto_ans.uq_prudencial_competencia_hash;
+drop index if exists bruto_ans.uq_portabilidade_competencia_hash;
+drop index if exists bruto_ans.uq_taxa_resolutividade_competencia_hash;
+drop index if exists bruto_ans.uq_diops_competencia_hash;
+drop index if exists bruto_ans.uq_fip_competencia_hash;
+drop index if exists bruto_ans.uq_vda_competencia_hash;
+drop index if exists bruto_ans.uq_glosa_competencia_hash;
+drop index if exists bruto_ans.uq_rede_competencia_hash;
+
+create index if not exists ix_cadop_competencia_hash
     on bruto_ans.cadop (competencia, _hash_arquivo);
 
-create unique index if not exists uq_sib_operadora_competencia_hash
+create index if not exists ix_sib_operadora_competencia_hash
     on bruto_ans.sib_beneficiario_operadora (competencia, _hash_arquivo);
 
-create unique index if not exists uq_sib_municipio_competencia_hash
+create index if not exists ix_sib_municipio_competencia_hash
     on bruto_ans.sib_beneficiario_municipio (competencia, _hash_arquivo);
 
-create unique index if not exists uq_igr_competencia_hash
+create index if not exists ix_igr_competencia_hash
     on bruto_ans.igr_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_nip_competencia_hash
+create index if not exists ix_nip_competencia_hash
     on bruto_ans.nip_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_rn623_competencia_hash
+create index if not exists ix_rn623_competencia_hash
     on bruto_ans.rn623_lista_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_idss_competencia_hash
+create index if not exists ix_idss_competencia_hash
     on bruto_ans.idss (ano_base, _hash_arquivo);
 
-create unique index if not exists uq_regime_especial_competencia_hash
+create index if not exists ix_regime_especial_competencia_hash
     on bruto_ans.regime_especial_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_prudencial_competencia_hash
+create index if not exists ix_prudencial_competencia_hash
     on bruto_ans.prudencial_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_portabilidade_competencia_hash
+create index if not exists ix_portabilidade_competencia_hash
     on bruto_ans.portabilidade_operadora_mensal (competencia, _hash_arquivo);
 
-create unique index if not exists uq_taxa_resolutividade_competencia_hash
+create index if not exists ix_taxa_resolutividade_competencia_hash
     on bruto_ans.taxa_resolutividade_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_diops_competencia_hash
+create index if not exists ix_diops_competencia_hash
     on bruto_ans.diops_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_fip_competencia_hash
+create index if not exists ix_fip_competencia_hash
     on bruto_ans.fip_operadora_trimestral (trimestre, _hash_arquivo);
 
-create unique index if not exists uq_vda_competencia_hash
+create index if not exists ix_vda_competencia_hash
     on bruto_ans.vda_operadora_mensal (competencia, _hash_arquivo);
 
-create unique index if not exists uq_glosa_competencia_hash
+create index if not exists ix_glosa_competencia_hash
     on bruto_ans.glosa_operadora_mensal (competencia, _hash_arquivo);
 
-create unique index if not exists uq_rede_competencia_hash
+create index if not exists ix_rede_competencia_hash
     on bruto_ans.rede_prestador_municipio (competencia, _hash_arquivo);
 
 -- uq_cnes_competencia_hash omitted: multi-row files share _hash_arquivo, constraint blocks bulk inserts

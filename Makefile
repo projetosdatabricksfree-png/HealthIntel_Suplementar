@@ -1,9 +1,12 @@
 SHELL := /bin/bash
 COMPOSE := docker compose -f infra/docker-compose.yml
+COMPOSE_HML := docker compose --env-file .env.hml -f infra/docker-compose.yml -f infra/docker-compose.hml.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 DBT_BIN := ../.venv/bin/dbt
+SQLFLUFF_BIN := ../.venv/bin/sqlfluff
+RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -26,6 +29,15 @@ ps:
 
 compose-config:
 	$(COMPOSE) config > /tmp/healthintel-compose.rendered.yml
+
+compose-config-hml:
+	$(COMPOSE_HML) config > /tmp/healthintel-compose-hml.rendered.yml
+
+up-hml:
+	$(COMPOSE_HML) up -d --build
+
+down-hml:
+	$(COMPOSE_HML) down
 
 api-dev:
 	uvicorn api.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -105,10 +117,10 @@ billing-close:
 	$(PYTHON) scripts/fechar_ciclo_billing.py --referencia $(REF)
 
 lint:
-	ruff check .
+	$(RUFF_BIN) check .
 
 sql-lint:
-	$(DBT_ENV) $(DBT_BIN) sqlfluff lint healthintel_dbt/models healthintel_dbt/tests
+	cd healthintel_dbt && $(DBT_ENV) $(SQLFLUFF_BIN) lint models tests
 
 smoke:
 	$(PYTHON) scripts/smoke_piloto.py
@@ -146,6 +158,9 @@ smoke-historico-sob-demanda:
 smoke-cadop:
 	$(PYTHON) scripts/smoke_cadop.py
 
+smoke-pgbackrest:
+	bash scripts/backup/smoke_pgbackrest.sh
+
 consumo-refresh:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) run --select tag:mart tag:consumo
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:consumo
@@ -172,7 +187,7 @@ elt-transform-all:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:staging tag:prata tag:mart tag:consumo
 
 elt-validate-all:
-	ruff check ingestao scripts healthintel_dbt
+	$(RUFF_BIN) check ingestao scripts healthintel_dbt
 	$(PYTEST_BIN) ingestao/tests/test_elt_discovery.py -v
 	$(PYTEST_BIN) ingestao/tests/test_elt_catalogo.py -v
 	$(PYTEST_BIN) ingestao/tests/test_elt_loaders.py -v

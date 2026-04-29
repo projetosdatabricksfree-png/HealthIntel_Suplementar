@@ -1,0 +1,26 @@
+# Sprint 39 / HIS-39.5 — Timer systemd para backup full diário pgBackRest
+#
+# Dispara pgbackrest-full.service uma vez por dia às 03:00 (horário local da VPS).
+# Persistent=true: se o sistema estiver desligado no momento agendado, o timer
+# re-executa na próxima inicialização — evita janela silenciosa de backup perdido.
+#
+# INSTALAÇÃO NA VPS (ver pgbackrest-full.service para passos completos):
+#   systemctl enable --now pgbackrest-full.timer
+#
+# VERIFICAR PRÓXIMA EXECUÇÃO:
+#   systemctl list-timers pgbackrest-full.timer
+#
+# ALTERAR HORÁRIO:
+#   Editar OnCalendar neste arquivo + systemctl daemon-reload + systemctl restart pgbackrest-full.timer
+#   Horário atual: 03:00 (baixo tráfego; antes dos diferenciais das 06:00, 12:00, 18:00).
+
+[Unit]
+Description=Timer para pgBackRest Full Backup diário — healthintel
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+Unit=pgbackrest-full.service
+
+[Install]
+WantedBy=timers.target

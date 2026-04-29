@@ -2,6 +2,7 @@
 
 - `subida_ambiente.md`
 - `layout_aprovacao.md`
+- `backup_postgres.md`
 - `reprocessamento_erro.md`
 - `runbook_incidente_pipeline.md`
 - `runbook_novo_cliente_enterprise.md`

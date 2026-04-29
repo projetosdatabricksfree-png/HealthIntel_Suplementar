@@ -1,6 +1,6 @@
 # Sprint 39 — Backup Full, Diferencial e WAL Archive com pgBackRest
 
-**Status:** Backlog
+**Status:** Em validação operacional
 **Fase:** Fase 7 — Storage Dinâmico, Particionamento Anual, Retenção e Backup
 **Tag de saída prevista:** nenhuma intermediária (tag final da fase: `v4.2.0-dataops` ao fim da Sprint 40)
 **Baseline congelado:** Fase 5 finalizada (`v3.8.0-gov`) + Sprints 34, 35, 36, 37, 38 da Fase 7. Particionamento anual e janela dinâmica já operacionais.
@@ -8,7 +8,7 @@
 **Schema novo:** nenhum schema criado. Tabela nova `plataforma.backup_execucao` no schema `plataforma` existente.
 **Objetivo:** instalar e configurar **pgBackRest** como ferramenta oficial de backup do PostgreSQL na VPS, com full diário, diferencial a cada 6h, WAL archive contínuo (`archive_timeout=3600`), repositório local temporário e repositório externo S3-compatible com criptografia. Toda execução é auditada em `plataforma.backup_execucao`. Backup somente na VPS é explicitamente declarado como **não disaster recovery**.
 **Critério de saída técnico:** pgBackRest instalado; `postgresql.conf` com `archive_mode=on`, `archive_command='pgbackrest --stanza=healthintel archive-push %p'`, `archive_timeout=3600`, `wal_level=replica`, `max_wal_senders>=2`; `pgbackrest.conf` com stanza `healthintel`, repositório 1 local (`repo1-path`), repositório 2 externo S3-compatible com `repo2-cipher-type=aes-256-cbc`; cron/systemd timer chamando `pgbackrest --stanza=healthintel backup --type=full` (1×/dia) e `--type=diff` (4×/dia); job de monitoramento que insere em `plataforma.backup_execucao` em cada execução.
-**Critério de saída operacional:** `pgbackrest check --stanza=healthintel` zero erros; `pgbackrest info --stanza=healthintel` mostra ao menos 1 full + 4 diffs do dia; `select max(executado_em) from plataforma.backup_execucao where tipo='wal'` é < 1h; alerta operacional configurado para crescimento de `pg_wal`.
+**Critério de saída operacional:** `pgbackrest check --stanza=healthintel` zero erros; `pgbackrest info --stanza=healthintel` mostra ao menos 1 full + 4 diffs do dia; `select max(iniciado_em) from plataforma.backup_execucao where tipo='wal'` é < 1h; alerta operacional configurado para crescimento de `pg_wal`.
 
 ## Regra-mãe da Fase 7 (não negociável nesta sprint)
 
@@ -41,8 +41,8 @@
 
 ### HIS-39.1 — Tabela `plataforma.backup_execucao`
 
-- [ ] Criar `infra/postgres/init/034_fase7_backup_execucao.sql`.
-- [ ] DDL:
+- [x] Criar `infra/postgres/init/034_fase7_backup_execucao.sql`.
+- [x] DDL:
 
 ```sql
 create table if not exists plataforma.backup_execucao (
@@ -67,7 +67,7 @@ create index if not exists ix_backup_execucao_lookup
 
 ### HIS-39.2 — Configuração `postgresql.conf`
 
-- [ ] Em `infra/postgres/conf/postgresql.fase7.conf` registrar:
+- [x] Em `infra/postgres/conf/postgresql.fase7.conf` registrar:
 
 ```conf
 wal_level = replica
@@ -79,12 +79,12 @@ wal_keep_size = 1GB
 checkpoint_timeout = 5min
 ```
 
-- [ ] Documentar passo de aplicação (`include` no compose ou patch via `ALTER SYSTEM`).
-- [ ] Documentar advertência: `archive_timeout` muito curto aumenta volume; `3600` é o equilíbrio.
+- [x] Documentar passo de aplicação (`include` no compose ou patch via `ALTER SYSTEM`).
+- [x] Documentar advertência: `archive_timeout` muito curto aumenta volume; `3600` é o equilíbrio.
 
 ### HIS-39.3 — Configuração `pgbackrest.conf`
 
-- [ ] Criar `infra/pgbackrest/pgbackrest.conf` com:
+- [x] Criar `infra/pgbackrest/pgbackrest.conf` com:
 
 ```ini
 [global]
@@ -125,41 +125,41 @@ pg1-port=5432
 pg1-user=postgres
 ```
 
-- [ ] Documentar variáveis em `.env.example` (sem valores reais).
-- [ ] Documentar uso de secret manager em produção.
+- [x] Documentar variáveis em `.env.exemplo` (sem valores reais).
+- [x] Documentar uso de secret manager em produção.
 
 ### HIS-39.4 — Stanza, init e check
 
-- [ ] Documentar comando único `pgbackrest --stanza=healthintel stanza-create` para inicialização.
-- [ ] Documentar `pgbackrest --stanza=healthintel check` como hardgate antes de aceitar backup como operacional.
-- [ ] Criar script `scripts/backup/pgbackrest_init.sh` que executa `stanza-create` + `check` + grava resultado em `plataforma.backup_execucao`.
+- [x] Documentar comando único `pgbackrest --stanza=healthintel stanza-create` para inicialização.
+- [x] Documentar `pgbackrest --stanza=healthintel check` como hardgate antes de aceitar backup como operacional.
+- [x] Criar script `scripts/backup/pgbackrest_init.sh` que executa `stanza-create` + `check` + grava resultado em `plataforma.backup_execucao`.
 
 ### HIS-39.5 — Schedule de backup
 
-- [ ] Criar systemd timers em `infra/systemd/`:
+- [x] Criar systemd timers em `infra/systemd/`:
   - `pgbackrest-full.service`/`.timer` — `OnCalendar=*-*-* 03:00:00`.
   - `pgbackrest-diff.service`/`.timer` — `OnCalendar=*-*-* 00,06,12,18:00:00`.
-- [ ] Cada serviço chama wrapper `scripts/backup/pgbackrest_run.sh --type=<tipo>` que:
+- [x] Cada serviço chama wrapper `scripts/backup/pgbackrest_run.sh --type=<tipo>` que:
   - insere `iniciado_em` em `plataforma.backup_execucao`;
   - executa `pgbackrest --stanza=healthintel backup --type=<tipo>`;
   - lê stdout/stderr e captura métricas (`bytes_armazenados`, `bytes_delta` via `pgbackrest info --output=json`);
   - atualiza `finalizado_em`, `status`, `bytes_*`, `log_resumo`/`erro`.
-- [ ] Garantir que `pgbackrest archive-push` é chamado pelo PostgreSQL (não pelo timer). Apenas registrar `tipo='wal'` em `plataforma.backup_execucao` quando archive-push for executado (via gatilho de monitoramento).
+- [x] Garantir que `pgbackrest archive-push` é chamado pelo PostgreSQL (não pelo timer). Apenas registrar `tipo='wal'` em `plataforma.backup_execucao` quando archive-push for executado (via gatilho de monitoramento).
 
 ### HIS-39.6 — Monitoramento e alertas
 
-- [ ] Criar exportador simples (ou script de cron) que verifica:
-  - último `wal` com `executado_em > now() - interval '1 hour'`;
+- [x] Criar exportador simples (ou script de cron) que verifica:
+  - último `wal` com `iniciado_em > now() - interval '1 hour'`;
   - tamanho do diretório `pg_wal` (alerta se > 5 GB ou > limite operacional);
-  - último `full` com `executado_em > now() - interval '26 hours'`;
-  - último `diff` com `executado_em > now() - interval '7 hours'`.
-- [ ] Integrar com `prometheus`/`alertmanager` se disponível, ou registrar em `plataforma.backup_alerta`.
-- [ ] Documentar runbook curto `docs/runbooks/backup_postgres.md`.
+  - último `full` com `iniciado_em > now() - interval '26 hours'`;
+  - último `diff` com `iniciado_em > now() - interval '7 hours'`.
+- [x] Integrar com `prometheus`/`alertmanager` se disponível, ou registrar em `plataforma.backup_alerta`.
+- [x] Documentar runbook curto `docs/runbooks/backup_postgres.md`.
 
 ### HIS-39.7 — Documentação e DR explícito
 
-- [ ] Criar `docs/operacao/backup_retencao_postgres.md` com matriz de retenção.
-- [ ] A matriz de retenção no documento deve separar explicitamente três tipos de retenção:
+- [x] Criar `docs/operacao/backup_retencao_postgres.md` com matriz de retenção.
+- [x] A matriz de retenção no documento deve separar explicitamente três tipos de retenção:
 
 **Retenção por tempo (repositório local — repo1):**
 | Tipo | Parâmetro | Valor | Unidade |
@@ -194,42 +194,42 @@ pg1-user=postgres
 - A retenção de WAL está vinculada à retenção do full mais antigo: o pgBackRest descarta WALs mais antigos que o full base de retenção.
 - O PITR máximo possível é igual ao período de retenção do full mais antigo + cobertura contínua de WAL dentro desse período.
 
-- [ ] Criar `docs/operacao/disaster_recovery.md` com regra: "backup somente local não é DR; recomendar storage externo S3-compatible antes de cliente pagante".
-- [ ] Documentar RPO alvo: 1h. RTO alvo MVP: até 8h.
-- [ ] Documentar custo aproximado mensal por GB nos provedores S3-compatible candidatos.
-- [ ] Atualizar `docs/sprints/fase7/README.md` linkando para os novos documentos.
+- [x] Criar `docs/operacao/disaster_recovery.md` com regra: "backup somente local não é DR; recomendar storage externo S3-compatible antes de cliente pagante".
+- [x] Documentar RPO alvo: 1h. RTO alvo MVP: até 8h.
+- [x] Documentar custo aproximado mensal por GB nos provedores S3-compatible candidatos.
+- [x] Atualizar `docs/sprints/fase7/README.md` linkando para os novos documentos.
 
 ### HIS-39.8 — Testes/validações
 
-- [ ] Criar smoke `scripts/backup/smoke_pgbackrest.sh` que:
+- [x] Criar smoke `scripts/backup/smoke_pgbackrest.sh` que:
   - executa `pgbackrest check`;
   - inspeciona última linha de `plataforma.backup_execucao` por tipo;
   - falha se algum critério acima estiver vermelho.
-- [ ] Smoke é parte do `make smoke-pgbackrest` (alvo novo no `Makefile`).
+- [x] Smoke é parte do `make smoke-pgbackrest` (alvo novo no `Makefile`).
 
 ## Entregas esperadas
 
-- [ ] `infra/postgres/init/034_fase7_backup_execucao.sql`
-- [ ] `infra/postgres/conf/postgresql.fase7.conf`
-- [ ] `infra/pgbackrest/pgbackrest.conf` (template)
-- [ ] `infra/systemd/pgbackrest-full.service` + `.timer`
-- [ ] `infra/systemd/pgbackrest-diff.service` + `.timer`
-- [ ] `scripts/backup/pgbackrest_init.sh`
-- [ ] `scripts/backup/pgbackrest_run.sh`
-- [ ] `scripts/backup/smoke_pgbackrest.sh`
-- [ ] Alvo `make smoke-pgbackrest`
-- [ ] `docs/operacao/backup_retencao_postgres.md`
-- [ ] `docs/operacao/disaster_recovery.md`
-- [ ] `docs/runbooks/backup_postgres.md`
-- [ ] `.env.example` com variáveis `PGBACKREST_REPO2_*`
+- [x] `infra/postgres/init/034_fase7_backup_execucao.sql`
+- [x] `infra/postgres/conf/postgresql.fase7.conf`
+- [x] `infra/pgbackrest/pgbackrest.conf` (template)
+- [x] `infra/systemd/pgbackrest-full.service` + `.timer`
+- [x] `infra/systemd/pgbackrest-diff.service` + `.timer`
+- [x] `scripts/backup/pgbackrest_init.sh`
+- [x] `scripts/backup/pgbackrest_run.sh`
+- [x] `scripts/backup/smoke_pgbackrest.sh`
+- [x] Alvo `make smoke-pgbackrest`
+- [x] `docs/operacao/backup_retencao_postgres.md`
+- [x] `docs/operacao/disaster_recovery.md`
+- [x] `docs/runbooks/backup_postgres.md`
+- [x] `.env.exemplo` com variáveis `PGBACKREST_REPO2_*`
 
 ## Validação esperada (hard gates)
 
 - [ ] `pgbackrest --stanza=healthintel check` zero erros.
 - [ ] `pgbackrest --stanza=healthintel info --output=json` mostra ao menos 1 full do dia e ao menos 4 diffs do dia (após 24h de operação).
-- [ ] `select max(executado_em) from plataforma.backup_execucao where tipo='wal'` retorna timestamp < 1h.
-- [ ] `select count(*) from plataforma.backup_execucao where tipo='full' and status='sucesso' and executado_em > now() - interval '26 hours'` >= 1.
-- [ ] `select count(*) from plataforma.backup_execucao where tipo='diff' and status='sucesso' and executado_em > now() - interval '24 hours'` >= 4.
+- [ ] `select max(iniciado_em) from plataforma.backup_execucao where tipo='wal'` retorna timestamp < 1h.
+- [ ] `select count(*) from plataforma.backup_execucao where tipo='full' and status='sucesso' and iniciado_em > now() - interval '26 hours'` >= 1.
+- [ ] `select count(*) from plataforma.backup_execucao where tipo='diff' and status='sucesso' and iniciado_em > now() - interval '24 hours'` >= 4.
 - [ ] `pgbackrest --stanza=healthintel info` mostra repositório 2 (externo) com pelo menos 1 full nos últimos 35 dias.
 - [ ] Alerta de `pg_wal` configurado: simulação artificial (escrever 6 GB) dispara alerta em até 5 min.
 - [ ] `make smoke-pgbackrest` zero falhas.

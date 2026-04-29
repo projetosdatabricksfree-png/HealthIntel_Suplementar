@@ -1,5 +1,7 @@
 .env
 .env.local
+.env.hml
+.env.prod
 __pycache__/
 *.py[cod]
 *$py.class
@@ -22,5 +24,7 @@ healthintel_dbt/.dbt_packages/
 healthintel_dbt/target/
 healthintel_dbt/logs/
 healthintel_dbt/package-lock.yml
+docs/dbt_*
+frontend/**/node_modules/
 testes/load/resultados/
 tmp/

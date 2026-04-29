@@ -1,0 +1,28 @@
+# Sprint 39 / HIS-39.6 — Timer systemd para monitoramento de backup pgBackRest
+#
+# Dispara pgbackrest-monitor.service a cada 5 minutos (em :00, :05, :10, ...).
+# Persistent=true: re-executa na próxima inicialização se algum disparo foi perdido.
+#
+# Frequência justificada pelo hard gate da sprint:
+#   "Alerta de pg_wal configurado: simulação artificial (6 GB) dispara alerta em ≤ 5 min."
+#
+# INSTALAÇÃO NA VPS (ver pgbackrest-monitor.service para passos completos):
+#   systemctl enable --now pgbackrest-monitor.timer
+#
+# VERIFICAR PRÓXIMA EXECUÇÃO:
+#   systemctl list-timers pgbackrest-monitor.timer
+#
+# ALTERAR FREQUÊNCIA:
+#   Editar OnCalendar neste arquivo + systemctl daemon-reload
+#   + systemctl restart pgbackrest-monitor.timer
+
+[Unit]
+Description=Timer para pgBackRest Monitor de Backup 5-min — healthintel
+
+[Timer]
+OnCalendar=*-*-* *:0/5:00
+Persistent=true
+Unit=pgbackrest-monitor.service
+
+[Install]
+WantedBy=timers.target
