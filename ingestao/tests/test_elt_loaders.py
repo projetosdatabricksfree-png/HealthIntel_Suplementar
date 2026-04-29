@@ -79,7 +79,12 @@ async def test_zip_com_csv_carrega_streaming(tmp_path, monkeypatch: pytest.Monke
 
 
 @pytest.mark.asyncio
-async def test_pdf_vai_para_arquivo_generico(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_pdf_vai_para_arquivo_generico(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pdf_path = tmp_path / "arquivo.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4")
     chamados = []
 
     async def fake_registrar(arquivo, status_parser="sem_parser"):
@@ -95,7 +100,7 @@ async def test_pdf_vai_para_arquivo_generico(monkeypatch: pytest.MonkeyPatch) ->
             "url": "https://dadosabertos.ans.gov.br/arquivo.pdf",
             "nome_arquivo": "arquivo.pdf",
             "hash_arquivo": "hash",
-            "caminho_landing": "/tmp/arquivo.pdf",
+            "caminho_landing": str(pdf_path),
             "extensao": "pdf",
             "tipo_arquivo": "pdf",
         }
@@ -143,6 +148,40 @@ async def test_zip_sem_csv_vai_para_arquivo_generico(
     assert resultado["status"] == "baixado_sem_parser"
     assert chamados[0][1] == "sem_parser"
     assert status == [("arquivo-zip", "baixado_sem_parser", None)]
+
+
+@pytest.mark.asyncio
+async def test_arquivo_ausente_na_landing_vira_erro_carga(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    status = []
+
+    async def fake_status(arquivo_id, novo_status, erro_mensagem=None):
+        status.append((arquivo_id, novo_status, erro_mensagem))
+
+    monkeypatch.setattr(loaders, "_marcar_status_arquivo", fake_status)
+
+    resultado = await loaders.carregar_arquivo_ans(
+        {
+            "id": "arquivo-ausente",
+            "dataset_codigo": "sib_ativo_uf",
+            "familia": "sib",
+            "url": "https://dadosabertos.ans.gov.br/nao_existe.zip",
+            "nome_arquivo": "nao_existe.zip",
+            "hash_arquivo": "hash",
+            "caminho_landing": str(tmp_path / "nao_existe.zip"),
+            "extensao": "zip",
+            "tipo_arquivo": "zip",
+        }
+    )
+
+    assert resultado["status"] == "erro_carga"
+    assert len(status) == 1
+    arquivo_id, novo_status, erro_mensagem = status[0]
+    assert arquivo_id == "arquivo-ausente"
+    assert novo_status == "erro_carga"
+    assert erro_mensagem is not None and "ausente" in erro_mensagem
 
 
 @pytest.mark.asyncio
