@@ -6,7 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 SQLFLUFF_BIN := ../.venv/bin/sqlfluff
 RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -254,3 +254,38 @@ smoke-ingestao-real:
 
 hardgate-sem-ano-hardcoded-janelacarga:
 	bash tests/hardgates/assert_sem_ano_hardcoded_janela.sh
+
+# --- Capacidade e Carga Fase 8 ---
+
+capacidade-snapshot:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/snapshot_sistema.sh $(NIVEL) $(MOMENTO)
+	@if [ "$(MOMENTO)" = "antes" ] || [ "$(MOMENTO)" = "depois" ]; then \
+		$(COMPOSE) exec -T postgres psql -U healthintel -d healthintel < scripts/capacidade/snapshot_postgres.sql >> docs/evidencias/capacidade/capacidade_$(NIVEL)_postgres_$(MOMENTO).txt; \
+	fi
+
+capacidade-monitor:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/monitorar_carga.sh $(NIVEL)
+
+capacidade-relatorio:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/relatorio_capacidade_ans.sh $(NIVEL)
+
+carga-ans-padrao-vps:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/executar_carga_ans_padrao_vps.sh false
+
+carga-ans-padrao-vps-dry-run:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/executar_carga_ans_padrao_vps.sh true
+
+carga-ans-padrao-vps-incluir-pendentes:
+	@chmod +x scripts/capacidade/*.sh
+	bash scripts/capacidade/executar_carga_ans_padrao_vps.sh false true
+
+monitor-full2a-sem-tiss:
+	bash scripts/capacidade/monitorar_full2a_sem_tiss.sh
+
+monitor-full2a-sem-tiss-once:
+	bash scripts/capacidade/monitorar_full2a_sem_tiss.sh --once
