@@ -2,7 +2,7 @@ import { sampleResponse } from '../data/mock';
 import { getApiKey } from './storage';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const ENABLE_DEMO_FALLBACK = String(import.meta.env.VITE_ENABLE_DEMO_FALLBACK ?? 'true') === 'true';
+const ENABLE_DEMO_FALLBACK = String(import.meta.env.VITE_ENABLE_DEMO_FALLBACK ?? 'false') === 'true';
 const ALLOWED_DEMO_MODES = new Set(['development', 'dev', 'local', 'homologacao', 'hml', 'staging', 'test']);
 
 function canUseDemoFallback(): boolean {
@@ -15,6 +15,15 @@ export interface ApiResult {
   durationMs: number;
   data: unknown;
   url: string;
+  method: string;
+  requestHeaders: Record<string, string>;
+  curl: string;
+}
+
+export function maskApiKey(apiKey: string): string {
+  if (!apiKey) return 'não configurada';
+  if (apiKey.length <= 10) return `${apiKey.slice(0, 2)}***${apiKey.slice(-2)}`;
+  return `${apiKey.slice(0, 8)}...${apiKey.slice(-6)}`;
 }
 
 export function buildUrl(path: string, query: Record<string, string | number | boolean | undefined> = {}): string {
@@ -28,6 +37,17 @@ export function buildUrl(path: string, query: Record<string, string | number | b
   return url.toString();
 }
 
+export function buildCurl(method: string, url: string, apiKey = '', body?: unknown): string {
+  const lines = [`curl -X ${method.toUpperCase()} "${url}"`];
+  if (apiKey) lines.push(`  -H "X-API-Key: ${apiKey}"`);
+  lines.push('  -H "Accept: application/json"');
+  if (body) {
+    lines.push('  -H "Content-Type: application/json"');
+    lines.push(`  -d '${JSON.stringify(body)}'`);
+  }
+  return lines.join(' \\\n');
+}
+
 export async function requestApi(
   path: string,
   options: {
@@ -38,6 +58,7 @@ export async function requestApi(
   } = {}
 ): Promise<ApiResult> {
   const start = performance.now();
+  const method = options.method || 'GET';
   const url = buildUrl(path, options.query);
   const headers: Record<string, string> = {
     Accept: 'application/json'
@@ -53,7 +74,7 @@ export async function requestApi(
 
   try {
     const response = await fetch(url, {
-      method: options.method || 'GET',
+      method,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined
     });
@@ -68,7 +89,13 @@ export async function requestApi(
       status: response.status,
       durationMs: Math.round(performance.now() - start),
       data,
-      url
+      url,
+      method,
+      requestHeaders: {
+        ...headers,
+        ...(apiKey ? { 'X-API-Key': maskApiKey(apiKey) } : {})
+      },
+      curl: buildCurl(method, url, apiKey, options.body)
     };
   } catch (error) {
     if (canUseDemoFallback()) {
@@ -81,7 +108,13 @@ export async function requestApi(
           aviso: 'Fallback demo usado porque a API real não respondeu no navegador.',
           erro_original: error instanceof Error ? error.message : String(error)
         },
-        url
+        url,
+        method,
+        requestHeaders: {
+          ...headers,
+          ...(apiKey ? { 'X-API-Key': maskApiKey(apiKey) } : {})
+        },
+        curl: buildCurl(method, url, apiKey, options.body)
       };
     }
 
@@ -93,7 +126,13 @@ export async function requestApi(
         codigo: 'FALHA_REDE',
         mensagem: error instanceof Error ? error.message : 'Falha desconhecida'
       },
-      url
+      url,
+      method,
+      requestHeaders: {
+        ...headers,
+        ...(apiKey ? { 'X-API-Key': maskApiKey(apiKey) } : {})
+      },
+      curl: buildCurl(method, url, apiKey, options.body)
     };
   }
 }

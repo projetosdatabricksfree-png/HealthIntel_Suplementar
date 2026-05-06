@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from 'react';
 import { demoUser } from '../data/mock';
 import type { PortalUser } from '../types/domain';
 import { clearUser, getUser, saveUser } from '../services/storage';
+import { addAuditEvent } from '../services/localPortalStore';
 
 interface AuthContextValue {
   user: PortalUser | null;
@@ -26,9 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         apiKey
       };
       saveUser(nextUser);
+      addAuditEvent({
+        tipo: 'login',
+        usuario: email,
+        detalhe: 'Login local no portal com API key informada.',
+        status: 'sucesso'
+      });
       setUser(nextUser);
     },
     logout: () => {
+      addAuditEvent({
+        tipo: 'logout',
+        usuario: user?.email || 'usuario_local',
+        detalhe: 'Sessao local encerrada.',
+        status: 'sucesso'
+      });
       clearUser();
       setUser(null);
     },

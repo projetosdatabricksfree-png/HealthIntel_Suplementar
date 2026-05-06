@@ -17,12 +17,12 @@ export function PublicLayout() {
           <Menu />
         </button>
         <nav className={open ? 'nav nav-open' : 'nav'}>
-          <NavLink to="/produto">Produto</NavLink>
-          <NavLink to="/documentacao">Documentação</NavLink>
-          <NavLink to="/precos">Preços</NavLink>
-          <NavLink to="/seguranca">Segurança</NavLink>
-          <NavLink to="/contato">Contato</NavLink>
-          <LinkButton to="/login" variant="primary">Entrar</LinkButton>
+          <NavLink to="/produto" onClick={() => setOpen(false)}>Produto</NavLink>
+          <NavLink to="/documentacao" onClick={() => setOpen(false)}>Documentação</NavLink>
+          <NavLink to="/precos" onClick={() => setOpen(false)}>Preços</NavLink>
+          <NavLink to="/seguranca" onClick={() => setOpen(false)}>Segurança</NavLink>
+          <NavLink to="/contato" onClick={() => setOpen(false)}>Contato</NavLink>
+          <LinkButton to="/login" variant="primary" onClick={() => setOpen(false)}>Entrar</LinkButton>
         </nav>
       </header>
       <main>

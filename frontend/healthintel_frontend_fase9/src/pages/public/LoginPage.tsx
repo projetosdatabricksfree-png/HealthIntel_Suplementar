@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { useNotification } from '../../components/NotificationProvider';
 import { useAuth } from '../../hooks/useAuth';
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const allowedLocalKeys = new Set(['hi_local_dev_2026_api_key', 'hi_local_admin_2026_api_key']);
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
+  const { success, error, warning } = useNotification();
   const [email, setEmail] = useState('cliente@healthintel.local');
   const [apiKey, setApiKey] = useState('hi_local_dev_2026_api_key');
 
@@ -24,7 +29,21 @@ export function LoginPage() {
         </p>
         <form onSubmit={(event) => {
           event.preventDefault();
-          login(email, apiKey);
+          const normalizedEmail = email.trim();
+          const normalizedKey = apiKey.trim();
+          if (!normalizedEmail || !normalizedKey) {
+            error('Informe e-mail e API key.');
+            return;
+          }
+          if (!emailRegex.test(normalizedEmail)) {
+            error('Informe um e-mail válido.');
+            return;
+          }
+          if (!allowedLocalKeys.has(normalizedKey)) {
+            warning('Chave salva para teste. A API validará permissões reais no Live Tester.');
+          }
+          login(normalizedEmail, normalizedKey);
+          success('Login local realizado. Use o Live Tester para validar a API key na API real.');
         }}>
           <label>
             E-mail

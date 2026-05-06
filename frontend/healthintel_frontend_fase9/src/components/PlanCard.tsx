@@ -18,7 +18,10 @@ export function PlanCard({ plan }: { plan: ApiPlan }) {
       <div className="plan-limits">
         {plan.limits.map((item) => <small key={item}>{item}</small>)}
       </div>
-      <LinkButton to="/contato" variant={plan.destaque ? 'primary' : 'secondary'}>
+      <LinkButton
+        to={`/contato?plano=${encodeURIComponent(plan.nome)}`}
+        variant={plan.destaque ? 'primary' : 'secondary'}
+      >
         Solicitar acesso
       </LinkButton>
     </article>

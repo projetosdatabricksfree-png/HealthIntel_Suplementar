@@ -1,4 +1,4 @@
-# Proposta Comercial — Piloto HealthIntel Core ANS
+# Proposta Comercial — Piloto Assistido HealthIntel Core ANS
 
 **Data:** [DATA]  
 **Para:** [EMPRESA]  
@@ -20,7 +20,7 @@ Acesso ao HealthIntel Core ANS durante 30 dias, incluindo API autenticada com da
 - Postman collection com todos os endpoints Core
 - 1 reunião de onboarding (30–60 min, remota)
 - Suporte assíncrono via e-mail/WhatsApp em horário comercial
-- Limite de requisições: conforme plano Piloto
+- Limite de requisições: conforme plano Piloto Assistido
 - Dados atualizados conforme cadência ANS
 
 ---

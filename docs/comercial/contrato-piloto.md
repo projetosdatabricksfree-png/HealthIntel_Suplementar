@@ -1,4 +1,4 @@
-# Contrato de Piloto — HealthIntel Core ANS
+# Contrato de Piloto Assistido — HealthIntel Core ANS
 
 **Contratante:** [NOME EMPRESA], CNPJ [CNPJ], representada por [NOME RESPONSÁVEL]  
 **Contratada:** [SEU NOME/EMPRESA], CPF/CNPJ [SEU CPF/CNPJ]  

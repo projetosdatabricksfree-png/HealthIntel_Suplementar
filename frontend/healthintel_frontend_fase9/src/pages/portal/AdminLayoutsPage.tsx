@@ -3,12 +3,24 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { CodeBlock } from '../../components/CodeBlock';
 import { requestApi } from '../../services/apiClient';
+import { useNotification } from '../../components/NotificationProvider';
+import { addAuditEvent } from '../../services/localPortalStore';
 
 export function AdminLayoutsPage() {
   const [result, setResult] = useState<unknown>(null);
+  const { success, error } = useNotification();
 
   async function listarLayouts() {
-    setResult(await requestApi('/admin/layouts'));
+    const response = await requestApi('/admin/layouts');
+    setResult(response);
+    addAuditEvent({
+      tipo: 'admin_layouts_listar',
+      usuario: 'portal_local',
+      detalhe: `/admin/layouts retornou status ${response.status}.`,
+      status: response.ok ? 'sucesso' : 'erro'
+    });
+    if (response.ok) success('Layouts retornaram da API.');
+    else error(`Erro real do serviço de layouts: status ${response.status}.`);
   }
 
   return (

@@ -361,6 +361,7 @@ small {
 .metrics-grid {
   display: grid;
   gap: 1rem;
+  align-items: stretch;
 }
 
 .feature-grid {
@@ -377,6 +378,10 @@ small {
 
 .plans-grid-four {
   grid-template-columns: repeat(4, 1fr);
+}
+
+.plans-grid-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .metrics-grid {
@@ -407,6 +412,10 @@ small {
 .card-header p {
   color: var(--color-muted);
   line-height: 1.6;
+}
+
+.plan-card p {
+  min-height: 4.85rem;
 }
 
 .card-header {
@@ -518,16 +527,24 @@ small {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  height: 100%;
+  min-width: 0;
 }
 
 .plan-card strong {
-  font-size: 2rem;
+  min-height: 2.45rem;
+  font-size: clamp(1.55rem, 1.8vw, 2rem);
+  line-height: 1.05;
   letter-spacing: -0.04em;
 }
 
 .plan-card-featured {
   border-color: rgba(8, 120, 201, 0.45);
-  transform: translateY(-0.5rem);
+  box-shadow: 0 24px 48px rgba(8, 120, 201, 0.16);
+}
+
+.plan-card-featured h3 {
+  padding-right: 6.8rem;
 }
 
 .plan-ribbon {
@@ -562,8 +579,14 @@ small {
 .plan-limits {
   display: grid;
   gap: 0.35rem;
+  margin-top: auto;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-line);
+}
+
+.plan-card .btn {
+  width: 100%;
+  text-align: center;
 }
 
 .docs-auth-box,
@@ -787,6 +810,80 @@ small {
   color: var(--color-primary);
 }
 
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.action-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: white;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(8, 120, 201, 0.4);
+}
+
+.action-card svg {
+  color: var(--color-primary);
+}
+
+.action-card span {
+  font-weight: 900;
+}
+
+.response-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.response-meta span {
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+  font-size: 0.86rem;
+}
+
+.modal-card {
+  border-color: rgba(8, 120, 201, 0.36);
+  background: #ffffff;
+}
+
+.toast-stack {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+  display: grid;
+  gap: 0.7rem;
+  width: min(420px, calc(100vw - 2rem));
+}
+
+.toast {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--color-line);
+  background: white;
+  box-shadow: var(--shadow-soft);
+  font-weight: 800;
+}
+
+.toast-success { border-color: rgba(15, 159, 110, 0.35); color: var(--color-green); }
+.toast-error { border-color: rgba(214, 69, 69, 0.35); color: var(--color-red); }
+.toast-warning { border-color: rgba(183, 121, 31, 0.35); color: var(--color-yellow); }
+.toast-info { border-color: rgba(8, 120, 201, 0.35); color: var(--color-primary); }
+
 .toolbar {
   display: grid;
   gap: 0.8rem;
@@ -815,7 +912,9 @@ small {
   .endpoint-grid,
   .plans-grid,
   .plans-grid-four,
-  .metrics-grid {
+  .plans-grid-five,
+  .metrics-grid,
+  .action-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -870,11 +969,17 @@ small {
   .endpoint-grid,
   .plans-grid,
   .plans-grid-four,
+  .plans-grid-five,
   .metrics-grid,
+  .action-grid,
   .split-grid,
   .split-grid-wide,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .plan-card p {
+    min-height: auto;
   }
 
   .hero-metrics {

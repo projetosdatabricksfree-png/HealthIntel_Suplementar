@@ -50,10 +50,11 @@ GET /v1/meta/datasets
 
 | Plano | Preço/mês | Inclui |
 |---|---|---|
-| Piloto | R$ 2.500 | 30 dias, 1 API key, onboarding, endpoints Core |
-| Core API | R$ 3.900–6.900 | 1–3 API keys, endpoints Core, docs, suporte |
-| BI/Consultoria | R$ 7.900–12.900 | Core + views SQL, apoio Power BI, onboarding técnico |
-| Enterprise | Sob contrato | Histórico ampliado, datasets adicionais, SLA, MDM privado |
+| Sandbox Técnico | R$ 99,99 | 100 requisições/mês, 1 API key, snapshot histórico controlado, endpoints Core selecionados |
+| Piloto Assistido | R$ 2.500 | 30 dias, 1 API key, onboarding, endpoints Core |
+| Core API | R$ 4.900 | 1–3 API keys, endpoints Core, docs, suporte, CNES agregado |
+| Core Pro | R$ 9.900 | Maior volume, mais API keys, apoio técnico de integração, exemplos BI/notebooks |
+| Enterprise | Sob contrato | Ambiente dedicado, histórico ampliado, datasets adicionais, SLA customizado |
 
 ---
 

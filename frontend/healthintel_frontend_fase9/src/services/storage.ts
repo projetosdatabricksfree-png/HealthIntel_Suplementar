@@ -36,3 +36,11 @@ export function saveApiKey(apiKey: string): void {
 export function getApiKey(): string {
   return localStorage.getItem(API_KEY_KEY) || '';
 }
+
+export function clearApiKey(): void {
+  localStorage.removeItem(API_KEY_KEY);
+  const user = getUser();
+  if (user) {
+    saveUser({ ...user, apiKey: '' });
+  }
+}

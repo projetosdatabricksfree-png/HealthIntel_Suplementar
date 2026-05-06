@@ -14,6 +14,7 @@ interface LinkButtonProps {
   variant?: ButtonVariant;
   children: ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
 const variantClass: Record<ButtonVariant, string> = {
@@ -31,9 +32,9 @@ export function Button({ variant = 'primary', children, className, ...props }: B
   );
 }
 
-export function LinkButton({ to, variant = 'primary', children, className }: LinkButtonProps) {
+export function LinkButton({ to, variant = 'primary', children, className, onClick }: LinkButtonProps) {
   return (
-    <Link to={to} className={cn(variantClass[variant], className)}>
+    <Link to={to} className={cn(variantClass[variant], className)} onClick={onClick}>
       {children}
     </Link>
   );

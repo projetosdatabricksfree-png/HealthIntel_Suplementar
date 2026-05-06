@@ -17,7 +17,7 @@ export function HomePage() {
             score, financeiro e risco regulatório — sem sua equipe montar pipeline próprio.
           </p>
           <div className="hero-actions">
-            <LinkButton to="/contato">Solicitar piloto <ArrowRight size={18} /></LinkButton>
+            <LinkButton to="/contato?origem=hero&plano=Piloto%20Assistido">Solicitar piloto <ArrowRight size={18} /></LinkButton>
             <LinkButton to="/documentacao" variant="secondary">Ver documentação</LinkButton>
           </div>
           <div className="trust-strip">
@@ -61,7 +61,7 @@ export function HomePage() {
             { icon: BarChart3, title: 'Rankings e score', desc: 'Rankings de crescimento, oportunidade e score composto.' },
             { icon: DatabaseZap, title: 'Dados curados', desc: 'API pronta para consumo, sem expor bases internas ao cliente.' },
             { icon: KeyRound, title: 'Acesso por API key', desc: 'Planos, rate limit, paginação e logs de consumo por cliente.' },
-            { icon: ShieldCheck, title: 'Antiextração', desc: 'Sem exportação integral, sem base bruta e com controle de uso.' }
+            { icon: ShieldCheck, title: 'Consumo controlado', desc: 'Paginação, limites por plano e controle de uso por API key.' }
           ].map((item) => {
             const Icon = item.icon;
             return (

@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix healthintel_frontend_fase9 install && npm --prefix healthintel_frontend_fase9 run dev",
+    "build": "npm --prefix healthintel_frontend_fase9 install && npm --prefix healthintel_frontend_fase9 run build",
+    "lint": "npm --prefix healthintel_frontend_fase9 install && npm --prefix healthintel_frontend_fase9 run lint",
+    "install:app": "npm --prefix healthintel_frontend_fase9 install"
+  }
+}

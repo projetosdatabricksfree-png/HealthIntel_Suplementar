@@ -13,10 +13,20 @@ O frontend da Fase 9 está em `frontend/healthintel_frontend_fase9` e implementa
 Comandos:
 
 ```bash
-cd frontend/healthintel_frontend_fase9
+cd frontend
 cp .env.example .env
 npm install
 npm run dev
+```
+
+API local esperada: `http://localhost:8080`
+
+Frontend local: `http://localhost:5173`
+
+Autenticação da API:
+
+```http
+X-API-Key: <chave>
 ```
 
 Documentação: `docs/produto/fase_9_frontend_portal_cliente.md`
@@ -133,7 +143,7 @@ Exemplos:
    - Resposta em envelope: `{dados: [...], meta: {total, pagina, competencia_referencia, ...}}`.
    - Autenticação: X-API-Key.
    - Rate limit: Diferenciado por plano (limites menores em Starter, maiores em Enterprise/Premium). Detalhe em roadmap.
-   - Paginação obrigatória: máximo de registros por request varia por plano, impede dump integral.
+   - Paginação obrigatória: máximo de registros por request varia por plano e impede extração integral.
 
 2. **SQL BI Standard** (Standard+)
    - Schema: `consumo_ans` (tabelas desnormalizadas, linguagem cliente).
@@ -164,7 +174,7 @@ Exemplos:
 
 | Controle | Implementação | Justificativa |
 |----------|--------------|---------------|
-| **Paginação** | Máximo 10k registros/request, cursor stateless | Impede dump integral |
+| **Paginação** | Máximo 10k registros/request, cursor stateless | Impede extração integral |
 | **Filtros** | Alguns filtros obrigatórios (ex: competência) | Força uso de API, não query raw |
 | **Rate Limit** | Por cliente, diferenciado por plano | Impede scraping paralelo |
 | **Autenticação** | X-API-Key, OAuth (roadmap) | Impede acesso anônimo |
@@ -312,7 +322,7 @@ Qualquer IA (Claude, ou outra) que atuar neste repositório deve seguir estas re
 
 - Este é um **produto DaaS comercial**, não um pipeline técnico genérico.
 - O norte é sempre: **"Isso aproxima o projeto de entregar tabelas confiáveis, governadas e consumíveis?"**
-- Não há espaço para BI final, dashboard bonito, ou dump irrestrito da base.
+- Não há espaço para BI final, dashboard bonito, ou extração irrestrita da base.
 
 ### Obrigações
 

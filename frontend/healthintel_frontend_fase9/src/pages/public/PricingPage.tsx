@@ -8,10 +8,10 @@ export function PricingPage() {
         <p className="eyebrow">Preços</p>
         <h1>Planos comerciais para operar com dados ANS</h1>
         <p>
-          Comece com piloto pago, evolua para API recorrente e amplie com suporte especializado sob contrato.
+          Valide a integração no Sandbox Técnico, avance para o Core API e amplie com suporte especializado sob contrato.
         </p>
       </div>
-      <div className="plans-grid plans-grid-four">
+      <div className="plans-grid plans-grid-five">
         {plans.map((plan) => <PlanCard key={plan.nome} plan={plan} />)}
       </div>
     </section>

@@ -36,7 +36,7 @@ export function ProductPage() {
             <li>Operadora 360, score, ranking e mercado por município.</li>
             <li>Rede assistencial e estabelecimentos CNES por município e UF.</li>
             <li>Paginação, rate limit e API key obrigatória.</li>
-            <li>Consumo seguro por API, sem exposição de base bruta.</li>
+            <li>Consumo seguro por API, com acesso controlado por contrato.</li>
           </ul>
         </Card>
         <Card>
@@ -55,7 +55,7 @@ export function ProductPage() {
           { icon: Database, title: 'Inteligência pronta', desc: 'Indicadores de operadoras, mercado e risco organizados para consumo imediato.' },
           { icon: Sparkles, title: 'Produto de alto impacto', desc: 'Entrega clara para times comerciais, dados, BI, consultorias e healthtechs.' },
           { icon: LockKeyhole, title: 'Controle de acesso', desc: 'API key, plano, endpoint permitido e camada permitida.' },
-          { icon: ShieldCheck, title: 'Segurança comercial', desc: 'Sem download full, com logs de consumo e limite de plano.' }
+          { icon: ShieldCheck, title: 'Segurança comercial', desc: 'Consumo paginado, logs de uso e limites definidos por plano.' }
         ].map((item) => {
           const Icon = item.icon;
           return (

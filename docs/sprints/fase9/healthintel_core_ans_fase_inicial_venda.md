@@ -335,7 +335,7 @@ A API deve implementar:
 - bloqueio de varredura massiva;
 - cache para consultas frequentes;
 - endpoints agregados em vez de linha a linha;
-- sem exportação full;
+- sem extração integral da base;
 - sem endpoint para baixar base completa.
 
 ## 12.2 Regras Contratuais
@@ -356,9 +356,27 @@ O contrato deve prever:
 
 ## 13. Planos Comerciais Iniciais
 
-## 13.1 Piloto Pago
+## 13.1 Sandbox Técnico
 
-**Preço sugerido:** R$ 1.500 a R$ 3.000/mês  
+**Preço sugerido:** R$ 99,99/mês
+
+**Limite:** 100 requisições/mês
+
+Inclui:
+
+- 1 API key;
+- endpoints Core selecionados;
+- snapshot histórico controlado para teste de integração;
+- Swagger e exemplos de consumo;
+- validação de autenticação, paginação e formato JSON;
+- sem uso comercial;
+- sem SLA;
+- sem suporte dedicado.
+
+## 13.2 Piloto Assistido
+
+**Preço sugerido:** R$ 2.500
+
 **Duração:** 30 a 60 dias
 
 Inclui:
@@ -370,37 +388,37 @@ Inclui:
 - suporte assíncrono;
 - 1 reunião de onboarding;
 - sem SLA enterprise;
-- sem exportação completa.
+- sem extração integral da base.
 
-## 13.2 Core API
+## 13.3 Core API
 
-**Preço sugerido:** R$ 3.900 a R$ 6.900/mês
+**Preço sugerido:** R$ 4.900/mês
 
 Inclui:
 
 - API Core;
 - 1 a 3 API keys;
-- endpoints de operadora, score, ranking, mercado, financeiro e regulatório;
+- endpoints de operadora, beneficiários, score, ranking, mercado, financeiro, regulatório e CNES agregado;
 - documentação técnica;
 - atualização recorrente;
 - logs básicos de consumo;
 - suporte comercial.
 
-## 13.3 BI/Consultoria
+## 13.4 Core Pro
 
-**Preço sugerido:** R$ 7.900 a R$ 12.900/mês
+**Preço sugerido:** R$ 9.900/mês
 
 Inclui:
 
-- API Core;
-- views SQL controladas;
-- apoio para Power BI;
-- onboarding técnico;
-- consultas específicas;
-- dashboard exemplo;
-- suporte consultivo.
+- tudo do Core API;
+- maior volume de requisições;
+- mais API keys;
+- apoio técnico de integração;
+- exemplos para Power BI, notebooks e pipelines;
+- onboarding avançado;
+- revisão mensal de consumo.
 
-## 13.4 Enterprise
+## 13.5 Enterprise
 
 **Preço:** sob contrato
 
@@ -473,7 +491,7 @@ Definir oficialmente o que será vendido e o que fica fora do MVP.
 - [ ] Lista de datasets excluídos.
 - [ ] Decisão formal: TISS fora do MVP.
 - [ ] Decisão formal: CNES completo fora do MVP.
-- [ ] Decisão formal: sem exportação full.
+- [ ] Decisão formal: sem extração integral da base.
 - [ ] Decisão formal: cliente só consome API/views controladas.
 
 ### Critério de aceite
@@ -565,7 +583,7 @@ Reduzir risco de cliente baixar a base inteira e cancelar.
 
 - [ ] Rate limit por plano.
 - [ ] Limite máximo de registros por resposta.
-- [ ] Bloqueio de exportação full.
+- [ ] Bloqueio de extração integral da base.
 - [ ] Logs por API key.
 - [ ] Detecção de varredura massiva.
 - [ ] Política de uso aceitável.
@@ -696,7 +714,7 @@ Posso te apresentar uma demonstração rápida?
 Inclui:
 
 - acesso à API Core;
-- endpoints de operadoras, score, ranking, beneficiários, mercado, financeiro e regulatório;
+- endpoints de operadoras, score, ranking, beneficiários, mercado, financeiro, regulatório e CNES agregado;
 - Swagger/Postman;
 - 1 reunião de onboarding;
 - suporte assíncrono;
@@ -709,7 +727,7 @@ Não inclui:
 - TISS;
 - CNES completo;
 - histórico completo;
-- download bruto;
+- extração integral da base;
 - desenvolvimento de dashboard sob medida;
 - ambiente dedicado;
 - acesso irrestrito ao banco.
@@ -725,7 +743,7 @@ A fase inicial será considerada bem-sucedida se atingir:
 - [ ] 20 prospects abordados.
 - [ ] API Core estável em VPS.
 - [ ] Nenhum incidente de disco.
-- [ ] Nenhuma rota de exportação full exposta.
+- [ ] Nenhuma rota de extração integral da base exposta.
 - [ ] Carga Core repetível.
 - [ ] dbt Core aprovado.
 - [ ] Smoke API aprovado.
@@ -827,4 +845,3 @@ O primeiro produto deve vender inteligência sobre:
 - regulatório.
 
 Com isso, o projeto pode começar a gerar receita sem depender de uma infraestrutura grande, sem prometer escopo excessivo e sem travar no custo das tabelas gigantes.
-

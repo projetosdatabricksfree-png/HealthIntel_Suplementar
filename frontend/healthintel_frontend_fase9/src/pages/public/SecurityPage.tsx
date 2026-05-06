@@ -8,7 +8,7 @@ export function SecurityPage() {
         <p className="eyebrow">Segurança</p>
         <h1>Segurança técnica e proteção comercial</h1>
         <p>
-          O produto precisa proteger a API e também impedir uso que transforme o DaaS em um dump único da base.
+          O produto protege a API e garante consumo controlado, paginado e aderente ao contrato.
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export function SecurityPage() {
         <Card>
           <CardHeader title="Proteção comercial" description="Evitar extração integral e redistribuição." />
           <ul className="check-list">
-            <li>Sem endpoint de exportação full.</li>
+            <li>Sem exportação integral em lote.</li>
             <li>Paginação obrigatória.</li>
             <li>Limite máximo por página.</li>
             <li>Detecção de consumo anômalo.</li>

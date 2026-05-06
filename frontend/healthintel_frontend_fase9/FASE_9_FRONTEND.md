@@ -19,17 +19,16 @@ O frontend deve vender **HealthIntel Core ANS**:
 - score;
 - financeiro;
 - regulatório;
-- metadados.
+- metadados;
+- CNES agregado.
 
-Fora do MVP público:
+Fora do fluxo publico padrao:
 
 - TISS;
-- CNES completo;
-- bronze;
-- prata;
-- premium instável;
-- exportação full;
-- dump bruto.
+- analises avancadas de rede e cobertura;
+- areas administrativas;
+- pacotes sob contrato;
+- exportacao integral.
 
 ## Paleta Visual
 
@@ -64,6 +63,8 @@ Configuração:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
+VITE_ENABLE_DEMO_FALLBACK=false
+VITE_APP_NAME=HealthIntel Core ANS
 ```
 
 ## Rotas do Site Público
@@ -126,7 +127,7 @@ core
 premium
 admin
 interno
-bloqueado_mvp
+sob_demanda
 ```
 
 ## Segurança Implementada no Frontend
@@ -136,7 +137,7 @@ bloqueado_mvp
 - API key salva localmente apenas para desenvolvimento/homologação.
 - Tela de allowlist de domínio/IP preparada.
 - Tela de auditoria preparada.
-- Sem endpoint de exportação full no fluxo comercial.
+- Sem exportacao integral no fluxo comercial.
 - Datasets bloqueados sinalizados visualmente.
 
 ## Pendências Backend Recomendadas
@@ -157,7 +158,7 @@ Para produção, implementar no backend:
 ## Como Rodar
 
 ```bash
-cd frontend/healthintel_frontend_fase9
+cd frontend
 cp .env.example .env
 npm install
 npm run dev

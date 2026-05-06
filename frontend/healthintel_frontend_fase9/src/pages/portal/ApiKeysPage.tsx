@@ -1,16 +1,65 @@
 import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
-import { getApiKey, saveApiKey } from '../../services/storage';
+import { CodeBlock } from '../../components/CodeBlock';
+import { useNotification } from '../../components/NotificationProvider';
+import { buildCurl, maskApiKey, requestApi, type ApiResult } from '../../services/apiClient';
+import { clearApiKey, getApiKey, saveApiKey } from '../../services/storage';
 import { useAuth } from '../../hooks/useAuth';
+import { addAuditEvent } from '../../services/localPortalStore';
 
 export function ApiKeysPage() {
   const { user, updateUser } = useAuth();
+  const { success, error, info } = useNotification();
   const [apiKey, setApiKey] = useState(getApiKey());
+  const [testResult, setTestResult] = useState<ApiResult | null>(null);
 
   function save() {
-    saveApiKey(apiKey);
-    if (user) updateUser({ ...user, apiKey });
+    const normalized = apiKey.trim();
+    if (!normalized) {
+      error('Informe uma API key antes de salvar.');
+      return;
+    }
+    saveApiKey(normalized);
+    if (user) updateUser({ ...user, apiKey: normalized });
+    addAuditEvent({
+      tipo: 'salvar_api_key',
+      usuario: user?.email || 'portal_local',
+      detalhe: `Chave salva localmente: ${maskApiKey(normalized)}.`,
+      status: 'sucesso'
+    });
+    success('API key salva localmente.');
+  }
+
+  function clear() {
+    clearApiKey();
+    setApiKey('');
+    if (user) updateUser({ ...user, apiKey: '' });
+    addAuditEvent({
+      tipo: 'limpar_api_key',
+      usuario: user?.email || 'portal_local',
+      detalhe: 'API key removida do localStorage.',
+      status: 'sucesso'
+    });
+    info('API key local removida.');
+  }
+
+  async function test() {
+    const response = await requestApi('/v1/meta/endpoints', { apiKey: apiKey.trim() });
+    setTestResult(response);
+    addAuditEvent({
+      tipo: 'testar_api_key',
+      usuario: user?.email || 'portal_local',
+      detalhe: `/v1/meta/endpoints retornou status ${response.status}.`,
+      status: response.ok ? 'sucesso' : 'erro'
+    });
+    if (response.ok) success('Chave válida para chamada de teste.');
+    else error(response.status === 401 ? 'Chave inválida.' : response.status === 403 ? 'Chave sem permissão.' : 'API indisponível ou retornou erro.');
+  }
+
+  async function copyMasked() {
+    await navigator.clipboard.writeText(maskApiKey(apiKey.trim()));
+    success('Chave mascarada copiada.');
   }
 
   return (
@@ -32,8 +81,12 @@ export function ApiKeysPage() {
           </label>
           <div className="button-row">
             <Button onClick={save}>Salvar chave local</Button>
-            <Button variant="secondary" onClick={() => setApiKey('')}>Limpar</Button>
+            <Button variant="secondary" onClick={clear}>Limpar chave</Button>
+            <Button variant="secondary" onClick={test}>Testar chave</Button>
+            <Button variant="ghost" onClick={copyMasked}>Copiar chave mascarada</Button>
           </div>
+          <CodeBlock code={buildCurl('GET', 'http://localhost:8080/v1/meta/endpoints', apiKey.trim())} />
+          {testResult && <CodeBlock code={JSON.stringify(testResult, null, 2)} />}
         </Card>
 
         <Card>

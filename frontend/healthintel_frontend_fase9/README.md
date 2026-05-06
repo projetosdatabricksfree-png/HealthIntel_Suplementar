@@ -30,7 +30,7 @@ Criar a camada visual para vender e operar o DaaS/API:
 ## Executar localmente
 
 ```bash
-cd frontend/healthintel_frontend_fase9
+cd frontend
 cp .env.example .env
 npm install
 npm run dev
@@ -48,6 +48,8 @@ Configure:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
+VITE_ENABLE_DEMO_FALLBACK=false
+VITE_APP_NAME=HealthIntel Core ANS
 ```
 
 A API atual do projeto usa o header:

@@ -3,13 +3,25 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { CodeBlock } from '../../components/CodeBlock';
 import { requestApi } from '../../services/apiClient';
+import { useNotification } from '../../components/NotificationProvider';
+import { addAuditEvent } from '../../services/localPortalStore';
 
 export function AdminBillingPage() {
   const [referencia, setReferencia] = useState('2026-05');
   const [result, setResult] = useState<unknown>(null);
+  const { success, error } = useNotification();
 
   async function buscarResumo() {
-    setResult(await requestApi('/admin/billing/resumo', { query: { referencia } }));
+    const response = await requestApi('/admin/billing/resumo', { query: { referencia } });
+    setResult(response);
+    addAuditEvent({
+      tipo: 'admin_billing_resumo',
+      usuario: 'portal_local',
+      detalhe: `/admin/billing/resumo retornou status ${response.status}.`,
+      status: response.ok ? 'sucesso' : 'erro'
+    });
+    if (response.ok) success('Resumo admin retornou da API.');
+    else error(`Erro real da API admin: status ${response.status}.`);
   }
 
   return (

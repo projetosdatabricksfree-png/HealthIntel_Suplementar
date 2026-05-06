@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { endpointCatalog } from '../../data/endpoints';
 import { EndpointCard } from '../../components/EndpointCard';
 import type { EndpointTier } from '../../types/domain';
@@ -15,6 +16,7 @@ const tierLabel: Record<'todos' | EndpointTier, string> = {
 };
 
 export function EndpointsPage() {
+  const navigate = useNavigate();
   const [tier, setTier] = useState<'todos' | EndpointTier>('core');
   const [search, setSearch] = useState('');
 
@@ -46,7 +48,13 @@ export function EndpointsPage() {
       </div>
 
       <div className="endpoint-grid">
-        {endpoints.map((endpoint) => <EndpointCard key={endpoint.id} endpoint={endpoint} />)}
+        {endpoints.map((endpoint) => (
+          <EndpointCard
+            key={endpoint.id}
+            endpoint={endpoint}
+            onSelect={(selected) => navigate(`/app/explorer?endpoint=${encodeURIComponent(selected.id)}`)}
+          />
+        ))}
       </div>
     </div>
   );
