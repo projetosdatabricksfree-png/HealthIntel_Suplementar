@@ -8,7 +8,7 @@
 
 O HealthIntel Core ANS transforma dados públicos da ANS em uma API pronta para consumo por times de BI, analytics, consultorias, corretoras e healthtechs.
 
-O cliente não precisa manter robôs de coleta, parsers de layout, banco de dados próprio, pipelines dbt ou atualização recorrente. Consome dados curados diretamente por API ou views SQL controladas.
+O cliente não precisa manter coleta, padronização, validação de layouts ou atualização recorrente. Consome dados curados diretamente por API, com documentação, controle de acesso e operação recorrente.
 
 ---
 
@@ -16,12 +16,13 @@ O cliente não precisa manter robôs de coleta, parsers de layout, banco de dado
 
 | | |
 |---|---|
-| Dados tratados da ANS | CADOP, SIB, IDSS, IGR, NIP, DIOPS/FIP |
+| Dados tratados da ANS | CADOP, SIB, CNES, IDSS, IGR, NIP, DIOPS/FIP |
 | Atualização recorrente | Carga automática conforme publicação ANS |
 | API autenticada | Endpoints REST com paginação e rate limit |
 | Score de operadora | Indicador composto v3 (regulatório, financeiro, rede, estrutural) |
 | Ranking de operadoras | Por score, crescimento, oportunidade |
 | Mercado por município | Market share, oportunidade territorial |
+| Rede CNES | Estabelecimentos de saúde por município e UF |
 | Metadados de qualidade | Última atualização, status de cada dataset |
 
 ---
@@ -38,6 +39,8 @@ GET /v1/operadoras/{registro_ans}/regulatorio
 GET /v1/rankings/operadoras
 GET /v1/mercado/municipios
 GET /v1/oportunidades/municipios
+GET /v1/cnes/municipio/{cd_municipio}
+GET /v1/cnes/uf/{sg_uf}
 GET /v1/meta/datasets
 ```
 

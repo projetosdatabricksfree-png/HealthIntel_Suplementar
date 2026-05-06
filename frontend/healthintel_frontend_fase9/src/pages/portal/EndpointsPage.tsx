@@ -3,7 +3,16 @@ import { endpointCatalog } from '../../data/endpoints';
 import { EndpointCard } from '../../components/EndpointCard';
 import type { EndpointTier } from '../../types/domain';
 
-const tiers: Array<'todos' | EndpointTier> = ['todos', 'core', 'premium', 'admin', 'bloqueado_mvp'];
+const tiers: Array<'todos' | EndpointTier> = ['todos', 'core', 'premium', 'admin', 'sob_demanda'];
+
+const tierLabel: Record<'todos' | EndpointTier, string> = {
+  todos: 'Todos',
+  core: 'Core',
+  premium: 'Premium',
+  admin: 'Admin',
+  interno: 'Interno',
+  sob_demanda: 'Sob demanda'
+};
 
 export function EndpointsPage() {
   const [tier, setTier] = useState<'todos' | EndpointTier>('core');
@@ -21,7 +30,7 @@ export function EndpointsPage() {
         <div>
           <p className="eyebrow">Endpoints</p>
           <h1>Catálogo da API</h1>
-          <p>Rotas mapeadas a partir do backend atual, com indicação do que entra ou não no MVP.</p>
+          <p>Rotas disponíveis no plano Core e módulos adicionais disponíveis por contratação específica.</p>
         </div>
       </div>
 
@@ -30,7 +39,7 @@ export function EndpointsPage() {
         <div className="filter-row">
           {tiers.map((item) => (
             <button key={item} className={item === tier ? 'chip chip-active' : 'chip'} onClick={() => setTier(item)}>
-              {item}
+              {tierLabel[item]}
             </button>
           ))}
         </div>

@@ -6,9 +6,9 @@ export function PricingPage() {
     <section className="page section">
       <div className="section-heading">
         <p className="eyebrow">Preços</p>
-        <h1>Planos comerciais para iniciar venda</h1>
+        <h1>Planos comerciais para operar com dados ANS</h1>
         <p>
-          Estrutura inicial com piloto pago, plano API recorrente, BI/consultoria e enterprise sob contrato.
+          Comece com piloto pago, evolua para API recorrente e amplie com suporte especializado sob contrato.
         </p>
       </div>
       <div className="plans-grid plans-grid-four">

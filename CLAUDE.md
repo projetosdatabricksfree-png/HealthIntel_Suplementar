@@ -4,14 +4,26 @@
 
 - → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
 
+### Skills temáticos HealthIntel (acionar quando o trabalho tocar a área)
+
+- **healthintel-daas-governance** — qualquer mudança que afete identidade/posicionamento DaaS ou escopo do produto.
+- **healthintel-ans-ingestion-bronze** — mexer em `ingestao/`, `bruto_ans`, layouts, DAGs ou fontes ANS.
+- **healthintel-dbt-medallion-modeling** — modelos dbt, schemas (`stg_*` → `int_*` → `nucleo_ans` → `api_ans` → `consumo_ans`), tags e exposição.
+- **healthintel-api-serving** — mudanças em `api/` (routers, schemas, services, deps, envelope `{dados, meta}`).
+- **healthintel-data-quality-contracts** — testes dbt, contratos de tabela, `quality_ans`, validações regulatórias.
+- **healthintel-observability-billing-ops** — `plataforma.log_uso`, `plataforma.job`, billing, alertas, métricas de uso.
+- **healthintel-commercial-protection-security** — paginação, rate limit, auth, autorização por plano/camada, antiextração.
+- **healthintel-sprint-release-hardgates** — fechar sprint, taggar release, hardgates, baseline imutável, `[x]` só após evidência.
+
 ## Architecture Overview
 
-**HealthIntel Suplementar** — plataforma medallion de dados ANS (regulador brasileiro). Quatro serviços:
+**HealthIntel Suplementar** — plataforma medallion de dados ANS (regulador brasileiro). Cinco componentes:
 
-- **`api/`**: FastAPI. Lê exclusivamente `api_ans`. X-API-Key + Redis TTL 60s. Envelope: `{dados: [...], meta: {...}}`.
+- **`api/`**: FastAPI. Lê exclusivamente `api_ans`. X-API-Key + Redis (auth cache 60s; prata 300s). Envelope: `{dados: [...], meta: {...}}`.
 - **`mongo_layout_service/`**: Governança MongoDB. Metadados de layout, versionamento. Auth por token.
 - **`ingestao/`**: Airflow DAGs. Download ANS → validação layout → `bruto_ans` → `plataforma.job`.
 - **`healthintel_dbt/`**: dbt. Fluxo: `bruto_ans` → `stg_ans` → `int_ans` → `nucleo_ans` → `api_ans` → `consumo_ans`. Camadas paralelas: `quality_ans`, `mdm_ans`.
+- **`frontend/healthintel_frontend_fase9/`**: Site público + portal cliente (Vite + React 19 + TS, react-router-dom, recharts). Consome a API via `api_ans` apenas — nunca expõe schemas internos.
 
 **Schemas PostgreSQL:**
 - `bruto_ans`: Bronze. RANGE partition por competência/trimestre. SIB: partições anuais `_YYYY` (nunca mensais).
@@ -27,17 +39,21 @@
 
 | Tarefa | Comando |
 |--------|---------|
-| Serviços | `make up / down / logs / ps` |
+| Serviços | `make up / down / logs / ps` · `make up-hml / down-hml` |
 | Lint / CI | `make lint` · `make sql-lint` · `make ci-local` |
 | Testes | `make test` · `pytest <path> -v` · `make dbt-test` |
 | dbt | `make dbt-build` · `make dbt-compile` · `make dbt-seed` · `make dbt-seed-ref` |
+| dbt seletivo | `make dbt-build-core` / `dbt-test-core` (Fase 9) · `make dbt-build-premium` / `dbt-test-premium` |
 | Seeds / Bootstrap | `make demo-data` · `make seed-dados-completos` · `make bootstrap-*-layouts` |
-| Smoke tests | `make smoke[-rede|-cnes|-tiss|-prata|-sib|-cadop|-consumo|-premium|-ingestao-real]` |
+| Smoke tests | `make smoke[-rede|-cnes|-tiss|-prata|-sib|-cadop|-consumo|-premium|-core|-ingestao-real]` |
+| Smoke Fase 7 | `make smoke-janela-carga-sib` · `make smoke-versao-vigente-tuss` · `make smoke-historico-sob-demanda` · `make smoke-pgbackrest` · `make hardgate-sem-ano-hardcoded-janelacarga` |
 | Ingestão real | `make dag-run-real-sib UFS=AC COMPETENCIA=YYYYMM` · `make dag-run-real-cadop COMPETENCIA=YYYYMM` |
 | Billing / Consumo | `make billing-close REF=YYYYMM` · `make consumo-refresh` |
-| Fase 7 | `make smoke-janela-carga-sib` · `make smoke-restore` · `make hardgate-sem-ano-hardcoded-janelacarga` |
-| ELT | `make elt-discover / elt-extract / elt-load / elt-all / elt-status` |
-| Dev | `make api-dev` (:8000) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
+| Capacidade / Disco | `make capacidade-snapshot` · `make capacidade-monitor` · `make capacidade-relatorio` · `make monitor-disco` |
+| Carga ANS VPS | `make carga-ans-padrao-vps[-dry-run|-incluir-pendentes]` · `make monitor-full2a-sem-tiss[-once]` |
+| ELT | `make elt-discover / elt-extract / elt-load / elt-all / elt-status` · `make elt-transform-all / elt-validate-all` |
+| Dev backend | `make api-dev` (:8000) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
+| Dev frontend (Fase 9) | `cd frontend/healthintel_frontend_fase9 && npm install && npm run dev` (:5173) · `npm run build` · `npm run lint` |
 
 ---
 
@@ -57,12 +73,13 @@
 
 | Serviço | Porta | Notas |
 |---------|-------|-------|
-| API | 8000 | Lê só `api_ans`; Redis TTL 60s |
+| API | 8000 | Lê só `api_ans`; auth cache 60s |
 | Layout Service | 8001 | MongoDB, token-gated |
 | Airflow | 8088 | DAGs em `ingestao/dags/` |
+| Frontend Fase 9 | 5173 | Vite dev server (`npm run dev`); build Nginx via `Dockerfile` |
 | PostgreSQL | 5432 | Todos os schemas acima |
 | MongoDB | 27017 | `healthintel_layout` |
-| Redis | 6379 | Auth cache + prata TTL 300s |
+| Redis | 6379 | Auth cache 60s + prata TTL 300s |
 
 ---
 

@@ -8,14 +8,14 @@
 
 ## Objeto
 
-Acesso ao HealthIntel Core ANS durante 30 dias, incluindo API autenticada com dados tratados da ANS para análise de operadoras, beneficiários, mercado, rankings, score e risco regulatório.
+Acesso ao HealthIntel Core ANS durante 30 dias, incluindo API autenticada com dados tratados da ANS para análise de operadoras, beneficiários, rede CNES, mercado, rankings, score e risco regulatório.
 
 ---
 
 ## O que está incluído
 
 - 1 API key válida por 30 dias
-- Endpoints Core: operadoras, score, beneficiários, financeiro, regulatório, rankings, mercado, metadados
+- Endpoints Core: operadoras, score, beneficiários, CNES agregado, financeiro, regulatório, rankings, mercado, metadados
 - Documentação Swagger (`/docs`) com autenticação demonstrável
 - Postman collection com todos os endpoints Core
 - 1 reunião de onboarding (30–60 min, remota)
@@ -27,9 +27,9 @@ Acesso ao HealthIntel Core ANS durante 30 dias, incluindo API autenticada com da
 
 ## O que não está incluído
 
-- Acesso a camadas bronze/prata/premium
-- TISS real
-- CNES completo
+- Acesso a bases internas ou módulos avançados
+- TISS analítico
+- Análises avançadas de rede e cobertura
 - Exportação integral da base
 - Ambiente dedicado
 - SLA enterprise

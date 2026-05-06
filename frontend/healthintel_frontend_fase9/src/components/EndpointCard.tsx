@@ -6,7 +6,15 @@ const tierTone = {
   premium: 'blue',
   admin: 'yellow',
   interno: 'gray',
-  bloqueado_mvp: 'red'
+  sob_demanda: 'blue'
+} as const;
+
+const tierLabel = {
+  core: 'Core',
+  premium: 'Premium',
+  admin: 'Admin',
+  interno: 'Interno',
+  sob_demanda: 'Sob demanda'
 } as const;
 
 export function EndpointCard({ endpoint, onSelect }: { endpoint: ApiEndpoint; onSelect?: (endpoint: ApiEndpoint) => void }) {
@@ -14,7 +22,7 @@ export function EndpointCard({ endpoint, onSelect }: { endpoint: ApiEndpoint; on
     <article className="endpoint-card">
       <div className="endpoint-card-top">
         <span className={`method method-${endpoint.method.toLowerCase()}`}>{endpoint.method}</span>
-        <Badge tone={tierTone[endpoint.tier]}>{endpoint.tier}</Badge>
+        <Badge tone={tierTone[endpoint.tier]}>{tierLabel[endpoint.tier]}</Badge>
       </div>
       <h3>{endpoint.title}</h3>
       <code>{endpoint.path}</code>

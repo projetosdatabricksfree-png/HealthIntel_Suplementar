@@ -18,7 +18,7 @@ Superficies implementadas:
 
 - Site publico do HealthIntel Core ANS.
 - Portal autenticado localmente por e-mail + API key.
-- Catalogo de endpoints classificado por `core`, `premium`, `admin`, `interno` e `bloqueado_mvp`.
+- Catalogo de endpoints classificado por `core`, `premium`, `admin`, `interno` e `sob_demanda`.
 - Live tester limitado aos endpoints `core`.
 - Telas de API keys, uso, billing, datasets, equipe, perfil e seguranca em modo portal-ready.
 
@@ -34,7 +34,7 @@ Superficies implementadas:
 /login
 ```
 
-A documentacao publica mostra apenas endpoints `core` do HealthIntel Core ANS. Endpoints TISS, CNES completo, Bronze, Prata, Premium e Admin nao sao vendidos no fluxo publico do MVP.
+A documentacao publica mostra apenas endpoints `core` do HealthIntel Core ANS. TISS analitico, analises avancadas de rede e cobertura, endpoints internos, Premium e Admin nao entram no fluxo publico padrao.
 
 ## Rotas do Portal
 
@@ -132,7 +132,7 @@ docker compose -f infra/docker-compose.yml up -d nginx frontend
 
 ## Endpoints Core
 
-Endpoints que podem aparecer no produto inicial:
+Endpoints que podem aparecer no produto Core:
 
 ```text
 GET /saude
@@ -161,18 +161,18 @@ GET /v1/rankings/municipio/oportunidade
 GET /v1/rankings/municipio/oportunidade-v2
 GET /v1/rankings/composto
 GET /v1/rede/municipio/{cd_municipio}
+GET /v1/cnes/municipio/{cd_municipio}
+GET /v1/cnes/uf/{sg_uf}
 ```
 
-## Endpoints Bloqueados no MVP
+## Endpoints Restritos e Modulos Sob Demanda
 
-Nao vender no MVP publico:
+Nao vender no fluxo publico padrao:
 
 ```text
-/v1/cnes/*
 /v1/tiss/*
 /v1/premium/*
-/v1/bronze/*
-/v1/prata/*
+/v1/interno/*
 /admin/*
 /raw
 /export-full
@@ -181,8 +181,8 @@ Nao vender no MVP publico:
 
 Motivos:
 
-- TISS e CNES completo ainda aumentam custo operacional e risco de escopo.
-- Bronze e Prata sao camadas internas.
+- TISS analitico e analises avancadas de rede e cobertura exigem escopo, filtros e retencao especificos por contrato.
+- Endpoints internos sao camadas de engenharia e nao devem aparecer no produto comercial.
 - Premium e Admin nao fazem parte do fluxo publico do Core ANS.
 - Exportacao full contraria a protecao comercial do produto.
 
@@ -234,7 +234,7 @@ Antes de producao publica, implementar:
 - [x] `Dockerfile` do frontend usa build Vite e Nginx.
 - [x] `nginx.conf` serve SPA com fallback para `index.html`.
 - [x] Compose possui servico `frontend`.
-- [x] Site publico nao vende TISS, CNES completo, Bronze, Prata, Premium ou Admin como MVP.
+- [x] Site publico vende CNES agregado no Core e mantem TISS analitico, analises avancadas de rede e cobertura, endpoints internos, Premium e Admin fora do fluxo publico padrao.
 - [x] Live tester monta chamadas com `X-API-Key`.
 - [x] Catalogo de endpoints foi comparado com routers atuais da API.
 - [ ] Backend possui autenticacao real de usuario do portal.

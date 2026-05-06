@@ -13,8 +13,8 @@ export function HomePage() {
           <p className="eyebrow">DaaS/API para saúde suplementar</p>
           <h1>Dados da ANS tratados, versionados e prontos para consumir.</h1>
           <p>
-            API para análise de operadoras, beneficiários, mercado, rankings, score,
-            financeiro e risco regulatório — sem sua equipe montar pipeline próprio.
+            API para análise de operadoras, beneficiários, rede CNES, mercado, rankings,
+            score, financeiro e risco regulatório — sem sua equipe montar pipeline próprio.
           </p>
           <div className="hero-actions">
             <LinkButton to="/contato">Solicitar piloto <ArrowRight size={18} /></LinkButton>
@@ -22,7 +22,7 @@ export function HomePage() {
           </div>
           <div className="trust-strip">
             <span>API-first</span>
-            <span>PostgreSQL + dbt</span>
+            <span>Dados validados</span>
             <span>Rate limit</span>
             <span>Governança ANS</span>
           </div>
@@ -37,7 +37,7 @@ export function HomePage() {
   "https://api.healthintel.com.br/v1/operadoras?uf=SP&limite=20" \
   -H "X-API-Key: SUA_CHAVE"`} />
           <div className="hero-metrics">
-            <div><strong>6</strong><span>famílias Core</span></div>
+            <div><strong>7</strong><span>famílias Core</span></div>
             <div><strong>12-24m</strong><span>SIB hot</span></div>
             <div><strong>100%</strong><span>API controlada</span></div>
           </div>
@@ -46,18 +46,22 @@ export function HomePage() {
 
       <section className="section">
         <div className="section-heading">
-          <p className="eyebrow">Produto inicial</p>
-          <h2>O que o Core ANS entrega</h2>
-          <p>Um produto menor, estável e vendável para começar a faturar sem carregar toda a ANS numa VPS.</p>
+          <p className="eyebrow">Produto comercial</p>
+          <h2>Inteligência ANS pronta para uso</h2>
+          <p>
+            Uma solução robusta, estável e de alto impacto para transformar dados regulatórios
+            em decisão comercial sem exigir infraestrutura própria do cliente.
+          </p>
         </div>
         <div className="feature-grid">
           {[
             { icon: Stethoscope, title: 'Operadoras 360', desc: 'Cadastro, modalidade, situação, UF, score e sinais de risco.' },
             { icon: TrendingUp, title: 'Mercado e beneficiários', desc: 'Visão por operadora, município e competência com janela controlada.' },
+            { icon: DatabaseZap, title: 'Rede CNES', desc: 'Estabelecimentos de saúde por município e UF para leitura regional de cobertura.' },
             { icon: BarChart3, title: 'Rankings e score', desc: 'Rankings de crescimento, oportunidade e score composto.' },
-            { icon: DatabaseZap, title: 'Dados curados', desc: 'Camadas de consumo e API sem expor bronze/prata para cliente.' },
+            { icon: DatabaseZap, title: 'Dados curados', desc: 'API pronta para consumo, sem expor bases internas ao cliente.' },
             { icon: KeyRound, title: 'Acesso por API key', desc: 'Planos, rate limit, paginação e logs de consumo por cliente.' },
-            { icon: ShieldCheck, title: 'Antiextração', desc: 'Sem exportação full, sem dump bruto e com controle de uso.' }
+            { icon: ShieldCheck, title: 'Antiextração', desc: 'Sem exportação integral, sem base bruta e com controle de uso.' }
           ].map((item) => {
             const Icon = item.icon;
             return (

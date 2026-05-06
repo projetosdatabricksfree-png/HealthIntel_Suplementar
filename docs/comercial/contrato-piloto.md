@@ -9,7 +9,7 @@
 
 ## 1. Objeto
 
-A Contratada fornece acesso ao serviço HealthIntel Core ANS, consistindo em API autenticada com dados públicos da ANS tratados, modelados e disponibilizados para análise de operadoras, beneficiários, mercado e indicadores regulatórios.
+A Contratada fornece acesso ao serviço HealthIntel Core ANS, consistindo em API autenticada com dados públicos da ANS tratados, modelados e disponibilizados para análise de operadoras, beneficiários, rede CNES, mercado e indicadores regulatórios.
 
 ## 2. Escopo do Serviço
 
@@ -19,7 +19,7 @@ O serviço inclui:
 - Documentação técnica (Swagger)
 - 1 reunião de onboarding remota
 
-Não estão incluídos dados brutos, exportação integral, TISS real, CNES completo, acesso a camadas bronze/prata/premium ou ambiente dedicado.
+Não estão incluídos dados brutos, exportação integral, TISS analítico, análises avançadas de rede e cobertura, bases internas, módulos avançados ou ambiente dedicado.
 
 ## 3. Valor e Pagamento
 

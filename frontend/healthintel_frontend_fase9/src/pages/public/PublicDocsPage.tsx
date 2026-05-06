@@ -18,7 +18,7 @@ export function PublicDocsPage() {
         <p>
           O portal segue o modelo API-first: documentação simples, exemplos por endpoint,
           autenticação por `X-API-Key` e live tester no dashboard. O catálogo público mostra
-          apenas endpoints do produto inicial Core ANS.
+          apenas endpoints do produto Core ANS.
         </p>
       </div>
 

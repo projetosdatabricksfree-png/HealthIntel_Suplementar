@@ -1,6 +1,6 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-export type EndpointTier = 'core' | 'premium' | 'admin' | 'interno' | 'bloqueado_mvp';
+export type EndpointTier = 'core' | 'premium' | 'admin' | 'interno' | 'sob_demanda';
 
 export interface ApiEndpoint {
   id: string;
@@ -18,7 +18,7 @@ export interface DatasetStatus {
   codigo: string;
   nome: string;
   camada: 'api' | 'consumo' | 'interno';
-  status: 'ativo' | 'em_validacao' | 'bloqueado_mvp';
+  status: 'ativo' | 'em_validacao' | 'sob_demanda';
   atualizacao: string;
   retencao: string;
   descricao: string;
