@@ -43,6 +43,8 @@ input,
 select,
 textarea {
   font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 input,
@@ -660,6 +662,8 @@ small {
 }
 
 .sidebar-brand {
+  display: flex;
+  width: 100%;
   padding: 0.75rem 0.5rem 1.2rem;
 }
 
@@ -897,6 +901,11 @@ small {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+}
+
+.section-soft-inner {
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 .table-wrap {

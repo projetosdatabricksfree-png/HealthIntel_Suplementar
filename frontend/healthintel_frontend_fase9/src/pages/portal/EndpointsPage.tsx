@@ -40,7 +40,7 @@ export function EndpointsPage() {
         <input placeholder="Buscar endpoint..." value={search} onChange={(event) => setSearch(event.target.value)} />
         <div className="filter-row">
           {tiers.map((item) => (
-            <button key={item} className={item === tier ? 'chip chip-active' : 'chip'} onClick={() => setTier(item)}>
+            <button type="button" key={item} className={item === tier ? 'chip chip-active' : 'chip'} onClick={() => setTier(item)}>
               {tierLabel[item]}
             </button>
           ))}

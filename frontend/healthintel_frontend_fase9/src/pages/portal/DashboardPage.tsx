@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Activity, Database, KeyRound, ShieldCheck } from 'lucide-react';
+import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
@@ -26,11 +26,11 @@ export function DashboardPage() {
       </div>
 
       <div className="action-grid">
-        <Link to="/app/endpoints" className="action-card"><BookIcon /> <span>Endpoints</span><small>Consultar catálogo e testar rotas</small></Link>
-        <Link to="/app/uso" className="action-card"><BarIcon /> <span>Uso</span><small>Ver consumo demonstrativo</small></Link>
-        <Link to="/app/api-keys" className="action-card"><KeyRound /> <span>API keys</span><small>Salvar, testar e copiar chave</small></Link>
-        <Link to="/app/datasets" className="action-card"><Database /> <span>Datasets</span><small>Ver escopo publicado</small></Link>
-        <Link to="/app/billing" className="action-card"><CreditIcon /> <span>Billing</span><small>Solicitar upgrade controlado</small></Link>
+        <Link to="/app/endpoints" className="action-card"><BookOpen size={22} /> <span>Endpoints</span><small>Consultar catálogo e testar rotas</small></Link>
+        <Link to="/app/uso" className="action-card"><BarChart3 size={22} /> <span>Uso</span><small>Ver consumo demonstrativo</small></Link>
+        <Link to="/app/api-keys" className="action-card"><KeyRound size={22} /> <span>API keys</span><small>Salvar, testar e copiar chave</small></Link>
+        <Link to="/app/datasets" className="action-card"><Database size={22} /> <span>Datasets</span><small>Ver escopo publicado</small></Link>
+        <Link to="/app/billing" className="action-card"><CreditCard size={22} /> <span>Billing</span><small>Solicitar upgrade controlado</small></Link>
       </div>
 
       <div className="split-grid">
@@ -52,14 +52,3 @@ export function DashboardPage() {
   );
 }
 
-function BookIcon() {
-  return <Activity />;
-}
-
-function BarIcon() {
-  return <ShieldCheck />;
-}
-
-function CreditIcon() {
-  return <Database />;
-}

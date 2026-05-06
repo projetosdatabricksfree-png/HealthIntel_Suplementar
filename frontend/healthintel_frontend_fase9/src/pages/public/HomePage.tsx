@@ -76,12 +76,14 @@ export function HomePage() {
       </section>
 
       <section className="section section-soft">
-        <div className="section-heading">
-          <p className="eyebrow">Planos</p>
-          <h2>Comece com piloto, evolua para API recorrente</h2>
-        </div>
-        <div className="plans-grid">
-          {plans.slice(0, 3).map((plan) => <PlanCard key={plan.nome} plan={plan} />)}
+        <div className="section-soft-inner">
+          <div className="section-heading">
+            <p className="eyebrow">Planos</p>
+            <h2>Comece com piloto, evolua para API recorrente</h2>
+          </div>
+          <div className="plans-grid">
+            {plans.slice(0, 3).map((plan) => <PlanCard key={plan.nome} plan={plan} />)}
+          </div>
         </div>
       </section>
     </>

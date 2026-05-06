@@ -30,7 +30,7 @@ export function PublicDocsPage() {
 
       <div className="filter-row">
         {groups.map((item) => (
-          <button key={item} className={item === group ? 'chip chip-active' : 'chip'} onClick={() => setGroup(item)}>
+          <button type="button" key={item} className={item === group ? 'chip chip-active' : 'chip'} onClick={() => setGroup(item)}>
             {item}
           </button>
         ))}
