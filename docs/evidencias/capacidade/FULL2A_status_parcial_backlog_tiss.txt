@@ -1,0 +1,5 @@
+FULL2A_STATUS=CARGA_PARCIAL_ABORTADA_COM_SEGURANCA
+MOTIVO=Foram identificadas execucoes simultaneas da carga FULL2A e backlog de TISS apenas baixado.
+TISS_STATUS=tiss_ambulatorial baixado sem carregamento no Postgres
+RISCO=Continuar consumiria disco sem medir carga real no PostgreSQL.
+ACAO=Parar processos duplicados, investigar parser/loader TISS e corrigir executor antes de nova carga.

@@ -841,3 +841,64 @@ async def listar_endpoints() -> dict:
             camada = "publico"
         dados.append(EndpointMetaResponse(**{**endpoint, "camada": camada}).model_dump())
     return {"dados": dados, "meta": _meta_padrao(len(dados))}
+
+
+async def listar_atualizacao() -> dict:
+    async with SessionLocal() as session:
+        result = await session.execute(
+            text(
+                """
+                select
+                    coalesce(fonte_ans, nome_job) as dataset,
+                    max(finalizado_em) as ultima_atualizacao,
+                    count(*) filter (where status = 'sucesso') as cargas_sucesso,
+                    max(status) as ultimo_status
+                from plataforma.job
+                where status in ('sucesso', 'falha')
+                group by coalesce(fonte_ans, nome_job)
+                order by ultima_atualizacao desc nulls last
+                limit 30
+                """
+            )
+        )
+        dados = [
+            {
+                "dataset": row["dataset"],
+                "ultima_atualizacao": row["ultima_atualizacao"].isoformat()
+                if row["ultima_atualizacao"]
+                else None,
+                "cargas_sucesso": row["cargas_sucesso"],
+                "ultimo_status": row["ultimo_status"],
+            }
+            for row in result.mappings()
+        ]
+    return {"dados": dados, "meta": _meta_padrao(len(dados))}
+
+
+async def listar_qualidade() -> dict:
+    async with SessionLocal() as session:
+        result = await session.execute(
+            text(
+                """
+                select
+                    dataset,
+                    max(carregado_em) as carregado_em,
+                    count(*) as versoes_ativas
+                from plataforma.versao_dataset
+                where status = 'ativo'
+                group by dataset
+                order by carregado_em desc nulls last
+                limit 30
+                """
+            )
+        )
+        dados = [
+            {
+                "dataset": row["dataset"],
+                "carregado_em": row["carregado_em"].isoformat() if row["carregado_em"] else None,
+                "versoes_ativas": row["versoes_ativas"],
+                "status": "ok",
+            }
+            for row in result.mappings()
+        ]
+    return {"dados": dados, "meta": _meta_padrao(len(dados))}

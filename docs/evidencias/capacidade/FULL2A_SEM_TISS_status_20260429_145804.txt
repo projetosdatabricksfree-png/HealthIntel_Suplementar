@@ -1,0 +1,10 @@
+FULL2A_STATUS=CARGA_INICIADA
+NIVEL=FULL2A_SEM_TISS_REAL
+pid=987328
+iniciado_em=2026-04-29T14:58:04-03:00
+landing_path=./data/landing_full2a_sem_tiss
+janela_temporal=202501_202701
+familias_grandes_carregaveis=sib
+familias_pequenas_carregaveis=cadop,idss,igr,nip,sip,diops,rpc,caderno_ss,plano
+familias_pendentes_excluidas=tiss
+tiss_status=PENDENTE_PARSER_LOAD_REAL

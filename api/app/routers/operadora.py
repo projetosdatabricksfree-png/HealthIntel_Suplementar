@@ -6,6 +6,7 @@ from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.services.operadora import (
     detalhar_operadora,
     detalhar_score_operadora,
+    listar_beneficiarios_operadora,
     listar_operadoras,
 )
 from api.app.services.rede import detalhar_rede_operadora
@@ -56,6 +57,23 @@ async def get_operadora_score(
 ) -> dict:
     await aplicar_rate_limit(request)
     payload = await detalhar_score_operadora(registro_ans, competencia=competencia)
+    request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
+    return payload
+
+
+@router.get("/{registro_ans}/beneficiarios")
+async def get_operadora_beneficiarios(
+    registro_ans: str,
+    request: Request,
+    pagina: int = Query(default=1, ge=1),
+    por_pagina: int = Query(default=24, ge=1, le=36),
+) -> dict:
+    await aplicar_rate_limit(request)
+    payload = await listar_beneficiarios_operadora(
+        registro_ans,
+        pagina=pagina,
+        por_pagina=por_pagina,
+    )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload
 

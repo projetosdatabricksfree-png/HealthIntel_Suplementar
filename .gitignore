@@ -16,6 +16,7 @@ env/
 htmlcov/
 dist/
 build/
+*.tsbuildinfo
 logs/
 *.log
 *.egg-info/
@@ -28,3 +29,4 @@ docs/dbt_*
 frontend/**/node_modules/
 testes/load/resultados/
 tmp/
+data/

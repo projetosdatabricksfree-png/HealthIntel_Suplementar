@@ -6,7 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 SQLFLUFF_BIN := ../.venv/bin/sqlfluff
 RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-test-core dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -62,6 +62,12 @@ dbt-build-premium:
 
 dbt-test-premium:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:quality tag:mdm tag:mdm_privado tag:consumo_premium tag:premium
+
+dbt-build-core:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:mart tag:core_ans
+
+dbt-test-core:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:core_ans
 
 dbt-seed:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) seed
@@ -167,6 +173,12 @@ consumo-refresh:
 
 smoke-consumo:
 	$(PYTHON) scripts/smoke_consumo.py
+
+smoke-core:
+	$(PYTHON) scripts/smoke_core.py
+
+monitor-disco:
+	bash scripts/monitor_disco.sh
 
 elt-discover:
 	PYTHONPATH=$(PWD) $(PYTHON) scripts/elt_discover_ans.py --escopo $(ELT_ESCOPO) --max-depth $(ELT_MAX_DEPTH)

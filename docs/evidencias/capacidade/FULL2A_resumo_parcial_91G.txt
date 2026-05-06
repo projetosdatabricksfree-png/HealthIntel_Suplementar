@@ -1,0 +1,10 @@
+FULL2A_STATUS=CARGA_PARCIAL_ABORTADA_COM_SEGURANCA
+MOTIVO=Execucoes concorrentes e backlog de TISS sem carga no PostgreSQL.
+LANDING_SIZE=91G
+LANDING_ARQUIVOS=4239
+DISCO_USO=58%
+POSTGRES_DATABASE_SIZE=113GB
+TISS_STATUS=tiss_ambulatorial baixado=4155 carregado=0
+SIB_STATUS=parcialmente carregado
+RISCO=Continuar aumentaria landing sem medir crescimento real do PostgreSQL.
+DECISAO=Congelar evidencia parcial e corrigir executor/parser antes de nova FULL2A.

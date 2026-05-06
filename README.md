@@ -6,6 +6,23 @@ HealthIntel Suplementar é uma plataforma de engenharia de dados que transforma 
 
 ---
 
+## Frontend Comercial / Portal do Cliente
+
+O frontend da Fase 9 está em `frontend/healthintel_frontend_fase9` e implementa o site público e portal do cliente do HealthIntel Core ANS.
+
+Comandos:
+
+```bash
+cd frontend/healthintel_frontend_fase9
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Documentação: `docs/produto/fase_9_frontend_portal_cliente.md`
+
+---
+
 ## 1. Visão do Produto
 
 HealthIntel Suplementar é uma **plataforma DaaS** que encapsula todo o ciclo de vida de dados regulatórios da saúde suplementar:

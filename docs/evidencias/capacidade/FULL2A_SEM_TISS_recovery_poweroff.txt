@@ -1,0 +1,11 @@
+FULL2A_SEM_TISS_STATUS=RECOVERY_APOS_DESLIGAMENTO
+MOTIVO=Maquina desligou sem energia durante execucao da carga.
+ACAO=Validar estado da landing, Postgres, processos e retomar de forma idempotente se seguro.
+Wed Apr 29 03:44:01 PM -03 2026
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  468G  263G  182G  60% /
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       7.1Gi       2.6Gi       887Mi       6.7Gi       8.3Gi
+Swap:          4.0Gi          0B       4.0Gi
+8.2G	data/landing_full2a_sem_tiss
+56

@@ -27,7 +27,10 @@ class Settings(BaseSettings):
         alias="API_ALLOWED_HOSTS",
     )
     app_cors_allowed_origins: str = Field(
-        default="http://localhost:8080,http://127.0.0.1:8080",
+        default=(
+            "http://localhost:8080,http://127.0.0.1:8080,"
+            "http://localhost:5173,http://127.0.0.1:5173"
+        ),
         alias="API_CORS_ALLOWED_ORIGINS",
     )
     app_max_request_size_bytes: int = Field(default=1_048_576, alias="API_MAX_REQUEST_SIZE_BYTES")

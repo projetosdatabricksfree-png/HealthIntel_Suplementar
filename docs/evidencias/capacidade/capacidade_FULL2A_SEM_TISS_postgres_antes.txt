@@ -1,0 +1,126 @@
+=== SNAPSHOT POSTGRESQL ===
+--- TAMANHO POR SCHEMA ---
+     schema_name     | tamanho_total 
+---------------------+---------------
+ bruto_ans           | 113 GB
+ plataforma          | 23 MB
+ public              | 1696 kB
+ nucleo_ans          | 1432 kB
+ ref_ans             | 1192 kB
+ api_ans             | 1104 kB
+ consumo_premium_ans | 584 kB
+ mdm_ans             | 96 kB
+ consumo_ans         | 88 kB
+ bruto_cliente       | 80 kB
+ mdm_privado         | 64 kB
+ quality_ans         | 56 kB
+ stg_ans             | 0 bytes
+ stg_cliente         | 0 bytes
+(14 rows)
+
+
+--- TOP 30 MAIORES TABELAS ---
+                     tabela                      | tamanho_total | aprox_linhas 
+-------------------------------------------------+---------------+--------------
+ bruto_ans.ans_linha_generica                    | 113 GB        |    114345001
+ plataforma.fonte_dado_ans                       | 19 MB         |        14636
+ plataforma.arquivo_fonte_ans                    | 3064 kB       |         4367
+ nucleo_ans.dim_tuss_procedimento                | 560 kB        |         3500
+ api_ans.api_premium_tuss_procedimento           | 560 kB        |         3500
+ consumo_premium_ans.xref_tiss_tuss_procedimento | 464 kB        |         3500
+ nucleo_ans.dim_tuss_terminologia                | 440 kB        |         3500
+ ref_ans.ref_municipio_ibge                      | 368 kB        |         5571
+ ref_ans.ref_tuss                                | 368 kB        |         3500
+ ref_ans.ref_rol_procedimento                    | 304 kB        |         3500
+ plataforma.retencao_particao_log                | 216 kB        |          411
+ plataforma.mapa_layout_resolvido                | 200 kB        |          780
+ public.job                                      | 176 kB        |            1
+ plataforma.lote_ingestao                        | 152 kB        |          175
+ public.serialized_dag                           | 120 kB        |           29
+ public.dag                                      | 112 kB        |           29
+ plataforma.ingestao_janela_decisao              | 112 kB        |           86
+ plataforma.versao_dataset_vigente               | 96 kB         |            0
+ plataforma.job                                  | 96 kB         |          182
+ plataforma.politica_dataset                     | 96 kB         |           28
+ public.dag_code                                 | 88 kB         |           29
+ plataforma.chave_api                            | 80 kB         |            3
+ plataforma.cliente                              | 80 kB         |            5
+ public.ab_user                                  | 80 kB         |            1
+ public.log                                      | 80 kB         |            5
+ public.task_instance                            | 72 kB         |            0
+ public.ab_permission_view_role                  | 72 kB         |          228
+ public.dag_run                                  | 72 kB         |            0
+ bruto_ans.tiss_procedimento_trimestral_default  | 72 kB         |            0
+ plataforma.versao_dataset                       | 64 kB         |           64
+(30 rows)
+
+
+--- TOP 30 MAIORES ÍNDICES ---
+                                   indice                                   |               tabela               | tamanho 
+----------------------------------------------------------------------------+------------------------------------+---------
+ bruto_ans.ans_linha_generica_pkey                                          | ans_linha_generica                 | 2449 MB
+ bruto_ans.ans_linha_generica_hash_idx                                      | ans_linha_generica                 | 781 MB
+ bruto_ans.ans_linha_generica_dataset_idx                                   | ans_linha_generica                 | 707 MB
+ plataforma.fonte_dado_ans_url_key                                          | fonte_dado_ans                     | 3368 kB
+ plataforma.fonte_dado_ans_pkey                                             | fonte_dado_ans                     | 784 kB
+ plataforma.fonte_dado_ans_dataset_idx                                      | fonte_dado_ans                     | 640 kB
+ plataforma.fonte_dado_ans_familia_idx                                      | fonte_dado_ans                     | 616 kB
+ plataforma.arquivo_fonte_ans_hash_baixado_uq                               | arquivo_fonte_ans                  | 544 kB
+ plataforma.arquivo_fonte_ans_hash_idx                                      | arquivo_fonte_ans                  | 536 kB
+ plataforma.arquivo_fonte_ans_pkey                                          | arquivo_fonte_ans                  | 176 kB
+ plataforma.ix_retencao_particao_log_lookup                                 | retencao_particao_log              | 48 kB
+ plataforma.mapa_layout_resolvido_pkey                                      | mapa_layout_resolvido              | 40 kB
+ public.job_type_heart                                                      | job                                | 32 kB
+ plataforma.retencao_particao_log_pkey                                      | retencao_particao_log              | 32 kB
+ bruto_ans.ix_rn623_trimestre_tipo                                          | rn623_lista_operadora_trimestral   | 16 kB
+ bruto_ans.ix_nip_registro                                                  | nip_operadora_trimestral           | 16 kB
+ plataforma.publicacao_regulatoria_pkey                                     | publicacao_regulatoria             | 16 kB
+ bruto_ans.ix_idss_ano_base_registro                                        | idss                               | 16 kB
+ plataforma.job_pkey                                                        | job                                | 16 kB
+ bruto_ans.sib_beneficiario_operadora_default_competencia_registro_ans_idx  | sib_beneficiario_operadora_default | 16 kB
+ plataforma.publicacao_regulatoria_dataset_competencia_versao_publicaca_key | publicacao_regulatoria             | 16 kB
+ plataforma.ix_chave_api_hash                                               | chave_api                          | 16 kB
+ plataforma.ix_chave_api_cliente                                            | chave_api                          | 16 kB
+ plataforma.log_uso_default_endpoint_timestamp_req_idx                      | log_uso_default                    | 16 kB
+ plataforma.log_uso_default_pkey                                            | log_uso_default                    | 16 kB
+ plataforma.log_uso_default_chave_id_timestamp_req_idx                      | log_uso_default                    | 16 kB
+ bruto_ans.ix_idss_registro                                                 | idss                               | 16 kB
+ bruto_ans.ix_nip_trimestre_registro                                        | nip_operadora_trimestral           | 16 kB
+ plataforma.backup_execucao_pkey                                            | backup_execucao                    | 16 kB
+ plataforma.chave_api_hash_chave_key                                        | chave_api                          | 16 kB
+(30 rows)
+
+
+--- STATUS POLÍTICA DATASET (vw_tamanho_dataset) ---
+      dataset_codigo      |                    descricao                     |    classe_dataset     | schema_destino |              tabela_destino              | limite_full_gb | tamanho_gb | acima_do_limite 
+--------------------------+--------------------------------------------------+-----------------------+----------------+------------------------------------------+----------------+------------+-----------------
+ sib_operadora            | SIB beneficiários por operadora                  | grande_temporal       | bruto_ans      | sib_beneficiario_operadora               |                |     0.0000 | f
+ sib_municipio            | SIB beneficiários por município                  | grande_temporal       | bruto_ans      | sib_beneficiario_municipio               |                |     0.0000 | f
+ tiss_producao            | TISS produção por procedimento trimestral        | grande_temporal       | bruto_ans      | tiss_procedimento_trimestral             |                |     0.0000 | f
+ vda                      | VDA - valor devido à ANS mensal                  | grande_temporal       | bruto_ans      | vda_operadora_mensal                     |                |     0.0000 | f
+ glosa                    | Glosa mensal por operadora                       | grande_temporal       | bruto_ans      | glosa_operadora_mensal                   |                |     0.0000 | f
+ portabilidade            | Portabilidade de carências mensal                | grande_temporal       | bruto_ans      | portabilidade_operadora_mensal           |                |     0.0000 | f
+ rede_prestador           | Rede assistencial por operadora e município      | grande_temporal       | bruto_ans      | rede_prestador_municipio                 |                |     0.0000 | f
+ cadop                    | CADOP - dados cadastrais das operadoras          | pequena_full_ate_5gb  | bruto_ans      | cadop                                    |           5.00 |     0.0001 | f
+ idss                     | IDSS - índice de desempenho da saúde suplementar | pequena_full_ate_5gb  | bruto_ans      | idss                                     |           5.00 |     0.0001 | f
+ igr                      | IGR - índice de garantia de retorno              | pequena_full_ate_5gb  | bruto_ans      | igr_operadora_trimestral                 |           5.00 |     0.0001 | f
+ nip                      | NIP - notificação de intermediação preliminar    | pequena_full_ate_5gb  | bruto_ans      | nip_operadora_trimestral                 |           5.00 |     0.0001 | f
+ regime_especial          | Regime especial de direção fiscal/técnica        | pequena_full_ate_5gb  | bruto_ans      | regime_especial_operadora_trimestral     |           5.00 |     0.0000 | f
+ prudencial               | Prudencial ANS                                   | pequena_full_ate_5gb  | bruto_ans      | prudencial_operadora_trimestral          |           5.00 |     0.0000 | f
+ lista_excelencia_reducao | Lista de excelência e redução RN 623/2024        | pequena_full_ate_5gb  | bruto_ans      | rn623_lista_operadora_trimestral         |           5.00 |     0.0000 | f
+ taxa_resolutividade      | Taxa de resolutividade por operadora             | pequena_full_ate_5gb  | bruto_ans      | taxa_resolutividade_operadora_trimestral |           5.00 |     0.0000 | f
+ diops                    | DIOPS - demonstrações contábeis trimestrais      | pequena_full_ate_5gb  | bruto_ans      | diops_operadora_trimestral               |           5.00 |     0.0000 | f
+ fip                      | FIP - série financeira trimestral                | pequena_full_ate_5gb  | bruto_ans      | fip_operadora_trimestral                 |           5.00 |     0.0000 | f
+ ans_arquivo_generico     | Metadados de arquivos ANS sem parser dedicado    | pequena_full_ate_5gb  | bruto_ans      | ans_arquivo_generico                     |           5.00 |     0.0001 | f
+ dimensoes_ibge           | Dimensões IBGE (UF, município, população)        | pequena_full_ate_5gb  | ref_ans        | ref_municipio_ibge                       |           5.00 |     0.0004 | f
+ tuss_procedimento        | TUSS - tabela de procedimentos                   | referencia_versionada | ref_ans        | ref_tuss                                 |                |     0.0004 | f
+ tuss_material_opme       | TUSS - materiais e OPME                          | referencia_versionada | bruto_ans      | tuss_material_opme                       |                |     0.0000 | f
+ tuss_medicamento         | TUSS - medicamentos                              | referencia_versionada | bruto_ans      | tuss_medicamento                         |                |     0.0000 | f
+ depara_sip_tuss          | DE-PARA SIP/TUSS                                 | referencia_versionada | bruto_ans      | depara_sip_tuss                          |                |     0.0000 | f
+ rol_procedimento         | ROL - rol de procedimentos ANS                   | referencia_versionada | ref_ans        | ref_rol_procedimento                     |                |     0.0003 | f
+ prestador_cadastral      | Prestadores cadastrais - rede vigente            | snapshot_atual        | bruto_ans      | prestador_cadastral                      |                |     0.0000 | f
+ qualiss                  | QUALISS - qualificação de prestadores            | snapshot_atual        | bruto_ans      | qualiss                                  |                |     0.0000 | f
+ cnes_estabelecimento     | CNES - estabelecimentos de saúde                 | snapshot_atual        | bruto_ans      | cnes_estabelecimento                     |                |     0.0000 | f
+ ans_linha_generica       | Linhas JSONB ANS sem parser dedicado             | historico_sob_demanda | bruto_ans      | ans_linha_generica                       |                |   121.3804 | f
+(28 rows)
+

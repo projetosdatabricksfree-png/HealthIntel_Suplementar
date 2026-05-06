@@ -1,326 +1,121 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Skills Obrigatórios
 
-- → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo (Sonnet/Haiku/Opus), uso de `/compact`, `/clear`, Plan Mode e MCPs. **Aplicar automaticamente em toda sessão.**
+- → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
 
 ## Architecture Overview
 
-**HealthIntel Suplementar** is a medallion-architecture data platform for ANS (Brazilian health regulator) data analysis. Four-service monorepo design:
+**HealthIntel Suplementar** — plataforma medallion de dados ANS (regulador brasileiro). Quatro serviços:
 
-- **`api/`**: FastAPI service exposing data via REST. Reads PostgreSQL `api_ans` schema exclusively (never `nucleo_ans`). X-API-Key auth + Redis caching (TTL 60s). Response envelope: `{dados: [...], meta: {...}}`.
-- **`mongo_layout_service/`**: MongoDB governance service. Stores file layout metadata, versioning, and bootstrap registries. Token-based auth.
-- **`ingestao/`**: Airflow DAGs + Python scripts. Download ANS datasets, validate structure via MongoDB layouts, load to PostgreSQL `bruto_ans` (Bronze).
-- **`healthintel_dbt/`**: dbt transformation engine. Medallion flow: `bruto_ans` (bronze) → `stg_ans` (silver views) → `int_ans` (ephemeral intermediates) → `nucleo_ans` (gold marts) → `api_ans` (gold API) → `consumo_ans` (client delivery). Fase 5 adds parallel layers: `quality_ans` (DQ models), `mdm_ans` (master data).
+- **`api/`**: FastAPI. Lê exclusivamente `api_ans`. X-API-Key + Redis TTL 60s. Envelope: `{dados: [...], meta: {...}}`.
+- **`mongo_layout_service/`**: Governança MongoDB. Metadados de layout, versionamento. Auth por token.
+- **`ingestao/`**: Airflow DAGs. Download ANS → validação layout → `bruto_ans` → `plataforma.job`.
+- **`healthintel_dbt/`**: dbt. Fluxo: `bruto_ans` → `stg_ans` → `int_ans` → `nucleo_ans` → `api_ans` → `consumo_ans`. Camadas paralelas: `quality_ans`, `mdm_ans`.
 
-**Key flows:**
-- **Ingest**: DAG downloads file → validate layout in MongoDB → load `bruto_ans` → record `plataforma.job`.
-- **Transform**: dbt staging normalizes, dbt tests validate, dbt marts aggregate, post-hooks create physical indices in `api_ans`.
-- **Serve**: FastAPI queries `api_ans` only, logs to `plataforma.log_uso`, caches in Redis.
-- **Client delivery**: `consumo_ans` schema serves desnormalized Gold tables directly to client BI tools (Power BI, Metabase, psql). Role `healthintel_cliente_reader` (NOLOGIN) is granted per-client user with no access to internal schemas. Refreshed via `dag_dbt_consumo_refresh.py` / `make consumo-refresh`.
-
-**Data schemas:**
-- `bruto_ans`: Raw bronze tables (CADOP, SIB, IGR, NIP, RN623, IDSS, etc.). RANGE partitioned by competência or trimestre.
-- `stg_ans`: Staging views. Casting, normalization, `registro_ans` standardization.
-- `int_ans`: Ephemeral intermediates (not materialized). Enrich, join, derive metrics.
-- `quality_ans`: Fase 5 — Document quality models (`dq_*`). Validates CNPJ-DV, CNES-DV and other regulatory document checks. Tagged `quality`.
-- `mdm_ans`: Fase 5 — Public Master Data records. `mdm_operadora_master`, `mdm_estabelecimento_master`, `mdm_prestador_master` plus `xref_*_origem` crosswalks and `*_exception` lists. Tagged `mdm`.
-- `nucleo_ans`: Gold mart tables (facts: `fat_*`, dimensions: `dim_*`). Incremental or full refresh per model.
-- `api_ans`: Gold API tables. Denormalized, indexed, read-only from FastAPI. Includes `api_premium_*` (Fase 5) — exclusive read surface for premium endpoints.
-- `consumo_ans`: Client delivery tables. Desnormalized Gold for direct BI/analyst access. Role `healthintel_cliente_reader`; each client gets individual LOGIN user. No access to internal schemas.
-- `consumo_premium_ans` (Fase 5, planned Sprint 31): Premium SQL-direct surface. Role `healthintel_premium_reader`. Cannot grant `healthintel_cliente_reader` access to this schema.
-- `bruto_cliente`, `stg_cliente`, `mdm_privado` (Fase 5, planned Sprint 30): Per-tenant private ingestion (contrato/subfatura) — isolated by tenant.
-- `plataforma`: Operational metadata (clients, API keys, billing, job logs, dataset versions, `lote_ingestao`). Fase 7 adds: `politica_dataset` (load class/strategy per dataset — 5 classes: `grande_temporal`, `pequena_full_ate_5gb`, `referencia_versionada`, `snapshot_atual`, `historico_sob_demanda`), `retencao_particao_log` (partition retention audit, triggered by default partition inserts), `ingestao_janela_decisao` (per-competência load decision audit: `carregado`/`ignorado_fora_janela`/`rejeitado_historico_sem_flag`). Planned: `cliente_dataset_acesso`, `solicitacao_historico`, `versao_dataset`, `backup_execucao`. SQL functions (Sprint 35): `calcular_janela_carga_anual`, `criar_particao_anual_competencia`, `preparar_particoes_janela_atual`.
+**Schemas PostgreSQL:**
+- `bruto_ans`: Bronze. RANGE partition por competência/trimestre. SIB: partições anuais `_YYYY` (nunca mensais).
+- `stg_ans` / `int_ans`: Staging views / Ephemeral intermediates (não materializados).
+- `nucleo_ans`: Gold marts (`fat_*`, `dim_*`). `api_ans`: Gold API (indexado, read-only). `consumo_ans`: Entrega cliente BI.
+- `quality_ans`: `dq_*` (CNPJ-DV, CNES-DV). `mdm_ans`: MDM público (`mdm_*_master`, `xref_*_origem`).
+- `consumo_premium_ans`: SQL-direto premium. `bruto_cliente` / `stg_cliente` / `mdm_privado`: ingestion privada por tenant.
+- `plataforma`: Metadados operacionais — `politica_dataset`, `ingestao_janela_decisao`, `retencao_particao_log`, `job`, `log_uso`.
 
 ---
 
 ## Development Commands
 
-| Task | Command |
-|------|---------|
-| **Start services** | `make up` |
-| **Stop services** | `make down` |
-| **View logs** | `make logs` |
-| **Service status** | `make ps` |
-| **Python linting** | `make lint` (Ruff) |
-| **SQL linting** | `make sql-lint` (SQLFluff) |
-| **Run all tests** | `make test` (pytest) |
-| **Run single test** | `pytest api/tests/unit/test_saude.py -v` |
-| **dbt deps** | `make dbt-deps` |
-| **dbt compile** | `make dbt-compile` |
-| **dbt build** | `make dbt-build` |
-| **dbt test** | `make dbt-test` |
-| **dbt seed** | `make dbt-seed` |
-| **Seed demo data** | `make demo-data` (core + regulatorio + idss) |
-| **Seed rede data** | `make demo-data-rede` |
-| **Seed CNES data** | `make demo-data-cnes` |
-| **Seed TISS data** | `make demo-data-tiss` |
-| **Seed SIB data** | `make demo-data-sib` |
-| **Seed CADOP data** | `make demo-data-cadop` |
-| **Seed all datasets** | `make seed-dados-completos` |
-| **Bootstrap regulatorio layouts** | `make bootstrap-regulatorio-layouts` |
-| **Bootstrap rede layouts** | `make bootstrap-rede-layouts` |
-| **Bootstrap CNES layouts** | `make bootstrap-cnes-layouts` |
-| **Bootstrap TISS layouts** | `make bootstrap-tiss-layouts` |
-| **Bootstrap SIB layouts** | `make bootstrap-sib-layouts` |
-| **Bootstrap CADOP layouts** | `make bootstrap-cadop-layouts` |
-| **Seed ref seeds** | `make dbt-seed-ref` (ref_tuss, ref_rol_procedimento) |
-| **Close billing cycle** | `make billing-close REF=YYYYMM` |
-| **Refresh consumo layer** | `make consumo-refresh` (runs tag:consumo models + tests) |
-| **Smoke test (piloto)** | `make smoke` |
-| **Smoke test (rede)** | `make smoke-rede` |
-| **Smoke test (CNES)** | `make smoke-cnes` |
-| **Smoke test (TISS)** | `make smoke-tiss` |
-| **Smoke test (Prata)** | `make smoke-prata` |
-| **Smoke test (SIB)** | `make smoke-sib` |
-| **Smoke test (CADOP)** | `make smoke-cadop` |
-| **Smoke test (consumo)** | `make smoke-consumo` |
-| **Smoke test (premium)** | `make smoke-premium` |
-| **Smoke test (ingestão real)** | `make smoke-ingestao-real` |
-| **Smoke test (restore)** | `make smoke-restore` (Fase 7 — validate restore+PITR) |
-| **Smoke test (janela carga SIB)** | `make smoke-janela-carga-sib` (Fase 7 — validate dynamic load window) |
-| **Hardgate sem ano hardcoded** | `make hardgate-sem-ano-hardcoded-janelacarga` (asserts no hardcoded year in load window logic) |
-| **Load test** | `make load-test` (Locust) |
-| **Dev API server** | `make api-dev` (auto-reload on :8000) |
-| **Dev layout service** | `make layout-dev` (auto-reload on :8001) |
-| **Full CI simulation** | `make ci-local` |
-| **Airflow connections** | `make airflow-setup` |
-| **Validate all DAGs parse** | `make dag-parse` (lists `DagBag.import_errors`) |
-| **Test single DAG** | `make dag-test DAG=dag_name` |
-| **Test all DAGs** | `make dag-test-all` |
-| **Run real SIB ingestion** | `make dag-run-real-sib UFS=AC COMPETENCIA=YYYYMM` |
-| **Run real CADOP ingestion** | `make dag-run-real-cadop COMPETENCIA=YYYYMM` |
-| **ELT discover** | `make elt-discover` (catalog ANS datasets) |
-| **ELT extract** | `make elt-extract` (download raw ANS files) |
-| **ELT load** | `make elt-load` (load to bruto_ans) |
-| **ELT full pipeline** | `make elt-all` |
-| **ELT status** | `make elt-status` |
-| **ELT transform all** | `make elt-transform-all` |
-| **ELT validate all** | `make elt-validate-all` |
-
----
-
-## Key Files and Patterns
-
-### Configuration & Environment
-
-- `.env`: Service credentials (PostgreSQL, MongoDB, Redis, API tokens). Checked into git but contains default values safe for local dev.
-- `pyproject.toml`: Python dependencies (pinned), pytest config, ruff config.
-- `.pre-commit-config.yaml`: Git hooks (Ruff, SQLFluff, YAML/JSON checks).
-- `infra/docker-compose.yml`: PostgreSQL 16, MongoDB 7, Redis 7, Airflow, Nginx.
-
-### API Service (`api/`)
-
-- `app/main.py`: FastAPI entrypoint. Health check, CORS, auth middleware.
-- `app/core/`: Database pools, Redis client, config loading.
-- `app/middleware/`: `autenticacao.py` (X-API-Key validation + Redis cache), `rate_limit.py` (SlowAPI), `hardening.py` (security headers), `log_requisicao.py` (request timing).
-- `app/routers/`: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro`, `rede`, `cnes`, `tiss`, `meta`, `admin_billing`, `admin_layout`, `bronze`, `prata`, `premium` (Fase 5 — `/v1/premium/*` endpoints reading `api_ans.api_premium_*`).
-- `app/schemas/`: Pydantic v2 request/response models per endpoint group.
-- `app/services/`: Async query builders (never direct dbt model access, only `api_ans`). Key services: `operadora`, `mercado`, `ranking`, `regulatorio`, `regulatorio_v2`, `financeiro_v2`, `rede`, `cnes`, `tiss`, `bronze`, `prata`, `premium`, `score_v3`, `billing`, `layout_admin`, `meta`, `uso`.
-- `app/dependencia.py`: Dependency injection (`validar_chave`, `verificar_plano`, `verificar_camada`). **Phase 3:** `verificar_camada(camada: str)` checks `plataforma.plano.camadas_permitidas[]` — blocks access if plan does not include the requested layer. Camadas válidas: `bronze`, `prata`, `premium`.
-- `tests/unit/`: Health checks, auth, schema validation.
-- `tests/integration/`: End-to-end endpoint tests against live PostgreSQL.
-
-### Ingestao (`ingestao/`)
-
-- `dags/`: Individual `dag_ingest_{dataset}.py` per dataset (SIB, CADOP, IGR, NIP, RN623, TISS, CNES, DIOPS, FIP, Glosa, VDA, Rede Assistencial, Regime Especial, Portabilidade, Prudencial, Taxa Resolutividade). Also: `dag_mestre_mensal.py` (main monthly orchestrator), `dag_anual_idss.py`, `dag_criar_particao_mensal.py`, `dag_dbt_freshness.py`, `dag_dbt_consumo_refresh.py`, `dag_registrar_versao.py`, `dag_elt_ans_catalogo.py`.
-- `app/`: Operators, hooks, utilities (file downloads, layout validation, load jobs).
-- `tests/`: DAG parsing, mock operator tests.
-
-### dbt (`healthintel_dbt/`)
-
-- `models/staging/`: Views. Casting, normalizing, one-to-one source mapping.
-- `models/intermediate/`: Ephemeral (not materialized). Joins, aggregations, preparation.
-- `models/marts/dimensao/`: Dimension tables (dim_operadora_atual, dim_competencia, dim_localidade).
-- `models/marts/fato/`: Fact tables (`fat_*`) and Gold BI marts (`mart_*`). Incremental merge with `unique_key` or full refresh. Gold marts (`mart_operadora_360`, `mart_mercado_municipio`, `mart_score_operadora`, `mart_rede_assistencial`, `mart_regulatorio_operadora`, `mart_tiss_procedimento`) live here, schema `nucleo_ans`.
-- `models/marts/derivado/`: Reserved directory (currently empty; derived models live in `fato/`).
-- `models/api/`: Denormalized API tables. All have `post-hook: criar_indices` macro.
-- `models/api/bronze/`: Thin views over `bruto_ans` (11 datasets). Redis cache DISABLED — data mutable until lote closes.
-- `models/api/prata/`: Tables from `stg_ans` + `int_ans` (17 models including CNES and TISS). Redis TTL 300s.
-- `models/consumo/`: Client delivery tables in `consumo_ans` schema (8 models, `tag: consumo`). Materialized as `table`. No API layer — direct BI access. Refreshed by `dag_dbt_consumo_refresh.py`.
-- `models/quality/`: Fase 5 — Document quality validators (`dq_*`). Schema `quality_ans`, `tag: quality`. Includes `dq_cadop_documento`, `dq_cnes_documento`, `dq_operadora_documento`, `dq_prestador_documento`, `audit_operadora_razao_social_divergente_cadop`.
-- `models/mdm/`: Fase 5 — Public MDM under `mdm_ans` schema, `tag: mdm`. Subdirs `operadora/`, `prestador/`, `estabelecimento/`. Each has `mdm_<entity>_master` (golden record, hash-deterministic key, status `ATIVO|QUARANTENA|REPROVADO|DESATIVADO`), `mdm_<entity>_exception` and `xref_<entity>_origem`.
-- `tests/`: dbt generic tests, singular SQL assertions (assert_*.sql).
-- `macros/`: `normalizar_registro_ans`, `competencia_para_data`, `competencia_para_trimestre`, `trimestre_para_competencia`, `calcular_hhi`, `normalizar_0_100`, `versao_metodologia_idss`, `classificar_rating_regulatorio`, `taxa_aprovacao_dataset`, `criar_indices`, `criar_indice_api`, `generate_schema_name`.
-- `seeds/ref_*`: Dimension data (ref_uf, ref_municipio_ibge, ref_competencia, ref_modalidade).
-- `_sources.yml`: Source declarations with freshness checks (warn after N days).
-- `_*.yml`: Documentation (staging, intermediate, dimension, fato, api, exposures).
-
-
-### Shared Utilities (`shared/`)
-
-- Database utilities, logging (structlog), common schemas.
-
-### Scripts (`scripts/`)
-
-- `bootstrap_layout_registry_*.py`: Initialize MongoDB layout collections.
-- `seed_demo_*.py`: Load demo data.
-- `smoke_*.py`: End-to-end validation scripts.
-- `run_load_test.sh`: Locust perf test.
-- `admin/provisionar_cliente_postgres.py`: Provision new client — creates PostgreSQL login role, grants `healthintel_cliente_reader`, configures `consumo_ans` access.
-- `elt_*.py`: ANS catalog discovery, raw file extraction, and load scripts (used by `make elt-*`).
+| Tarefa | Comando |
+|--------|---------|
+| Serviços | `make up / down / logs / ps` |
+| Lint / CI | `make lint` · `make sql-lint` · `make ci-local` |
+| Testes | `make test` · `pytest <path> -v` · `make dbt-test` |
+| dbt | `make dbt-build` · `make dbt-compile` · `make dbt-seed` · `make dbt-seed-ref` |
+| Seeds / Bootstrap | `make demo-data` · `make seed-dados-completos` · `make bootstrap-*-layouts` |
+| Smoke tests | `make smoke[-rede|-cnes|-tiss|-prata|-sib|-cadop|-consumo|-premium|-ingestao-real]` |
+| Ingestão real | `make dag-run-real-sib UFS=AC COMPETENCIA=YYYYMM` · `make dag-run-real-cadop COMPETENCIA=YYYYMM` |
+| Billing / Consumo | `make billing-close REF=YYYYMM` · `make consumo-refresh` |
+| Fase 7 | `make smoke-janela-carga-sib` · `make smoke-restore` · `make hardgate-sem-ano-hardcoded-janelacarga` |
+| ELT | `make elt-discover / elt-extract / elt-load / elt-all / elt-status` |
+| Dev | `make api-dev` (:8000) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
 
 ---
 
 ## Workflow Rules
 
-### Adding an Endpoint
+**Endpoint:** router `api/app/routers/` → schema `app/schemas/` (Pydantic v2) → service `app/services/` (só `api_ans`) → deps `validar_chave` + `verificar_plano` [+ `verificar_camada('bronze'|'prata')`] → envelope `{dados, meta}` → teste integration.
 
-1. Create router in `api/app/routers/{topic}.py`.
-2. Define schema in `api/app/schemas/{topic}.py` (Pydantic v2).
-3. Query only `api_ans` models via `app/services/{topic}.py`.
-4. Use dependency injection: `validar_chave`, `verificar_plano`. For Bronze/Prata endpoints also `verificar_camada('bronze'|'prata')`.
-5. Return envelope: `{dados: [...], meta: {competencia_referencia, versao_dataset, total, pagina}}`. Bronze envelope adds `aviso_qualidade`. Prata envelope adds `qualidade: {taxa_aprovacao, registros_quarentena}`.
-6. Add test in `api/tests/integration/test_{topic}.py`.
+**dbt model:** staging view (`stg_`) → intermediate ephemeral (`int_`) → mart table (`nucleo_ans`) → api table (`api_ans`, `post_hook: criar_indices`) → consumo table (`consumo_ans`, tag `consumo`) → doc em `_{tipo}.yml` → testes `assert_*.sql`.
 
-### Adding a dbt Model
+**DAG:** `ingestao/dags/dag_{dataset}.py` → validar layout MongoDB → upsert `bruto_ans` → registrar `plataforma.job` → freshness em `_sources.yml`.
 
-1. **Staging (view)**: `models/staging/stg_{source}.sql` — normalize, cast, one-to-one.
-2. **Intermediate (ephemeral)**: `models/intermediate/int_{concept}.sql` — join, derive, prepare.
-3. **Fact/Dimension (table)**: `models/marts/{dimensao|fato}/{model}.sql`.
-   - Set `materialized: table` and `schema: nucleo_ans` (or api_ans for API layer, consumo_ans for client delivery).
-   - For incremental: `incremental_merge`, `unique_key: [...]`, reprocess last N competencies.
-   - For API: add `post_hook: criar_indices(...)`.
-4. **Consumo (table)**: `models/consumo/consumo_{concept}.sql`. Schema `consumo_ans`, tag `consumo`. Readable column names — no internal prefixes.
-5. Document in matching `_{tipo}.yml`.
-6. Add tests: `tests/assert_*.sql` or `generic_tests` in YAML.
-7. Tag with `tag: staging`, `tag: intermediario`, `tag: fato`, `tag: api`, or `tag: consumo`.
-
-### Adding a DAG
-
-1. Create `ingestao/dags/dag_{dataset}.py` (Airflow 2.9+, astronomer-cosmos).
-2. Use sub-task pattern under dag_mestre_mensal or dag_trimestral.
-3. Implement load operator: validate layout, insert/upsert to `bruto_ans`.
-4. Record job metadata in `plataforma.job` (status, timestamps, dataset name).
-5. Add freshness entry in `healthintel_dbt/models/staging/_sources.yml`.
-
-### Testing
-
-Test paths (from `pyproject.toml`): `api/tests/`, `ingestao/tests/`, `testes/`.
-
-- **Unit**: `pytest api/tests/unit/` (API) or `pytest testes/unit/` (layout service).
-- **Integration**: `pytest api/tests/integration/` — endpoints vs. live DB.
-- **Regression**: `pytest testes/regressao/` — cross-phase endpoint regression suite.
-- **Ingestao**: `pytest ingestao/tests/` — DAG parsing, mock operator tests.
-- **dbt**: `dbt test` — generic tests + singular SQL assertions.
-- **Smoke**: `make smoke` (piloto) or `make smoke-rede` — end-to-end validation.
-- **Load**: `make load-test` — Locust perf baseline (`testes/load/locustfile.py`).
+**Testes:** `pytest api/tests/unit/` · `pytest api/tests/integration/` · `pytest testes/regressao/` · `make smoke` · `make load-test`
 
 ---
 
 ## Service Dependencies
 
-| Service | Port | Depends | Notes |
-|---------|------|---------|-------|
-| **API** | 8000 | PostgreSQL, Redis, MongoDB (layout lookup) | Reads only `api_ans` |
-| **Layout Service** | 8001 | MongoDB | Token-gated, no auth header |
-| **Airflow** | 8088 | PostgreSQL, MongoDB (layout validation) | DAGs load from `ingestao/dags/` |
-| **PostgreSQL** | 5432 | — | Schemas: bruto_ans, stg_ans, int_ans, quality_ans, mdm_ans, nucleo_ans, api_ans, consumo_ans, plataforma, alembic. Planejados Fase 5: bruto_cliente, stg_cliente, mdm_privado, consumo_premium_ans |
-| **MongoDB** | 27017 (27018 external) | — | DB: healthintel_layout, Collections: layout, layout_versao, etc. |
-| **Redis** | 6379 | — | Cache for API key validation (TTL 60s) |
+| Serviço | Porta | Notas |
+|---------|-------|-------|
+| API | 8000 | Lê só `api_ans`; Redis TTL 60s |
+| Layout Service | 8001 | MongoDB, token-gated |
+| Airflow | 8088 | DAGs em `ingestao/dags/` |
+| PostgreSQL | 5432 | Todos os schemas acima |
+| MongoDB | 27017 | `healthintel_layout` |
+| Redis | 6379 | Auth cache + prata TTL 300s |
 
 ---
 
 ## Important Conventions
 
-- **Surrogate keys**: All facts use `operadora_id` (FK to `snap_operadora.id`), not raw `registro_ans`. `snap_operadora` is SCD Type 2 dimension.
-- **Competência format**: YYYYMM (e.g., 202504 = May 2025). Use macro `competencia_para_data()` for date conversion.
-- **Registro ANS**: Always normalized to exactly 6 digits (with leading zeros). Use macro `normalizar_registro_ans()`.
-- **API response**: Always wrap in envelope. Do NOT return raw JSON.
-- **Incremental models**: Reprocess last 3–4 competencies per run (ANS often republishes corrections).
-- **Partition strategy**: RANGE by competência or trimestre; no LIST or HASH. SIB tables (`bruto_ans.sib_beneficiario_operadora`, `bruto_ans.sib_beneficiario_municipio`) migrated in Sprint 35 to **annual** partitions (`_YYYY` suffix, `FOR VALUES FROM (YYYY01) TO ((YYYY+1)01)`). All other tables remain monthly. Never create monthly SIB partitions.
-- **Load window**: Fase 7 enforces dynamic load window via `plataforma.calcular_janela_carga_anual(ANS_ANOS_CARGA_HOT)`. Default `ANS_ANOS_CARGA_HOT=2` (current year + prior year). Helper: `ingestao/app/janela_carga.py` — `obter_janela(dataset_codigo)` returns `JanelaCarga(competencia_minima, competencia_maxima_exclusiva, ano_inicial, ano_final, ano_preparado)`. Competências outside the window are logged to `plataforma.ingestao_janela_decisao` with `acao='ignorado_fora_janela'`, never silently dropped. Hardgate `tests/hardgates/assert_sem_ano_hardcoded_janela.sh` enforces no hardcoded year in production load logic.
-- **Freshness**: Entry in `_sources.yml` required for every bronze table.
-- **venv isolation**: Each service (`api/`, `healthintel_dbt/`, `ingestao/`) has isolated `.venv` if running outside containers.
-- **Layer access control**: `plataforma.plano` has `camadas_permitidas TEXT[]`. Use `verificar_camada('bronze'|'prata')` dependency for Bronze/Prata endpoints. Gold endpoints use existing `verificar_plano`.
-- **Rate limit multipliers**: `/v1/bronze` routes consume 3× bucket; `/v1/prata` routes consume 2×; `/v1` (gold) consumes 1×.
-- **Bronze cache**: Redis cache DISABLED for Bronze API routes (data is mutable until lote closes).
-- **Prata cache**: Redis TTL 300s (5 min) for Prata API routes.
-- **Quarantine tables**: Each dataset has a `bruto_ans.*_quarentena` table. Records failing staging validation go there, never into served data. Rejection reason, failed rule and lote preserved.
-- **Score v3**: `versao_metodologia = 'v3.0'`. Five components: core(0.25) + regulatorio(0.25) + financeiro(0.20) + rede(0.20) + estrutural(0.10). Fallback to score_v2 with `componente_estimado = true` when a component is missing. Service: `api/app/services/score_v3.py`.
+- **Surrogate keys**: `operadora_id` (FK `snap_operadora.id`, SCD Type 2). Nunca `registro_ans` cru em fatos.
+- **Competência**: YYYYMM. Macro `competencia_para_data()`. Registro ANS: 6 dígitos com zeros — `normalizar_registro_ans()`.
+- **API**: sempre envelope. Bronze: sem Redis cache (dado mutável até lote fechar). Prata: TTL 300s. Rate limit: bronze 3×, prata 2×, gold 1×.
+- **Incremental**: reprocessar últimas 3–4 competências. Freshness entry obrigatória em `_sources.yml`.
+- **Partições SIB**: anuais `_YYYY` (`FOR VALUES FROM (YYYY01) TO ((YYYY+1)01)`). Nunca criar partição mensal SIB.
+- **Janela carga (Fase 7)**: `calcular_janela_carga_anual(ANS_ANOS_CARGA_HOT=2)`. Fora da janela → `ingestao_janela_decisao` com `acao='ignorado_fora_janela'`. Nunca descartar silenciosamente. Nenhum ano hardcoded em lógica produtiva.
+- **Score v3**: `versao_metodologia='v3.0'`. Componentes: core(0.25) + regulatorio(0.25) + financeiro(0.20) + rede(0.20) + estrutural(0.10).
+- **Quarentena**: `bruto_ans.*_quarentena` para registros inválidos — nunca entram em dados servidos.
+- **Layer access**: `plataforma.plano.camadas_permitidas[]`. Dep `verificar_camada` para bronze/prata; `verificar_plano` para gold.
+- **FastAPI premium**: lê somente `api_ans.api_premium_*`. Proibido: Serpro, BrasilAPI, enrich-cnpj, requests externos.
 
 ---
 
-## Sprint Structure
+## Sprint Status
 
-**Fase 1 (Sprints 01–12): CONCLUÍDA** — baseline v1.0.0 taggeada.
-**Fase 2 (Sprints 13–14): CONCLUÍDA** — CNES + TISS implementados.
-**Fase 3 (Sprints 15–20): CONCLUÍDA** — baseline v2.0.0 taggeada.
-**Fase 4 (Sprints 21–25): CONCLUÍDA** — v3.0.0 taggeada. Prata completa, ingestão real SIB/CADOP, Gold marts BI, consumo_ans, qualidade v3.
-**Fase 5 (Sprints 26–33): CONCLUÍDA (Sprint 33 pendente tag)** — Qualidade documental, MDM público/privado, premium. Tag final prevista `v3.8.0-gov`.
-**Fase 6 (Sprints 14–21 do tracking comercial): BACKLOG** — Entrega ao cliente / operação comercial. Aditiva e operacional. Tag final prevista `v4.0.0`.
-**Fase 7 (Sprints 34–40): EM ANDAMENTO** — Storage dinâmico, particionamento anual, retenção e backup. Aditiva. Tag final prevista `v4.2.0-dataops`.
+| Fase | Status | Tag |
+|------|--------|-----|
+| Fases 1–4 (Sprints 01–25) | CONCLUÍDA | `v3.0.0` |
+| Fase 5 (Sprints 26–32 concluídos, Sprint 33 backlog) | CONCLUÍDA* | `v3.8.0-gov` pendente |
+| Fase 6 (operação comercial, backlog) | BACKLOG | `v4.0.0` |
+| Fase 7 (Sprints 34–36 implementados, 37–40 backlog) | EM ANDAMENTO | `v4.2.0-dataops` |
+| Fase 9 (Sprints 1–7: MVP comercial Core ANS) | EM ANDAMENTO | `v5.0.0-core-mvp` |
 
-### Fase 2 (entregue)
-- **Sprint 13**: CNES — bronze, `stg_cnes_estabelecimento`, `fat_cnes_estabelecimento_municipio`, `fat_cnes_rede_gap_municipio`, `api_cnes_municipio`, `api_cnes_rede_gap`. Router/service: `cnes`.
-- **Sprint 14**: TISS — bronze, `stg_tiss_procedimento`, `fat_tiss_procedimento_operadora`, `fat_sinistralidade_procedimento`, `api_tiss_operadora_trimestral`, `api_sinistralidade_procedimento`. Router/service: `tiss`.
+**Regras ativas (todas aditivas — não alterar artefatos de fase anterior):**
+- **Fase 5**: `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline v3.0.0 são imutáveis.
+- **Fase 7**: nenhum modelo dbt, API, DAG aprovada, coluna `competencia` ou `bruto_ans.sib_*` pode ser alterado. Novos artefatos entram via bootstrap SQL numerado ou helper Python novo.
+- **Fase 6**: não altera modelos, tabelas ou contratos de endpoints existentes.
+- **Fase 9**: produto HealthIntel Core ANS. Tag `core_ans` no dbt. Novos endpoints adicionam; não alteram contratos existentes. Comandos: `make dbt-build-core`, `make smoke-core`, `make monitor-disco`.
 
-### Fase 3 (entregue)
-- **Sprint 15**: Governança — hash bronze, quarentena semântica, quality gates, freshness SLO, macro `taxa_aprovacao_dataset`.
-- **Sprint 16**: Bronze API — 11 modelos em `api/bronze/`, router `bronze`, plano `enterprise_tecnico`, `verificar_camada('bronze')`.
-- **Sprint 17**: Prata API — modelos em `api/prata/`, router `prata`, plano `analitico`, `verificar_camada('prata')`, envelope `qualidade.taxa_aprovacao`.
-- **Sprint 19**: Score v3 — `fat_score_v3_operadora_mensal`, `api_score_v3_operadora_mensal`, `api_ranking_composto_mensal`, `score_v3.py` service.
-- **Sprint 20**: v2.0.0 tag, 5 tiers com `camadas_permitidas`, billing por camada.
+Fase 7 backlog: Sprint 37 (TUSS) · Sprint 38 (histórico sob demanda) · Sprint 39 (pgBackRest) · Sprint 40 (restore PITR).
+Fase 9 backlog: Sprint 5 (antiextração avançada) · Sprint 6 completo (backup R2) · Sprint 7 (landing page, Postman collection).
 
-### Fase 4 (entregue — v3.0.0)
-- **Sprint 21**: Prata completa — CNES/TISS na Prata (17 modelos total), cobertura de testes de integração, `make smoke-prata`.
-- **Sprint 22**: Ingestão real — SIB e CADOP com DAGs individuais, `dag_ingest_sib.py` / `dag_ingest_cadop.py`, `make smoke-sib` / `make smoke-cadop`.
-- **Sprint 23**: Gold marts BI — `mart_operadora_360`, `mart_mercado_municipio`, `mart_score_operadora`, `mart_rede_assistencial`, `mart_regulatorio_operadora` em `nucleo_ans`.
-- **Sprint 24**: consumo_ans — schema `consumo_ans`, 8 modelos desnormalizados, role `healthintel_cliente_reader`, `dag_dbt_consumo_refresh.py`, `make consumo-refresh` / `make smoke-consumo`.
-- **Sprint 25**: Qualidade v3 / catálogo — freshness SLO dashboard, catálogo atualizado.
-
-### Fase 5 (em andamento)
-- **Sprint 26 (CONCLUÍDA)**: Baseline `v3.0.0` congelado. Documentos: `baseline_hardgate_fase4.md`, `matriz_lacunas_produto.md`, `padrao_nomes_fase5.md`, `governanca_minima_fase5.md`. Sem código.
-- **Sprint 27 (CONCLUÍDA)**: Qualidade documental — modelos `dq_*` em `quality_ans`, hardgates de validação documental (CNPJ-DV, etc.) com sinal `warn`.
-- **Sprint 28 (CONCLUÍDA)**: Validação determinística CNPJ offline.
-- **Sprint 29 (CONCLUÍDA)**: MDM público — `mdm_operadora_master`, `mdm_estabelecimento_master`, `mdm_prestador_master` em `mdm_ans` com `xref_*_origem` e `*_exception`. Tag de release move-se para o final da Fase 5.
-- **Sprint 30 (CONCLUÍDA)**: MDM contrato/subfatura — entrada privada por tenant (`bruto_cliente`, `stg_cliente`, `mdm_privado`). Bootstrap `028_fase5_mdm_privado_rls.sql` com RLS por `app.tenant_id`, hashes determinísticos `md5(text)`, 8 modelos `mdm_privado` + 2 staging cliente, 10 testes singulares + 23 testes YAML. Hard gates V1–V10 verdes.
-- **Sprint 31 (CONCLUÍDA)**: Produtos premium em SQL direto — `consumo_premium_ans` + `api_ans.api_premium_*`.
-- **Sprint 32 (CONCLUÍDA)**: Endpoints `/v1/premium/*`, smoke e hardgate da Fase 5. 9 rotas premium, schemas completos, tenant obrigatório em rotas privadas, smoke 14 cenários, testes de integração 12 cenários, regressão Fase 5.
-- **Sprint 33 (backlog)**: Governança documental formal final, release `v3.8.0-gov`.
-
-### Fase 7 (em andamento — v4.2.0-dataops)
-- **Sprint 34 (CONCLUÍDA)**: Política dinâmica de carga — `plataforma.politica_dataset` criada via `029_fase7_politica_dataset.sql`; 5 classes de dataset classificadas; doc `docs/arquitetura/politica_carga_dataset.md`.
-- **Sprint 35 (implementada localmente)**: Particionamento anual SIB — 3 funções novas (`calcular_janela_carga_anual`, `criar_particao_anual_competencia`, `preparar_particoes_janela_atual`) via `030_fase7_particionamento_anual.sql`; `bruto_ans.sib_beneficiario_operadora` e `sib_beneficiario_municipio` migrados para partições anuais `_YYYY`; `plataforma.retencao_particao_log` para auditoria de default partition; doc `docs/arquitetura/particionamento_anual_postgres.md`.
-- **Sprint 36 (implementada localmente)**: Janela dinâmica de ingestão — `ingestao/app/janela_carga.py` com `JanelaCarga` dataclass; `ANS_ANOS_CARGA_HOT=2` via `.env`/Airflow Variable; `plataforma.ingestao_janela_decisao` via `031_fase7_janela_carga.sql`; módulos SIB filtram por janela; hardgate `tests/hardgates/assert_sem_ano_hardcoded_janela.sh`; smoke `make smoke-janela-carga-sib`.
-- **Sprint 37 (backlog)**: Última versão vigente TUSS/prestadores.
-- **Sprint 38 (backlog)**: Histórico sob demanda por cliente (`dag_historico_sob_demanda.py`).
-- **Sprint 39 (backlog)**: Backup pgBackRest — full diário, diferencial 4×/dia, WAL archive, `plataforma.backup_execucao`.
-- **Sprint 40 (backlog)**: Restore + PITR + `smoke-restore` + release `v4.2.0-dataops`.
-
-**Regra-mãe da Fase 7**: aditiva e não destrutiva. Nenhum modelo dbt, contrato de API, DAG aprovada, coluna `competencia` ou tabela-mãe `bruto_ans.sib_*` pode ser alterada. Toda lógica nova entra em artefato novo (bootstrap SQL numerado, helper Python novo, documento novo). Nenhum ano hardcoded em lógica produtiva de janela. Histórico completo só pode ser carregado pela DAG da Sprint 38.
-
-**Regra-mãe da Fase 5**: aditiva. Modelos `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline `v3.0.0` não podem ser reescritos, renomeados, nem ter semântica alterada. FastAPI premium **nunca** lê `consumo_premium_ans`, `mdm_ans`, `mdm_privado`, `quality_ans`, `bruto_cliente`, `stg_cliente` ou `enrichment` diretamente — só `api_ans.api_premium_*`. Proibido: Serpro, Receita online, BrasilAPI, enrichment, enrich-cnpj, requests externos.
-
-### Fase 6 (backlog — operação comercial)
-- Sprints 14–21 (numeração do tracking comercial). Cobre infraestrutura/runtime, API de produção, orquestração e freshness, observabilidade SLA/SLO, segurança LGPD/tenant/billing, onboarding e go-live (`v4.0.0`).
-- **Regra-mãe da Fase 6**: aditiva e operacional. Não altera lógica de modelos, não renomeia tabelas, não muda contratos de endpoints existentes.
-
-Sprint docs: `docs/sprints/fase{2,3,4,5,6}/`. HIS-*.* stories por sprint. Runbooks operacionais: `docs/runbooks/` (ingestão real, aprovação de layout, reprocessamento, incidente de pipeline, novo cliente enterprise, versionamento de layout).
+Docs: `docs/sprints/fase{2,3,4,5,6,7,9}/` · Runbooks: `docs/runbooks/` · Comercial: `docs/comercial/`
 
 ---
 
-## Debugging & Troubleshooting
+## Debugging
 
-- **dbt incremental merge fails**: Check `unique_key` uniqueness in last N competencies. Run `dbt build --full-refresh` to reset.
-- **API latency spike**: Check Redis connection pool (`core/redis_client.py`), PostgreSQL slow query log, query plan via `EXPLAIN ANALYZE`.
-- **Layout validation fails**: Verify CSV encoding, field count, and layout version in MongoDB (`mongo_layout_service` logs).
-- **DAG timeout**: Check Airflow logs, worker resources, upstream dataset freshness.
-- **Test failures in CI**: Run `make ci-local` locally first; check dbt compile errors, SQLFluff violations, pytest assertions.
+- **dbt incremental**: verificar unicidade `unique_key`; `dbt build --full-refresh` para reset.
+- **API latency**: checar Redis pool (`core/redis_client.py`), slow query log, `EXPLAIN ANALYZE`.
+- **Layout validation**: encoding CSV, field count, versão no MongoDB (`mongo_layout_service` logs).
+- **CI failures**: `make ci-local`; checar dbt compile, SQLFluff, pytest assertions.
 
----
-
-## Useful SQL Queries
+## Useful SQL
 
 ```sql
--- Check dataset freshness
-SELECT dataset, MAX(_carregado_em) as ultima_carga FROM plataforma.job WHERE status = 'sucesso' GROUP BY dataset ORDER BY ultima_carga DESC;
-
--- List incompatible operadoras (regime especial)
-SELECT registro_ans, COUNT(*) FROM fat_regime_especial_historico WHERE ativo = true GROUP BY registro_ans;
-
--- API query distribution
-SELECT endpoint, COUNT(*) FROM plataforma.log_uso WHERE DATE(_criado_em) = CURRENT_DATE GROUP BY endpoint ORDER BY COUNT DESC;
+-- Freshness datasets
+SELECT dataset, MAX(_carregado_em) FROM plataforma.job WHERE status='sucesso' GROUP BY dataset ORDER BY 2 DESC;
+-- Distribuição API hoje
+SELECT endpoint, COUNT(*) FROM plataforma.log_uso WHERE DATE(_criado_em)=CURRENT_DATE GROUP BY endpoint ORDER BY 2 DESC;
 ```

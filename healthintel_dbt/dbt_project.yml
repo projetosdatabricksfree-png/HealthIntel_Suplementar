@@ -61,7 +61,7 @@ models:
     consumo:
       +schema: consumo_ans
       +materialized: table
-      +tags: ["consumo"]
+      +tags: ["consumo", "core_ans"]
 
 vars:
   score_pesos:

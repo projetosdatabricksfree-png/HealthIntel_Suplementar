@@ -7,7 +7,11 @@ from api.app.core.config import get_settings
 from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
 from api.app.schemas.meta import MetaEnvelope
-from api.app.schemas.operadora import OperadoraResumoResponse, OperadoraScoreResponse
+from api.app.schemas.operadora import (
+    BeneficiariosOperadoraResponse,
+    OperadoraResumoResponse,
+    OperadoraScoreResponse,
+)
 
 settings = get_settings()
 
@@ -263,6 +267,89 @@ async def detalhar_score_operadora(
             total=1,
             pagina=1,
             por_pagina=1,
+        ).model_dump(),
+    }
+    payload["meta"]["cache"] = "miss"
+    await _salvar_cache(cache_key, payload)
+    return payload
+
+
+async def listar_beneficiarios_operadora(
+    registro_ans: str,
+    *,
+    pagina: int = 1,
+    por_pagina: int = 24,
+) -> dict:
+    pagina = max(pagina, 1)
+    por_pagina = min(max(por_pagina, 1), 36)
+    offset = (pagina - 1) * por_pagina
+    cache_key = f"beneficiarios:{registro_ans}:{pagina}:{por_pagina}"
+    cached = await _obter_cache(cache_key)
+    if cached:
+        cached.setdefault("meta", {})["cache"] = "hit"
+        return cached
+
+    params: dict[str, object] = {
+        "registro_ans": registro_ans.zfill(6),
+        "limit": por_pagina,
+        "offset": offset,
+    }
+
+    async with SessionLocal() as session:
+        total_result = await session.execute(
+            text(
+                "select count(*) from consumo_ans.consumo_beneficiarios_operadora_mes "
+                "where registro_ans = :registro_ans"
+            ),
+            {"registro_ans": params["registro_ans"]},
+        )
+        total = int(total_result.scalar_one())
+        if total == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "codigo_erro": "BENEFICIARIOS_NAO_ENCONTRADOS",
+                    "mensagem": "Nao ha serie de beneficiarios para o registro ANS informado.",
+                },
+            )
+
+        result = await session.execute(
+            text(
+                """
+                select
+                    competencia,
+                    registro_ans,
+                    razao_social,
+                    nome_fantasia,
+                    modalidade,
+                    uf,
+                    qt_beneficiarios,
+                    qt_beneficiario_medico,
+                    qt_beneficiario_odonto,
+                    taxa_crescimento_12m,
+                    volatilidade_24m
+                from consumo_ans.consumo_beneficiarios_operadora_mes
+                where registro_ans = :registro_ans
+                order by competencia desc
+                limit :limit offset :offset
+                """
+            ),
+            params,
+        )
+        rows = result.mappings().all()
+        meta_dataset = await _resolver_meta_dataset(
+            session, "beneficiario_operadora", rows[0]["competencia"] if rows else "atual"
+        )
+
+    dados = [BeneficiariosOperadoraResponse(**row).model_dump() for row in rows]
+    payload = {
+        "dados": dados,
+        "meta": MetaEnvelope(
+            competencia_referencia=meta_dataset["competencia_referencia"],
+            versao_dataset=meta_dataset["versao_dataset"],
+            total=total,
+            pagina=pagina,
+            por_pagina=por_pagina,
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"

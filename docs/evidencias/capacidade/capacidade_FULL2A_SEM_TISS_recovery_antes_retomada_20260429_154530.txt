@@ -1,0 +1,62 @@
+=== SNAPSHOT SISTEMA: recovery_antes_retomada (20260429_154530) ===
+Nível: FULL2A_SEM_TISS
+
+--- DISCO (df -h) ---
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           1.6G  3.6M  1.6G   1% /run
+/dev/nvme0n1p2  468G  263G  181G  60% /
+tmpfs           7.7G   47M  7.7G   1% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+efivarfs        438K  363K   71K  84% /sys/firmware/efi/efivars
+tmpfs           7.7G     0  7.7G   0% /run/qemu
+/dev/nvme0n1p1  1.1G  6.2M  1.1G   1% /boot/efi
+tmpfs           1.6G  132K  1.6G   1% /run/user/1000
+
+--- INODES (df -i) ---
+Filesystem       Inodes  IUsed    IFree IUse% Mounted on
+tmpfs           2006585   1608  2004977    1% /run
+/dev/nvme0n1p2 31195136 741975 30453161    3% /
+tmpfs           2006585     93  2006492    1% /dev/shm
+tmpfs           2006585      4  2006581    1% /run/lock
+efivarfs              0      0        0     - /sys/firmware/efi/efivars
+tmpfs           2006585      1  2006584    1% /run/qemu
+/dev/nvme0n1p1        0      0        0     - /boot/efi
+tmpfs            401317    174   401143    1% /run/user/1000
+
+--- MEMÓRIA (free -h) ---
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       7.1Gi       2.5Gi       936Mi       6.7Gi       8.2Gi
+Swap:          4.0Gi          0B       4.0Gi
+
+--- CPU (lscpu resumido) ---
+CPU(s):                                  12
+Model name:                              13th Gen Intel(R) Core(TM) i5-1334U
+Thread(s) per core:                      2
+Core(s) per socket:                      10
+NUMA node0 CPU(s):                       0-11
+
+--- DOCKER SYSTEM DF ---
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          8         8         5.718GB   0B (0%)
+Containers      12        10        599.5MB   53.34MB (8%)
+Local Volumes   10        4         127.8GB   264B (0%)
+Build Cache     0         0         0B        0B
+
+--- DOCKER STATS (no-stream) ---
+CONTAINER ID   NAME                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O        PIDS
+65659cb02c05   healthintel_airflow_scheduler   114.14%   459.2MiB / 15.31GiB   2.93%     9.78MB / 2.73MB   58.4MB / 108MB   75
+8d0b91697898   healthintel_api                 0.17%     84.11MiB / 15.31GiB   0.54%     26.2MB / 149kB    11.5MB / 146MB   5
+b754be221986   flamboyant_haslett              0.00%     8.449MiB / 15.31GiB   0.05%     12.2kB / 3.45kB   0B / 0B          13
+08756bb0dc85   flamboyant_buck                 0.00%     22.93MiB / 15.31GiB   0.15%     14.7kB / 3.52kB   15.3MB / 0B      15
+4f567dd38a8a   healthintel_airflow_webserver   0.13%     626.1MiB / 15.31GiB   3.99%     802kB / 236kB     212MB / 4.1kB    8
+65d1bd683c03   healthintel_nginx               0.00%     8.387MiB / 15.31GiB   0.05%     4.49kB / 126B     6.76MB / 4.1kB   2
+b557e0e8ea7a   healthintel_layout_service      0.27%     65.45MiB / 15.31GiB   0.42%     28.7kB / 12.6kB   40.7MB / 184kB   9
+4cca91d3baf6   healthintel_postgres            18.32%    215.1MiB / 15.31GiB   1.37%     3.33MB / 4.03MB   1.38GB / 624MB   11
+dc05c024ff4e   healthintel_redis               0.56%     17.82MiB / 15.31GiB   0.11%     9.36kB / 126B     15.5MB / 0B      6
+1c057599c2d2   healthintel_mongo               0.88%     285.8MiB / 15.31GiB   1.82%     18.4kB / 15.2kB   222MB / 1.06MB   37
+
+--- TAMANHO PROJETO ---
+99G	.
+
+--- TAMANHO LANDING ZONE ---
+91G	data/landing
