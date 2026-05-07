@@ -792,20 +792,23 @@ Criterio de aceite:
 
 - [ ] restore PITR demonstrado na VPS com evidencia de RTO < 8h (pendente execucao).
 
-### 18.2 repo2 (S3-compatible) nao ativo
+### 18.2 backup off-site Cloudflare R2 — ATIVO 2026-05-07
 
-Hoje so existe `repo1` local.
+PostgreSQL roda em Docker (sem acesso WAL direto no host), portanto pgBackRest nao e aplicavel
+no setup atual. Implementado backup logico diario via `pg_dumpall` + `rclone` → R2.
 
-- [ ] escolher provedor S3-compatible (sugestao: Cloudflare R2 ou Backblaze B2 — pendente decisao);
-- [x] `infra/pgbackrest/pgbackrest.conf` ja tem template repo2 com `${PGBACKREST_REPO2_*}`;
-- [x] `.env.hml.example` atualizado com vars `PGBACKREST_REPO2_*` e instrucoes de `/etc/healthintel/pgbackrest.env`;
-- [x] `scripts/vps/setup_pgbackrest_repo2.sh` criado — valida vars, materializa conf, executa `pgbackrest check` e primeiro `backup --type=full`;
-- [ ] executar `setup_pgbackrest_repo2.sh` na VPS apos escolher provedor (pendente).
+- [x] provedor escolhido: Cloudflare R2 (bucket `healthintel-backups`, free tier);
+- [x] `scripts/backup/backup_r2.sh` criado — `pg_dumpall` via `docker exec` + `rclone copy` + registro em `plataforma.backup_execucao`;
+- [x] `rclone` v1.74.0 instalado na VPS; config em `/root/.config/rclone/rclone.conf` (chmod 600);
+- [x] credenciais R2 em `/etc/healthintel/r2_backup.env` (chmod 600, fora do git);
+- [x] `/etc/cron.d/healthintel-backup-r2` instalado: `0 2 * * * root bash /opt/healthintel/scripts/backup/backup_r2.sh`;
+- [x] primeiro backup executado em 2026-05-07: `healthintel_20260507_194420.sql.gz` (107 MB) em `r2:healthintel-backups/backups/`; `backup_execucao.id=3 status=sucesso duracao=43s`.
 
 Criterio de aceite:
 
-- [ ] `pgbackrest --repo=2 info` lista pelo menos um backup full em S3 (pendente execucao);
-- [ ] restore PITR de §18.1 testado a partir do repo2 (pendente execucao).
+- [x] backup full visivel no R2 (`rclone ls r2:healthintel-backups/backups/`);
+- [x] `plataforma.backup_execucao` registra `status=sucesso` com `bytes_armazenados=112527702`;
+- [ ] restore PITR a partir do dump R2 documentado (pendente — §18.1 adiado por orcamento).
 
 ### 18.3 Secrets em .env.hml plaintext
 
@@ -955,7 +958,7 @@ Sequencia recomendada para sair de "demo controlada Operadoras Core" para "pilot
 | Bloco | Itens | Criterio de aceite |
 |-------|-------|--------------------|
 | P0 - fecha Fase 13 (semana 1) | 14.1, 14.2, 14.3, 14.4, 16.1, 16.2 | `make smoke-core` verde com `api_operadora`, `api_ranking_score` e `api_market_share_mensal` populados; `build_serving_core.sh` rodando `dbt build` |
-| P0 - DR minimo (semana 1) | 18.1, 18.2 | `pgbackrest --repo=2 check` ok; restore PITR demonstrado em host espelho; `docs/runbooks/restore_postgres.md` atualizado |
+| P0 - DR minimo (semana 1) | 18.1 (adiado — orcamento), 18.2 (concluido 2026-05-07) | §18.2: backup diario pg_dumpall → R2 ativo (`backup_execucao.id=3 sucesso`); §18.1: restore PITR adiado — segunda maquina fora do orcamento atual |
 | P1 - Airflow operacional (semanas 2-3) | 15.1 (NIP, IGR, IDSS), 15.2, 15.3, 15.4, 15.5, 15.6 | `dag_elt_ans_catalogo` com schedule diario rodando 7 dias seguidos sem intervencao; `dag_ingest_nip`, `dag_ingest_igr`, `dag_anual_idss` saindo de skeleton |
 | P1 - Hardening API (semanas 2-3) | 17.1, 17.2, 17.3, 17.4 | Circuit breaker Redis logando em `log_uso`; flush seletivo apos `dbt run`; runbook de criacao de chave comercial publicado |
 | P1 - Observabilidade basica (semanas 3-4) | 19.1 (3 dashboards minimos), 19.3, 19.4 | Grafana acessivel em `app.healthintel.com.br/observabilidade`; status page publica; alertas criticos chegam por email/Slack |
