@@ -753,7 +753,7 @@ async def registrar_upgrade_plano(payload: BillingUpgradeRequest) -> dict:
 
 async def criar_chave_api(cliente_id: str, payload: "ChaveCriacaoRequest") -> dict:
     """Cria chave API para um cliente existente. Retorna chave plain-text uma unica vez."""
-    prefixo = "hi_" + secrets.token_urlsafe(7)[:10].replace("-", "x").replace("_", "y")
+    prefixo = ("hi_" + secrets.token_urlsafe(7).replace("-", "x").replace("_", "y"))[:10]
     corpo = secrets.token_urlsafe(32)
     chave_plain = f"{prefixo}_{corpo}"
     hash_chave = gerar_hash_sha256(chave_plain)
@@ -815,22 +815,22 @@ async def criar_chave_api(cliente_id: str, payload: "ChaveCriacaoRequest") -> di
             text(
                 """
                 INSERT INTO plataforma.auditoria_cobranca
-                  (evento, cliente_id, chave_id, descricao, criado_em, operador)
+                  (id, evento, cliente_id, ator, origem, payload, criado_em)
                 VALUES (
+                  gen_random_uuid(),
                   'chave_criada',
                   cast(:cliente_id as uuid),
-                  cast(:chave_id as uuid),
-                  :descricao,
-                  now(),
-                  :ator
+                  :ator,
+                  'admin_billing',
+                  cast(:payload as jsonb),
+                  now()
                 )
                 """
             ),
             {
                 "cliente_id": cliente_id,
-                "chave_id": chave_id,
-                "descricao": payload.descricao or f"Criada por {payload.ator}",
                 "ator": payload.ator,
+                "payload": json.dumps({"chave_id": chave_id, "descricao": payload.descricao or f"Criada por {payload.ator}"}),
             },
         )
         await session.commit()
