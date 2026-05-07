@@ -3,6 +3,15 @@ import type { ApiPlan } from '../types/domain';
 const STRIPE_PAYMENT_LINK_SANDBOX = String(
   import.meta.env.VITE_STRIPE_PAYMENT_LINK_SANDBOX ?? ''
 ).trim();
+const STRIPE_PAYMENT_LINK_PILOTO = String(
+  import.meta.env.VITE_STRIPE_PAYMENT_LINK_PILOTO ?? ''
+).trim();
+const STRIPE_PAYMENT_LINK_CORE_API = String(
+  import.meta.env.VITE_STRIPE_PAYMENT_LINK_CORE_API ?? ''
+).trim();
+const STRIPE_PAYMENT_LINK_CORE_PRO = String(
+  import.meta.env.VITE_STRIPE_PAYMENT_LINK_CORE_PRO ?? ''
+).trim();
 
 export const plans: ApiPlan[] = [
   {
@@ -41,7 +50,9 @@ export const plans: ApiPlan[] = [
       'Sem extração integral',
       'Limite controlado de requisições',
       'Sem SLA enterprise'
-    ]
+    ],
+    stripePaymentLink: STRIPE_PAYMENT_LINK_PILOTO,
+    planoBd: 'piloto'
   },
   {
     nome: 'Core API',
@@ -63,7 +74,9 @@ export const plans: ApiPlan[] = [
       '1 a 3 API keys',
       'Rate limit por plano',
       'Logs de consumo'
-    ]
+    ],
+    stripePaymentLink: STRIPE_PAYMENT_LINK_CORE_API,
+    planoBd: 'essencial'
   },
   {
     nome: 'Core Pro',
@@ -83,7 +96,9 @@ export const plans: ApiPlan[] = [
       'Sem acesso a camadas internas',
       'Uso conforme contrato',
       'Escopo técnico combinado'
-    ]
+    ],
+    stripePaymentLink: STRIPE_PAYMENT_LINK_CORE_PRO,
+    planoBd: 'plus'
   },
   {
     nome: 'Enterprise',
