@@ -11,8 +11,10 @@ set -euo pipefail
 
 ENV_FILE="${ALERTAS_ENV_FILE:-/etc/healthintel/alertas.env}"
 if [[ -f "${ENV_FILE}" ]]; then
+    set -a
     # shellcheck source=/dev/null
     source "${ENV_FILE}"
+    set +a
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

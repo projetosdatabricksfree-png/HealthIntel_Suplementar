@@ -891,7 +891,12 @@ Acao:
 
 Criterio de aceite:
 
-- [ ] configurar `SENTRY_DSN` em `.env.hml` na VPS e forcar excecao via `POST /admin/_debug/raise` (pendente VPS).
+- [x] configurar `SENTRY_DSN` em `.env.hml` na VPS e forcar excecao via `POST /admin/_debug/raise` — concluido 2026-05-07:
+  - `SENTRY_DSN` adicionado a `/opt/healthintel/.env.hml`;
+  - `SENTRY_DSN: ${SENTRY_DSN:-}` adicionado ao servico `api` em `infra/docker-compose.yml` para propagar a variavel ao container;
+  - container recriado com `--force-recreate` (restart nao aplica mudancas de env);
+  - `POST /admin/_debug/raise` retornou HTTP 500 com `RuntimeError: debug: excecao artificial para teste de Sentry — healthintel`;
+  - evento capturado pelo Sentry SDK com `environment=hml` e headers sensiveis filtrados pelo `before_send`.
 
 ### 19.3 Alertas nao automaticos
 
@@ -902,11 +907,16 @@ Acao:
 - [x] implementar bridge Postgres -> email/Slack em `scripts/alertas/alertas_criticos_bridge.py` — suporta `SLACK_WEBHOOK_URL` e SMTP;
 - [x] `scripts/alertas/cron_alertas.sh` com instrucoes de cron (`*/5 * * * * root`) e `source /etc/healthintel/alertas.env`;
 - [x] dispara webhook Slack ou email SMTP por alerta critico encontrado;
-- [ ] instalar cron na VPS e forcar alerta artificial para validar notificacao (pendente VPS).
+- [x] instalar cron na VPS e forcar alerta artificial — concluido 2026-05-07:
+  - `/etc/healthintel/alertas.env` criado com `SLACK_WEBHOOK_URL`, `POSTGRES_*`, `ALERTAS_JANELA_MIN=15` (`chmod 600`);
+  - `/etc/cron.d/healthintel-alertas` instalado (`*/5 * * * * root ...`);
+  - bug corrigido em `cron_alertas.sh`: `set -a` antes de `source` para exportar vars ao subprocess Python;
+  - `asyncpg` instalado no host via `apt install python3-asyncpg` (0.29.0);
+  - alerta artificial inserido em `plataforma.backup_alerta` e script rodado manualmente — mensagem chegou ao Slack.
 
 Criterio de aceite:
 
-- [ ] forcar alerta artificial e ver mensagem no canal Slack/email em ate 5 min (pendente VPS + config de webhook).
+- [x] mensagem chegou ao canal Slack com `check_tipo=wal_atraso`, `severidade=critico` em menos de 1 min (validado 2026-05-07).
 
 ### 19.4 Sem status page publica
 
