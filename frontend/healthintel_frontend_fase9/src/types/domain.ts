@@ -33,6 +33,7 @@ export interface UsagePoint {
 
 export interface ApiPlan {
   nome: string;
+  slug: string;
   preco: string;
   descricao: string;
   destaque?: boolean;

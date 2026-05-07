@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, Request
 
-from api.app.dependencia import verificar_camada
+from api.app.dependencia import verificar_camada, verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.services.prata import (
@@ -12,7 +12,7 @@ from api.app.services.prata import (
 router = APIRouter(
     prefix="/prata",
     tags=["prata"],
-    dependencies=[Depends(validar_api_key)],
+    dependencies=[Depends(validar_api_key), Depends(verificar_plano)],
 )
 
 

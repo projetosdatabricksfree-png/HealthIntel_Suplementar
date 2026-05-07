@@ -7,6 +7,7 @@ const STRIPE_PAYMENT_LINK_SANDBOX = String(
 export const plans: ApiPlan[] = [
   {
     nome: 'Sandbox Técnico',
+    slug: 'sandbox',
     preco: 'R$ 99,99/mês',
     descricao: 'Teste de integração para validar autenticação, formato das respostas e consumo inicial.',
     features: [
@@ -26,6 +27,7 @@ export const plans: ApiPlan[] = [
   },
   {
     nome: 'Piloto Assistido',
+    slug: 'piloto',
     preco: 'R$ 2.500',
     descricao: 'Validação técnica e comercial com acompanhamento para empresas do setor.',
     features: [
@@ -43,6 +45,7 @@ export const plans: ApiPlan[] = [
   },
   {
     nome: 'Core API',
+    slug: 'core',
     preco: 'R$ 4.900/mês',
     descricao: 'Produto principal para consumo recorrente de dados ANS tratados via API.',
     destaque: true,
@@ -64,6 +67,7 @@ export const plans: ApiPlan[] = [
   },
   {
     nome: 'Core Pro',
+    slug: 'core',
     preco: 'R$ 9.900/mês',
     descricao: 'Para times que precisam acelerar integração, consumo analítico e operação interna.',
     features: [
@@ -83,6 +87,7 @@ export const plans: ApiPlan[] = [
   },
   {
     nome: 'Enterprise',
+    slug: 'enterprise',
     preco: 'Sob contrato',
     descricao: 'Ambiente dedicado, histórico ampliado e datasets adicionais.',
     features: [

@@ -62,7 +62,15 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_nome, version=settings.app_versao, lifespan=lifespan)
+_em_producao = settings.app_env == "production"
+app = FastAPI(
+    title=settings.app_nome,
+    version=settings.app_versao,
+    lifespan=lifespan,
+    docs_url=None if _em_producao else "/docs",
+    redoc_url=None if _em_producao else "/redoc",
+    openapi_url=None if _em_producao else "/openapi.json",
+)
 
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
@@ -102,20 +110,14 @@ async def tratar_http_exception(_: Request, exc: HTTPException) -> JSONResponse:
 
 @app.get("/saude")
 async def saude() -> dict:
-    return {
-        "status": "ok",
-        "ambiente": settings.app_env,
-        "versao": settings.app_versao,
-        "dependencias": {
-            "postgres": settings.postgres_host,
-            "redis": settings.redis_host,
-            "mongo": settings.mongo_host,
-        },
-    }
+    return {"status": "ok"}
 
 
 @app.get("/prontidao")
-async def prontidao() -> JSONResponse:
+async def prontidao(request: Request) -> JSONResponse:
+    token = request.headers.get("X-Internal-Token", "")
+    if token != settings.internal_token:
+        raise HTTPException(status_code=401, detail="Token interno ausente ou inválido.")
     payload = await obter_prontidao()
     status_code = 200 if payload["status"] == "ok" else 503
     return JSONResponse(status_code=status_code, content=payload)

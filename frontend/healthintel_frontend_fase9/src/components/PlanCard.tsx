@@ -24,7 +24,7 @@ export function PlanCard({ plan }: { plan: ApiPlan }) {
         </ExternalLinkButton>
       ) : (
         <LinkButton
-          to={`/contato?plano=${encodeURIComponent(plan.nome)}`}
+          to={`/contato?plano=${encodeURIComponent(plan.slug)}`}
           variant={plan.destaque ? 'primary' : 'secondary'}
         >
           Solicitar acesso

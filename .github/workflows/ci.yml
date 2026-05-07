@@ -53,6 +53,7 @@ jobs:
       LAYOUT_SERVICE_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES: 1048576
       LAYOUT_SERVICE_TOKEN: ci_layout_service_token_healthintel
+      API_INTERNAL_TOKEN: ci_internal_token_healthintel
       LOG_LEVEL: INFO
 
     steps:

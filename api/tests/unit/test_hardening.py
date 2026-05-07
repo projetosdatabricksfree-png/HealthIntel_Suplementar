@@ -3,9 +3,11 @@ from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
 from api.app import dependencia
+from api.app.core.config import get_settings
 from api.app.main import app
 
 client = TestClient(app)
+_internal_token = get_settings().internal_token
 
 
 def test_saude_deve_publicar_headers_de_seguranca() -> None:
@@ -58,7 +60,17 @@ def test_prontidao_deve_retornar_503_quando_dependencia_falha(
         "dependencias": {"postgres": {"status": "erro", "mensagem": "timeout"}},
     }
 
-    response = client.get("/prontidao")
+    response = client.get("/prontidao", headers={"X-Internal-Token": _internal_token})
 
     assert response.status_code == 503
     assert response.json()["status"] == "indisponivel"
+
+
+def test_prontidao_sem_token_deve_retornar_401() -> None:
+    response = client.get("/prontidao")
+    assert response.status_code == 401
+
+
+def test_prontidao_com_token_invalido_deve_retornar_401() -> None:
+    response = client.get("/prontidao", headers={"X-Internal-Token": "token_errado"})
+    assert response.status_code == 401

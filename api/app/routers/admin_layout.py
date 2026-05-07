@@ -1,7 +1,7 @@
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.app.dependencia import verificar_plano
+from api.app.dependencia import verificar_admin
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.schemas.layout_admin import (
@@ -44,7 +44,7 @@ def _converter_erro_rede(exc: httpx.RequestError) -> HTTPException:
 router = APIRouter(
     prefix="/admin/layouts",
     tags=["admin-layout"],
-    dependencies=[Depends(validar_api_key), Depends(verificar_plano), Depends(aplicar_rate_limit)],
+    dependencies=[Depends(validar_api_key), Depends(verificar_admin), Depends(aplicar_rate_limit)],
 )
 
 

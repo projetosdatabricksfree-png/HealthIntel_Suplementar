@@ -158,6 +158,7 @@ async def validar_chave(
         )
 
     endpoints_permitidos = list(row["endpoint_permitido"] or [])
+    plano_nome = str(row.get("plano_nome") or "")
     request.state.chave_api = str(row["prefixo_chave"]).strip()
     request.state.chave_api_id = str(row["chave_id"])
     request.state.cliente_id = str(row["cliente_id"])
@@ -165,15 +166,25 @@ async def validar_chave(
     request.state.limite_rpm = int(row["limite_rpm"])
     request.state.endpoint_permitido = endpoints_permitidos
     request.state.camadas_permitidas = list(row.get("camadas_permitidas") or [])
-    request.state.plano_nome = row.get("plano_nome")
+    request.state.plano_nome = plano_nome
+    request.state.is_admin = plano_nome.lower() == "admin_interno"
     request.state.auth_cache = "hit" if cached else "miss"
     return x_api_key
 
 
 async def verificar_plano(request: Request) -> None:
     endpoints_permitidos: Sequence[str] = getattr(request.state, "endpoint_permitido", [])
+    is_admin: bool = getattr(request.state, "is_admin", False)
     if not endpoints_permitidos:
-        return
+        if is_admin:
+            return
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "codigo": "PLANO_SEM_ENDPOINTS",
+                "mensagem": "Plano sem endpoints autorizados. Contate o suporte.",
+            },
+        )
     rota = request.url.path
     if not any(rota.startswith(prefixo) for prefixo in endpoints_permitidos):
         raise HTTPException(
@@ -181,6 +192,17 @@ async def verificar_plano(request: Request) -> None:
             detail={
                 "codigo": "PLANO_SEM_ACESSO",
                 "mensagem": "Plano sem acesso a este endpoint.",
+            },
+        )
+
+
+async def verificar_admin(request: Request) -> None:
+    if not getattr(request.state, "is_admin", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "codigo": "ACESSO_RESTRITO_ADMIN",
+                "mensagem": "Acesso restrito a administradores.",
             },
         )
 

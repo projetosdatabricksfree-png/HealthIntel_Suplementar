@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     )
 
     api_jwt_admin_secret: str = Field(default="trocar_em_producao", alias="API_JWT_ADMIN_SECRET")
+    internal_token: str = Field(
+        default="healthintel_internal_local_token", alias="API_INTERNAL_TOKEN"
+    )
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     sentry_dsn: str | None = Field(default=None, alias="SENTRY_DSN")
     stripe_secret_key: str | None = Field(default=None, alias="STRIPE_SECRET_KEY")
@@ -95,18 +98,62 @@ class Settings(BaseSettings):
         ambientes_tolerantes = {"local", "dev", "test", "ci"}
         return self.app_rate_limit_fail_open and self.app_env.lower() in ambientes_tolerantes
 
+    _SECRETS_INVALIDOS_PRODUCAO = {
+        "API_JWT_ADMIN_SECRET": (
+            lambda s: s.api_jwt_admin_secret in {"trocar_em_producao", ""}
+        ),
+        "LAYOUT_SERVICE_TOKEN": (
+            lambda s: s.layout_service_token == DEFAULT_LAYOUT_SERVICE_TOKEN
+            or not s.layout_service_token
+        ),
+        "POSTGRES_PASSWORD": (
+            lambda s: s.postgres_password in {"healthintel", ""}
+        ),
+        "MONGO_INITDB_ROOT_PASSWORD": (
+            lambda s: s.mongo_password in {"healthintel", ""}
+        ),
+        "API_INTERNAL_TOKEN": (
+            lambda s: s.internal_token in {"healthintel_internal_local_token", ""}
+        ),
+    }
+
     def validar_configuracao(self) -> None:
-        if self.app_env.lower() == "local":
+        import logging
+
+        logger = logging.getLogger("healthintel.config")
+        env = self.app_env.lower()
+        if env == "local":
             return
-        segredos_invalidos = []
-        if self.api_jwt_admin_secret == "trocar_em_producao":
-            segredos_invalidos.append("API_JWT_ADMIN_SECRET")
-        if self.layout_service_token == DEFAULT_LAYOUT_SERVICE_TOKEN:
-            segredos_invalidos.append("LAYOUT_SERVICE_TOKEN")
-        if segredos_invalidos:
-            raise ValueError(
-                "Configuracao insegura para ambiente nao local: "
-                + ", ".join(sorted(segredos_invalidos))
+        if env == "production":
+            segredos_invalidos = [
+                nome
+                for nome, check in self._SECRETS_INVALIDOS_PRODUCAO.items()
+                if check(self)
+            ]
+            if segredos_invalidos:
+                raise RuntimeError(
+                    "Startup bloqueado: secrets inseguros para api_env=production: "
+                    + ", ".join(sorted(segredos_invalidos))
+                )
+        else:
+            segredos_invalidos = []
+            if self.api_jwt_admin_secret == "trocar_em_producao":
+                segredos_invalidos.append("API_JWT_ADMIN_SECRET")
+            if self.layout_service_token == DEFAULT_LAYOUT_SERVICE_TOKEN:
+                segredos_invalidos.append("LAYOUT_SERVICE_TOKEN")
+            if segredos_invalidos:
+                raise ValueError(
+                    "Configuracao insegura para ambiente nao local: "
+                    + ", ".join(sorted(segredos_invalidos))
+                )
+        origins_suspeitas = [
+            o for o in self.cors_allowed_origins if "localhost" in o or "127.0.0.1" in o
+        ]
+        if origins_suspeitas and env not in {"local", "dev", "test", "ci"}:
+            logger.warning(
+                "CORS inclui origens de desenvolvimento em ambiente %s: %s",
+                env,
+                origins_suspeitas,
             )
 
 

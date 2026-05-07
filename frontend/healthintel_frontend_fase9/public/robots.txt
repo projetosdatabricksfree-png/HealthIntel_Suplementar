@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /checkout/
+
+Sitemap: https://healthintel.com.br/sitemap.xml

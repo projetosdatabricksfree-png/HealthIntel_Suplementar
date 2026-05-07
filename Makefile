@@ -6,7 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 SQLFLUFF_BIN := ../.venv/bin/sqlfluff
 RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-test-core dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts bootstrap-igr-layouts bootstrap-nip-layouts bootstrap-idss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core smoke-layout-cadop consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-test-core dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts bootstrap-igr-layouts bootstrap-nip-layouts bootstrap-idss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core smoke-layout-cadop consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco security-audit-local api-security-tests frontend-e2e
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -223,6 +223,15 @@ DURACAO ?=
 
 load-test:
 	PLANO=$(PLANO) RPS=$(RPS) DURACAO=$(DURACAO) bash scripts/run_load_test.sh
+
+security-audit-local:
+	$(PYTEST_BIN) api/tests/unit/test_security_config.py api/tests/unit/test_security.py -v
+
+api-security-tests:
+	$(PYTEST_BIN) api/tests/unit/test_security.py api/tests/unit/test_security_config.py api/tests/unit/test_security_hardening.py api/tests/unit/test_hardening.py api/tests/unit/test_saude.py -v
+
+frontend-e2e:
+	cd frontend/healthintel_frontend_fase9 && npm run test:e2e
 
 ci-local: compose-config lint sql-lint test
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps && $(DBT_ENV) $(DBT_BIN) parse && $(DBT_ENV) $(DBT_BIN) compile

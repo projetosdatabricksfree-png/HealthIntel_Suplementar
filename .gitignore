@@ -33,4 +33,5 @@ frontend/**/node_modules/
 testes/load/resultados/
 tmp/
 data/
+!frontend/**/src/data/
 landing/
