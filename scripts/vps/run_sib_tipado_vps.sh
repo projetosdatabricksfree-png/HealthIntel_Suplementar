@@ -64,13 +64,21 @@ if [ "$DRY_RUN" = "1" ]; then
   exit 0
 fi
 
-# Helper: executa Python na ingestao via docker compose ou .venv ou PATH
+# Helper: executa Python na ingestao via docker compose ou .venv ou PATH.
+# O uso de -T preserva stdin em execucoes remotas nao interativas.
 run_python() {
+  if docker compose --env-file "$ENV_FILE" -f infra/docker-compose.yml \
+      -f infra/docker-compose.hml.yml ps --services --filter status=running 2>/dev/null | grep -qx 'api'; then
+    docker compose --env-file "$ENV_FILE" \
+      -f infra/docker-compose.yml -f infra/docker-compose.hml.yml \
+      exec -T -e PYTHONPATH=/workspace api python "$@"
+    return
+  fi
   if docker compose --env-file "$ENV_FILE" -f infra/docker-compose.yml \
       -f infra/docker-compose.hml.yml config --services 2>/dev/null | grep -qx 'api'; then
     docker compose --env-file "$ENV_FILE" \
       -f infra/docker-compose.yml -f infra/docker-compose.hml.yml \
-      run --rm -e PYTHONPATH=/workspace api python "$@"
+      run --rm -T -e PYTHONPATH=/workspace api python "$@"
     return
   fi
   if [ -x ".venv/bin/python" ]; then
@@ -83,10 +91,17 @@ run_python() {
 # Helper: executa dbt via compose ou .venv ou PATH
 run_dbt() {
   if docker compose --env-file "$ENV_FILE" -f infra/docker-compose.yml \
+      -f infra/docker-compose.hml.yml ps --services --filter status=running 2>/dev/null | grep -qx 'dbt'; then
+    docker compose --env-file "$ENV_FILE" \
+      -f infra/docker-compose.yml -f infra/docker-compose.hml.yml \
+      exec -T dbt "$@"
+    return
+  fi
+  if docker compose --env-file "$ENV_FILE" -f infra/docker-compose.yml \
       -f infra/docker-compose.hml.yml config --services 2>/dev/null | grep -qx 'dbt'; then
     docker compose --env-file "$ENV_FILE" \
       -f infra/docker-compose.yml -f infra/docker-compose.hml.yml \
-      run --rm dbt "$@"
+      run --rm -T dbt "$@"
     return
   fi
   if [ -x ".venv/bin/dbt" ]; then
@@ -122,34 +137,53 @@ asyncio.run(main())
 EOF
 
 # --- ETAPA 2: validar contagem bruto_ans ---
-printf '\n[run_sib_tipado] ETAPA 2 — validando bruto_ans.sib_operadora\n'
+printf '\n[run_sib_tipado] ETAPA 2 — validando bruto_ans.sib_beneficiario_operadora\n'
 docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 \
   -U healthintel -d healthintel -c "
   SELECT
-    'sib_operadora' AS tabela,
+    'sib_beneficiario_operadora' AS tabela,
+    competencia,
     COUNT(*) AS registros
-  FROM bruto_ans.sib_operadora
-  WHERE competencia = ${COMPETENCIA}
+  FROM bruto_ans.sib_beneficiario_operadora
+  WHERE _arquivo_origem LIKE 'sib_ativo_%'
+  GROUP BY competencia
   UNION ALL
   SELECT
-    'sib_municipio',
+    'sib_beneficiario_municipio',
+    competencia,
     COUNT(*)
-  FROM bruto_ans.sib_municipio
-  WHERE competencia = ${COMPETENCIA};
+  FROM bruto_ans.sib_beneficiario_municipio
+  WHERE _arquivo_origem LIKE 'sib_ativo_%'
+  GROUP BY competencia
+  ORDER BY tabela, competencia;
 "
+op_count=$(docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 -U healthintel -d healthintel -Atc "
+  SELECT COUNT(*)
+  FROM bruto_ans.sib_beneficiario_operadora
+  WHERE _arquivo_origem LIKE 'sib_ativo_%';
+")
+mun_count=$(docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 -U healthintel -d healthintel -Atc "
+  SELECT COUNT(*)
+  FROM bruto_ans.sib_beneficiario_municipio
+  WHERE _arquivo_origem LIKE 'sib_ativo_%';
+")
+if [ "${op_count:-0}" -le 0 ] || [ "${mun_count:-0}" -le 0 ]; then
+  printf 'FAIL SIB tipado sem linhas: operadora=%s municipio=%s\n' "$op_count" "$mun_count" >&2
+  exit 1
+fi
 
 # --- ETAPA 3: limpar genéricos SIB ---
 printf '\n[run_sib_tipado] ETAPA 3 — limpando bruto_ans.ans_linha_generica para SIB\n'
 docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 \
   -U healthintel -d healthintel -c "
   DELETE FROM bruto_ans.ans_linha_generica
-  WHERE dataset_codigo IN ('sib_operadora', 'sib_municipio');
+  WHERE dataset_codigo LIKE 'sib%';
   SELECT 'genericos removidos' AS status;
 "
 
 # --- ETAPA 4: rebuild dbt modelos SIB/serving ---
-printf '\n[run_sib_tipado] ETAPA 4 — dbt build modelos Core dependentes de SIB\n'
-run_dbt build \
+printf '\n[run_sib_tipado] ETAPA 4 — dbt run modelos Core dependentes de SIB\n'
+run_dbt run \
   --select "+api_ranking_score +api_market_share_mensal +api_score_operadora_mensal +api_ranking_crescimento +api_ranking_oportunidade" \
   --exclude "tag:tiss tag:premium tag:consumo_premium"
 
@@ -169,17 +203,30 @@ fi
 printf '\n[run_sib_tipado] ETAPA 6 — contagens finais api_ans\n'
 docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 \
   -U healthintel -d healthintel -c "
-  SELECT relname AS tabela, n_live_tup::bigint AS linhas_estimadas
-  FROM pg_stat_user_tables
-  WHERE schemaname = 'api_ans'
-    AND relname IN (
-      'api_ranking_score',
-      'api_market_share_mensal',
-      'api_score_operadora_mensal',
-      'api_ranking_crescimento',
-      'api_ranking_oportunidade'
-    )
-  ORDER BY relname;
+  SELECT 'api_ranking_score' AS tabela, COUNT(*) AS registros FROM api_ans.api_ranking_score
+  UNION ALL
+  SELECT 'api_market_share_mensal', COUNT(*) FROM api_ans.api_market_share_mensal
+  UNION ALL
+  SELECT 'api_score_operadora_mensal', COUNT(*) FROM api_ans.api_score_operadora_mensal
+  UNION ALL
+  SELECT 'api_ranking_crescimento', COUNT(*) FROM api_ans.api_ranking_crescimento
+  UNION ALL
+  SELECT 'api_ranking_oportunidade', COUNT(*) FROM api_ans.api_ranking_oportunidade
+  ORDER BY tabela;
 "
+api_min_count=$(docker exec -i healthintel_postgres psql -v ON_ERROR_STOP=1 -U healthintel -d healthintel -Atc "
+  WITH contagens AS (
+    SELECT COUNT(*) AS total FROM api_ans.api_ranking_score
+    UNION ALL
+    SELECT COUNT(*) FROM api_ans.api_market_share_mensal
+    UNION ALL
+    SELECT COUNT(*) FROM api_ans.api_score_operadora_mensal
+  )
+  SELECT MIN(total) FROM contagens;
+")
+if [ "${api_min_count:-0}" -le 0 ]; then
+  printf 'FAIL api_ans Core SIB ainda possui tabela principal vazia (min=%s)\n' "$api_min_count" >&2
+  exit 1
+fi
 
 printf '\n[run_sib_tipado] concluido. Log: %s\n' "$log_file"

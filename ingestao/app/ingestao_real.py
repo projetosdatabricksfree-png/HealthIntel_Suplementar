@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import zipfile
+from collections import defaultdict
 from pathlib import Path
 from typing import Iterator
 from uuid import uuid4
@@ -148,6 +149,34 @@ def iterar_csv_zip(
                 yield batch
 
 
+def _normalizar_competencia_sib(valor: object, fallback: str) -> int:
+    texto = str(valor or "").strip()
+    digitos = "".join(ch for ch in texto if ch.isdigit())
+    if len(digitos) >= 6:
+        return int(digitos[:6])
+    fallback_digitos = "".join(ch for ch in str(fallback) if ch.isdigit())
+    return int(fallback_digitos[:6])
+
+
+def _normalizar_registro_ans_sib(valor: object) -> str | None:
+    digitos = "".join(ch for ch in str(valor or "") if ch.isdigit())
+    if not digitos:
+        return None
+    return digitos.zfill(6)[-6:]
+
+
+def _normalizar_codigo_municipio_sib(valor: object) -> str | None:
+    digitos = "".join(ch for ch in str(valor or "") if ch.isdigit())
+    if not digitos:
+        return None
+    return digitos[:7]
+
+
+def _beneficiario_ativo_sib(valor: object) -> bool:
+    texto = str(valor if valor is not None else "1").strip().upper()
+    return texto in {"", "1", "S", "SIM", "TRUE", "T", "ATIVO"}
+
+
 # ---------------------------------------------------------------------------
 # Streaming SIB flow
 # ---------------------------------------------------------------------------
@@ -192,7 +221,11 @@ async def executar_ingestao_sib_uf_streaming(
     hash_arquivo = arquivo["hash_arquivo"]
     nome_arquivo = arquivo["arquivo_origem"]
 
-    # Check for duplicate before processing
+    hash_operadora = f"{hash_arquivo}:operadora"
+    hash_municipio = f"{hash_arquivo}:municipio"
+
+    # Check for duplicate before processing. O mesmo arquivo alimenta duas
+    # tabelas tipadas, por isso o hash persistido recebe sufixo por destino.
     from sqlalchemy import text
 
     from ingestao.app.carregar_postgres import SessionLocal, registrar_lote_ingestao
@@ -200,16 +233,17 @@ async def executar_ingestao_sib_uf_streaming(
     async with SessionLocal() as session:
         dup_result = await session.execute(
             text("""
-                select 1
+                select count(*) = 2
                 from plataforma.lote_ingestao
-                where dataset = :dataset
-                  and hash_arquivo = :hash_arquivo
+                where (dataset, hash_arquivo) in (
+                    ('sib_operadora', :hash_operadora),
+                    ('sib_municipio', :hash_municipio)
+                )
                   and status in ('sucesso', 'sucesso_com_alertas')
-                limit 1
             """),
-            {"dataset": "sib_operadora", "hash_arquivo": hash_arquivo},
+            {"hash_operadora": hash_operadora, "hash_municipio": hash_municipio},
         )
-        duplicado = dup_result.scalar_one_or_none() is not None
+        duplicado = bool(dup_result.scalar_one())
 
     if duplicado:
         lote_id = str(uuid4())
@@ -218,7 +252,7 @@ async def executar_ingestao_sib_uf_streaming(
             dataset_codigo="sib_operadora",
             competencia=competencia,
             arquivo_origem=nome_arquivo,
-            hash_arquivo=hash_arquivo,
+            hash_arquivo=hash_operadora,
             hash_estrutura=None,
             versao_layout=None,
             status="ignorado_duplicata",
@@ -234,7 +268,7 @@ async def executar_ingestao_sib_uf_streaming(
         return {
             "status": "ignorado_duplicata",
             "lote_id": lote_id,
-            "hash_arquivo": hash_arquivo,
+            "hash_arquivo": hash_operadora,
             "uf": uf,
         }
 
@@ -250,6 +284,11 @@ async def executar_ingestao_sib_uf_streaming(
 
     colunas_detectadas = list(primeiro_batch[0].keys())
     identificacao = await identificar_layout("sib_operadora", colunas_detectadas, nome_arquivo)
+    identificacao_municipio = await identificar_layout(
+        "sib_municipio",
+        colunas_detectadas,
+        nome_arquivo,
+    )
 
     if (
         not identificacao.compativel
@@ -271,37 +310,116 @@ async def executar_ingestao_sib_uf_streaming(
             "motivos": identificacao.motivos,
             "uf": uf,
         }
+    if (
+        not identificacao_municipio.compativel
+        or not identificacao_municipio.layout_id
+        or not identificacao_municipio.layout_versao_id
+    ):
+        from ingestao.app.carregar_postgres import registrar_quarentena
 
-    lote_id = str(uuid4())
+        quarentena_id = await registrar_quarentena(
+            dataset_codigo="sib_municipio",
+            arquivo_origem=nome_arquivo,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=identificacao_municipio.assinatura_colunas,
+            motivo=(
+                "; ".join(identificacao_municipio.motivos)
+                or "Layout incompativel para o arquivo."
+            ),
+        )
+        return {
+            "status": "quarentena",
+            "quarentena_id": quarentena_id,
+            "motivos": identificacao_municipio.motivos,
+            "uf": uf,
+        }
 
-
+    agreg_operadora: dict[tuple[int, str], int] = defaultdict(int)
+    agreg_municipio: dict[tuple[int, str, str, str], int] = defaultdict(int)
+    total_linhas_raw = 0
+    total_ignoradas = 0
 
     def _batches_completos():
         yield primeiro_batch
         yield from iterador
 
-    # Add competencia to each row
-    def _batches_com_competencia():
-        for batch in _batches_completos():
-            for registro in batch:
-                registro.setdefault("competencia", competencia)
-            yield batch
+    for batch in _batches_completos():
+        total_linhas_raw += len(batch)
+        for registro in batch:
+            if not _beneficiario_ativo_sib(registro.get("LG_BENEFICIARIO_ATIVO")):
+                total_ignoradas += 1
+                continue
+            registro_ans = _normalizar_registro_ans_sib(registro.get("REGISTRO_OPERADORA"))
+            if not registro_ans:
+                total_ignoradas += 1
+                continue
+            competencia_linha = _normalizar_competencia_sib(
+                registro.get("ID_TEMPO_COMPETENCIA"),
+                competencia,
+            )
+            agreg_operadora[(competencia_linha, registro_ans)] += 1
 
-    resultado = await processar_arquivo_bruto_streaming(
-        dataset_codigo="sib_operadora",
-        nome_arquivo=nome_arquivo,
-        hash_arquivo=hash_arquivo,
-        iterador_batches=_batches_com_competencia(),
-        lote_id=lote_id,
+            codigo_ibge = _normalizar_codigo_municipio_sib(registro.get("CD_MUNICIPIO"))
+            uf_linha = str(registro.get("SG_UF") or uf).strip().upper()[:2]
+            if codigo_ibge:
+                agreg_municipio[(competencia_linha, registro_ans, codigo_ibge, uf_linha)] += 1
+
+    registros_operadora = [
+        {
+            "competencia": competencia_linha,
+            "registro_ans": registro_ans,
+            "beneficiario_medico": None,
+            "beneficiario_odonto": None,
+            "beneficiario_total": total,
+        }
+        for (competencia_linha, registro_ans), total in agreg_operadora.items()
+    ]
+    registros_municipio = [
+        {
+            "competencia": competencia_linha,
+            "registro_ans": registro_ans,
+            "codigo_ibge": codigo_ibge,
+            "municipio": None,
+            "uf": uf_linha,
+            "beneficiario_medico": None,
+            "beneficiario_odonto": None,
+            "beneficiario_total": total,
+        }
+        for (competencia_linha, registro_ans, codigo_ibge, uf_linha), total
+        in agreg_municipio.items()
+    ]
+
+    from ingestao.app.carregar_postgres import carregar_dataset_bruto
+
+    lote_operadora = await carregar_dataset_bruto(
+        "sib_operadora",
+        registros_operadora,
+        arquivo_origem=nome_arquivo,
         layout_id=identificacao.layout_id,
         layout_versao_id=identificacao.layout_versao_id,
+        hash_arquivo=hash_operadora,
         hash_estrutura=identificacao.assinatura_colunas,
-        batch_size=bs,
         colunas_mapeadas=identificacao.colunas_mapeadas,
+    )
+    lote_municipio = await carregar_dataset_bruto(
+        "sib_municipio",
+        registros_municipio,
+        arquivo_origem=nome_arquivo,
+        layout_id=identificacao_municipio.layout_id,
+        layout_versao_id=identificacao_municipio.layout_versao_id,
+        hash_arquivo=hash_municipio,
+        hash_estrutura=identificacao_municipio.assinatura_colunas,
+        colunas_mapeadas=identificacao_municipio.colunas_mapeadas,
     )
 
     return {
-        **resultado,
+        "status": "carregado",
+        "lote_operadora_id": lote_operadora.lote_id,
+        "lote_municipio_id": lote_municipio.lote_id,
+        "total_linhas_raw": total_linhas_raw,
+        "total_ignoradas": total_ignoradas,
+        "total_operadora": lote_operadora.total_registros,
+        "total_municipio": lote_municipio.total_registros,
         "uf": uf,
         "hash_arquivo": hash_arquivo,
     }

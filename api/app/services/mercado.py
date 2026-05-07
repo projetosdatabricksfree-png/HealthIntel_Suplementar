@@ -80,10 +80,10 @@ async def listar_mercado_municipio(
             text(
                 f"""
                 select
-                    cd_municipio,
-                    nm_municipio,
-                    sg_uf,
-                    nm_regiao,
+                    coalesce(cd_municipio, '0000000') as cd_municipio,
+                    coalesce(nm_municipio, municipio, 'NAO_INFORMADO') as nm_municipio,
+                    coalesce(sg_uf, uf, 'NA') as sg_uf,
+                    coalesce(nm_regiao, 'NAO_INFORMADA') as nm_regiao,
                     segmento,
                     competencia,
                     operadora_id,

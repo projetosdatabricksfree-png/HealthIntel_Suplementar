@@ -350,7 +350,8 @@ Status: `demo comercial controlada para o modulo Operadoras Core`.
 Limites atuais:
 
 - rankings, score e mercado existem como tabelas/endpoints e nao falham por tabela ausente;
-- rankings, score e mercado ainda retornam vazio porque SIB tipado/serving analitico ainda precisa ser concluido;
+- SIB tipado foi carregado em 2026-05-07 para SP, MG, RJ, RS, PR, SC, BA, GO e DF;
+- rankings, score e mercado retornam payload real para a competencia de fonte `202603`;
 - o load generico SIB em background nao deve ser confundido com serving comercial completo.
 
 ## 14. Pendencias de fechamento da Fase 13 (P0)
@@ -406,13 +407,48 @@ api_ranking_crescimento
 Acao:
 
 - [x] rodar `dag_ingest_sib` em modo streaming por UF para a competencia mais recente fechada — script `scripts/vps/run_sib_tipado_vps.sh` criado;
-- [ ] validar `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` com contagem maior que zero (executar na VPS);
+- [x] validar `bruto_ans.sib_beneficiario_operadora` e `bruto_ans.sib_beneficiario_municipio` com contagem maior que zero (executado na VPS);
 - [x] rebuildar selectors `+api_ranking_score`, `+api_market_share_mensal`, `+api_score_operadora_mensal`, `+api_ranking_crescimento`, `+api_ranking_oportunidade` — incluido em `run_sib_tipado_vps.sh` etapa 4.
 
 Criterio de aceite:
 
-- [ ] `select count(*) from bruto_ans.sib_operadora where competencia = 202503` retorna acima de zero por UF carregada;
-- [ ] `api_ans.api_ranking_score`, `api_ans.api_market_share_mensal` e `api_ans.api_score_operadora_mensal` retornam linhas em `/v1/rankings/operadora/score`, `/v1/mercado/municipio` e `/v1/operadoras/{registro_ans}/score`.
+- [x] `select count(*) from bruto_ans.sib_beneficiario_operadora where competencia = 202603` retorna acima de zero por UF carregada;
+- [x] `api_ans.api_ranking_score`, `api_ans.api_market_share_mensal` e `api_ans.api_score_operadora_mensal` retornam linhas em `/v1/rankings/operadora/score`, `/v1/mercado/municipio` e `/v1/operadoras/{registro_ans}/score`.
+
+#### Evidencia de execucao em 2026-05-07
+
+Comandos executados na VPS:
+
+```bash
+UFS=SP COMPETENCIA=202503 bash scripts/vps/run_sib_tipado_vps.sh
+UFS=MG,RJ,RS,PR,SC,BA,GO,DF COMPETENCIA=202503 bash scripts/vps/run_sib_tipado_vps.sh
+```
+
+Observacao operacional:
+
+- o parametro `COMPETENCIA=202503` foi mantido por compatibilidade com o runbook;
+- o arquivo `sib_ativo_<UF>.zip` da ANS trouxe `ID_TEMPO_COMPETENCIA=2026-03`;
+- a Bronze tipada preservou a competencia real da fonte como `202603`.
+
+Resultado final:
+
+| Camada | Tabela | Competencia | Registros |
+|---|---:|---:|---:|
+| Bronze | `bruto_ans.sib_beneficiario_operadora` | `202603` | `5.365` |
+| Bronze | `bruto_ans.sib_beneficiario_municipio` | `202603` | `206.603` |
+| Bronze generico | `bruto_ans.ans_linha_generica` SIB | - | `0` |
+| API | `api_ans.api_ranking_score` | `202603` | `853` |
+| API | `api_ans.api_score_operadora_mensal` | `202603` | `853` |
+| API | `api_ans.api_market_share_mensal` | `202603` | `204.761` |
+| API | `api_ans.api_ranking_oportunidade` | `202603` | `3.454` |
+| API | `api_ans.api_ranking_crescimento` | `202603` | `0` |
+
+Validacao HTTPS:
+
+- `check_public_domain_https.sh`: passou;
+- `check_api_core_comercial.sh`: passou;
+- `/v1/rankings/operadora/score`: retornou dados reais;
+- `/v1/mercado/municipio`: retornou dados reais apos fallback explicito para `nm_municipio` ausente na seed IBGE.
 
 ### 14.3 Limpeza de bruto_ans.ans_linha_generica para datasets ja tipados
 
@@ -425,8 +461,8 @@ Acao:
 
 Criterio de aceite:
 
-- [ ] apos rodar `dag_ingest_sib` com sucesso, `select count(*) from bruto_ans.ans_linha_generica where dataset_codigo like 'sib%'` retorna zero;
-- [ ] `bruto_ans.sib_operadora` e `bruto_ans.sib_municipio` permanecem populados (somente o generico do mesmo dataset e descartado).
+- [x] apos rodar `dag_ingest_sib` com sucesso, `select count(*) from bruto_ans.ans_linha_generica where dataset_codigo like 'sib%'` retorna zero;
+- [x] `bruto_ans.sib_beneficiario_operadora` e `bruto_ans.sib_beneficiario_municipio` permanecem populados (somente o generico do mesmo dataset e descartado).
 
 ### 14.4 Smoke de reprodutibilidade do CADOP real
 
@@ -858,7 +894,7 @@ DBT_SELECTORS="+api_operadora +api_ranking_score +api_market_share_mensal" \
   bash scripts/vps/build_serving_core.sh
 
 # §14.2 SIB tipado por UF
-make dag-run-real-sib UFS=AC,AL,AM,AP,BA COMPETENCIA=202503
+UFS=SP COMPETENCIA=202503 bash scripts/vps/run_sib_tipado_vps.sh
 
 # §14.3 limpar generico apos SIB tipado
 docker exec -i healthintel_postgres psql -U healthintel -d healthintel -c "
