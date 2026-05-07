@@ -1,7 +1,6 @@
 import { ArrowRight, BarChart3, DatabaseZap, KeyRound, ShieldCheck, Stethoscope, TrendingUp } from 'lucide-react';
 import { LinkButton } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { CodeBlock } from '../../components/CodeBlock';
 import { plans } from '../../data/plans';
 import { PlanCard } from '../../components/PlanCard';
 
@@ -28,20 +27,6 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="hero-panel">
-          <div className="hero-panel-header">
-            <span className="status-dot" />
-            <span>Live tester</span>
-          </div>
-          <CodeBlock code={`curl -X GET \
-  "https://api.healthintel.com.br/v1/operadoras?uf=SP&limite=20" \
-  -H "X-API-Key: SUA_CHAVE"`} />
-          <div className="hero-metrics">
-            <div><strong>7</strong><span>famílias Core</span></div>
-            <div><strong>12-24m</strong><span>SIB hot</span></div>
-            <div><strong>100%</strong><span>API controlada</span></div>
-          </div>
-        </div>
       </section>
 
       <section className="section">

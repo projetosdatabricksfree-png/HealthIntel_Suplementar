@@ -3,7 +3,7 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { CodeBlock } from '../../components/CodeBlock';
 import { useNotification } from '../../components/NotificationProvider';
-import { buildCurl, maskApiKey, requestApi, type ApiResult } from '../../services/apiClient';
+import { buildCurl, buildUrl, maskApiKey, requestApi, type ApiResult } from '../../services/apiClient';
 import { clearApiKey, getApiKey, saveApiKey } from '../../services/storage';
 import { useAuth } from '../../hooks/useAuth';
 import { addAuditEvent } from '../../services/localPortalStore';
@@ -85,7 +85,7 @@ export function ApiKeysPage() {
             <Button variant="secondary" onClick={test}>Testar chave</Button>
             <Button variant="ghost" onClick={copyMasked}>Copiar chave mascarada</Button>
           </div>
-          <CodeBlock code={buildCurl('GET', 'http://localhost:8080/v1/meta/endpoints', apiKey.trim())} />
+          <CodeBlock code={buildCurl('GET', buildUrl('/v1/meta/endpoints'), apiKey.trim())} />
           {testResult && <CodeBlock code={JSON.stringify(testResult, null, 2)} />}
         </Card>
 

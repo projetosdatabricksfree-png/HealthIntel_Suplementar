@@ -1,0 +1,540 @@
+Segue o **prompt 10/10 para seguir com a Fase 11 — Snapshot Real Core ANS na VPS**:
+
+````text id="0ma2ti"
+Você está trabalhando no projeto HealthIntel Suplementar.
+
+Caminho local:
+ /home/diegocosta/Documents/PROJETO/HealthIntel_Suplementar
+
+VPS:
+ IP: 5.189.160.27
+
+Contexto:
+A Fase 10 — Deploy em VPS por IP foi executada com sucesso.
+
+Estado atual da VPS:
+- Frontend responde em:
+  http://5.189.160.27
+- API responde em:
+  http://5.189.160.27:8080
+- CORS aceita:
+  Origin: http://5.189.160.27
+- Containers ativos:
+  postgres
+  redis
+  mongo
+  mongo_layout_service
+  api
+  nginx
+  frontend
+- Portas públicas abertas:
+  22
+  80
+  8080
+- Postgres, Redis, Mongo e layout service estão vinculados a 127.0.0.1.
+- Healthcheck técnico passou.
+- API key dev HML bloqueia admin corretamente.
+- API key admin HML acessa admin corretamente.
+
+Problema atual:
+A VPS ainda não possui dados reais Core ANS.
+A tabela `api_ans.api_operadora` foi criada vazia apenas para o endpoint `/v1/operadoras` responder 200 no healthcheck técnico.
+Isso é aceitável para homologação técnica, mas não é suficiente para demo comercial real.
+
+Objetivo da tarefa:
+Implementar a Fase 11 — Snapshot Real Core ANS na VPS.
+
+Meta:
+Exportar do ambiente local um snapshot controlado das tabelas de serving `api_ans` e metadados mínimos, transferir para a VPS, importar com backup/rollback e validar que a API pública por IP retorna dados reais.
+
+Importante:
+Não rodar carga pesada na VPS.
+Não subir Airflow contínuo.
+Não executar `all_ftp`.
+Não carregar TISS.
+Não carregar CNES completo.
+Não expor banco publicamente.
+Não usar chaves `hi_local_*` na VPS HML.
+Não sobrescrever chaves HML provisionadas na VPS.
+
+Produto inicial:
+HealthIntel Core ANS.
+
+Escopo comercial inicial:
+- operadoras;
+- beneficiários;
+- mercado por município;
+- rankings;
+- score;
+- financeiro leve, se já existir no serving;
+- regulatório leve, se já existir no serving;
+- metadados de datasets.
+
+Fora do escopo:
+- TISS real;
+- CNES completo;
+- bronze público;
+- prata público;
+- premium instável;
+- exportação full;
+- dump bruto;
+- histórico completo;
+- carga ANS pesada na VPS.
+
+Regras obrigatórias:
+1. Não alterar dbt, ingestão, Airflow ou modelos sem necessidade real.
+2. Não rodar carga pesada na VPS.
+3. Não subir Airflow nessa fase.
+4. Não exportar/importar `plataforma.chave_api` da máquina local para a VPS.
+5. Não sobrescrever chaves HML da VPS.
+6. Não exportar segredos.
+7. Não commitar `.env.hml`.
+8. Não usar dados sintéticos como se fossem reais.
+9. Se algum dado for placeholder, marcar como `demo técnica`, não `demo comercial`.
+10. Snapshot deve ser reversível.
+11. Fazer backup do schema `api_ans` atual da VPS antes de importar.
+12. Validar contagem antes e depois.
+13. `/v1/operadoras` na VPS só será aprovado se retornar `total > 0` e dados reais.
+14. Manter Postgres, Redis, Mongo e layout service fechados em 127.0.0.1.
+15. Não mexer em domínio/Cloudflare/HTTPS nesta fase.
+
+Tarefa 1 — Diagnóstico local:
+
+No ambiente local, verificar:
+
+```bash
+cd /home/diegocosta/Documents/PROJETO/HealthIntel_Suplementar
+docker compose -f infra/docker-compose.yml ps
+````
+
+Identificar container local do Postgres:
+
+* normalmente `healthintel_postgres`.
+
+Listar tabelas locais do schema `api_ans`:
+
+```bash
+docker exec -i healthintel_postgres psql -U healthintel -d healthintel -c "
+select table_schema, table_name
+from information_schema.tables
+where table_schema = 'api_ans'
+order by table_name;
+"
+```
+
+Contar linhas de cada tabela `api_ans`:
+
+```bash
+docker exec -i healthintel_postgres psql -U healthintel -d healthintel -c "
+select
+  schemaname,
+  relname as tabela,
+  n_live_tup::bigint as linhas_estimadas
+from pg_stat_user_tables
+where schemaname = 'api_ans'
+order by relname;
+"
+```
+
+Validar endpoints locais com dados:
+
+```bash
+curl -i "http://localhost:8080/v1/operadoras?pagina=1&por_pagina=10" \
+  -H "X-API-Key: hi_local_dev_2026_api_key"
+```
+
+Se localmente `/v1/operadoras` retornar apenas dados fake/exemplo, classificar como demo técnica e não demo comercial.
+
+Tarefa 2 — Diagnóstico da VPS:
+
+Conectar à VPS:
+
+```bash
+ssh root@5.189.160.27
+```
+
+Na VPS:
+
+```bash
+cd /opt/healthintel
+docker compose --env-file .env.hml -f infra/docker-compose.yml -f infra/docker-compose.hml.yml ps
+```
+
+Listar tabelas `api_ans`:
+
+```bash
+docker exec -i healthintel_postgres psql -U healthintel -d healthintel -c "
+select table_schema, table_name
+from information_schema.tables
+where table_schema = 'api_ans'
+order by table_name;
+"
+```
+
+Contar linhas:
+
+```bash
+docker exec -i healthintel_postgres psql -U healthintel -d healthintel -c "
+select
+  schemaname,
+  relname as tabela,
+  n_live_tup::bigint as linhas_estimadas
+from pg_stat_user_tables
+where schemaname = 'api_ans'
+order by relname;
+"
+```
+
+Validar API pública atual:
+
+```bash
+curl -i "http://5.189.160.27:8080/v1/operadoras?pagina=1&por_pagina=10" \
+  -H "X-API-Key: <CHAVE_HML_DEV_DA_VPS>"
+```
+
+Não cole a chave HML em documentação pública.
+
+Tarefa 3 — Criar script de export local:
+
+Criar:
+
+```text
+scripts/vps/export_snapshot_core_api_ans.sh
+```
+
+Requisitos do script:
+
+* rodar localmente;
+* ser idempotente;
+* criar diretório:
+  `tmp/snapshot_core_api_ans/YYYYMMDD_HHMMSS`;
+* detectar container Postgres local ou aceitar variáveis:
+  `PG_CONTAINER`
+  `PGDATABASE`
+  `PGUSER`;
+* exportar apenas tabelas de serving necessárias;
+* gerar `.sql.gz`;
+* gerar manifesto `.json` ou `.md`;
+* registrar contagem por tabela;
+* não exportar chaves API;
+* não exportar segredos;
+* não exportar logs sensíveis;
+* não exportar bronze/prata/TISS/CNES completo.
+
+Tabelas candidatas para exportar, se existirem:
+
+* api_ans.api_operadora
+* api_ans.api_score_operadora_mensal
+* api_ans.api_market_share_mensal
+* api_ans.api_ranking_score
+* api_ans.api_ranking_crescimento
+* api_ans.api_ranking_oportunidade
+* api_ans.api_ranking_composto_mensal
+* api_ans.api_score_v3_operadora_mensal
+* api_ans.api_score_regulatorio_operadora_mensal
+* api_ans.api_financeiro_operadora_mensal
+* api_ans.api_regime_especial_operadora
+* api_ans.api_portabilidade_operadora_mensal
+* api_ans.api_vazio_assistencial
+* api_ans.api_rede_assistencial, somente se leve
+* plataforma.versao_dataset
+* plataforma.job, somente se necessário para `/v1/meta/pipeline` e se não contiver segredo
+
+Não exportar:
+
+* plataforma.chave_api
+* plataforma.uso_api
+* logs de cliente
+* tabelas bronze
+* tabelas prata
+* tabelas premium
+* TISS
+* CNES completo
+* dados sensíveis ou segredos.
+
+Forma recomendada:
+
+* usar `pg_dump`;
+* preferencialmente exportar schema/tabelas específicas;
+* usar `--data-only` se a estrutura já existir na VPS;
+* ou exportar `--schema-only` + `--data-only` se necessário;
+* não derrubar o schema inteiro sem backup.
+
+O script deve imprimir:
+
+* arquivo gerado;
+* tamanho;
+* tabelas exportadas;
+* contagens;
+* próximo comando para copiar via scp.
+
+Tarefa 4 — Criar script de import na VPS:
+
+Criar:
+
+```text
+scripts/vps/import_snapshot_core_api_ans.sh
+```
+
+Requisitos do script:
+
+* rodar na VPS;
+* exigir caminho do arquivo `.sql.gz`;
+* validar que está em `/opt/healthintel`;
+* validar que `.env.hml` existe;
+* validar que o container `healthintel_postgres` está rodando;
+* fazer backup lógico pré-import do schema `api_ans` atual;
+* salvar backup em:
+  `backups/vps_pre_import_api_ans/YYYYMMDD_HHMMSS`;
+* não sobrescrever `plataforma.chave_api`;
+* importar snapshot;
+* rodar `ANALYZE`;
+* contar linhas pós-import;
+* falhar se `api_ans.api_operadora` continuar com `count = 0`;
+* testar endpoints principais;
+* imprimir resultado final.
+
+Endpoints a testar pós-import:
+
+* `/saude`
+* `/prontidao`
+* `/v1/meta/endpoints`
+* `/v1/operadoras`
+* `/v1/rankings/operadora/score`, se tabela existir
+* `/v1/mercado/municipio`, se tabela existir
+
+O script deve aceitar variável:
+
+* `HML_DEV_API_KEY`
+* `HML_ADMIN_API_KEY`
+
+Não hardcodar chaves reais.
+
+Tarefa 5 — Criar script de transferência opcional:
+
+Criar:
+
+```text
+scripts/vps/copy_snapshot_to_vps.sh
+```
+
+Uso esperado:
+
+```bash
+SNAPSHOT_FILE=tmp/snapshot_core_api_ans/.../snapshot.sql.gz \
+VPS_HOST=root@5.189.160.27 \
+bash scripts/vps/copy_snapshot_to_vps.sh
+```
+
+Destino na VPS:
+
+```text
+/opt/healthintel/snapshots/
+```
+
+Tarefa 6 — Corrigir erro P1 do init:
+
+Investigar:
+
+```text
+infra/postgres/init/027_fase5_premium_roles.sql
+```
+
+Problema reportado:
+
+* falha por `quality_ans` ausente.
+
+Corrigir de forma segura:
+
+* criar schema `quality_ans` antes dos grants;
+* ou tornar grants condicionais;
+* ou ajustar ordem de criação;
+* ou adicionar `CREATE SCHEMA IF NOT EXISTS quality_ans;`.
+
+Critérios:
+
+* novo bootstrap não deve registrar erro conhecido por schema ausente;
+* não quebrar roles existentes;
+* não abrir permissão indevida.
+
+Tarefa 7 — Atualizar healthchecks:
+
+Atualizar:
+
+```text
+scripts/vps/check_hml_ip.sh
+scripts/vps/check_public_ip.sh
+```
+
+Novos critérios:
+
+* `/v1/operadoras` deve retornar 200;
+* `meta.total` deve ser maior que 0;
+* ou deve haver pelo menos um item em `dados`;
+* se retornar 200 com lista vazia, classificar como FAIL para demo comercial.
+
+O healthcheck deve diferenciar:
+
+* `OK técnico`;
+* `OK comercial`;
+* `FAIL`.
+
+Tarefa 8 — Criar documentação da Fase 11:
+
+Criar:
+
+```text
+docs/infra/fase_11_snapshot_core_ans_vps.md
+```
+
+Conteúdo obrigatório:
+
+1. objetivo;
+2. contexto;
+3. motivo de não rodar carga pesada na VPS;
+4. tabelas candidatas;
+5. tabelas exportadas;
+6. tabelas excluídas;
+7. comandos de export;
+8. comandos de transferência;
+9. comandos de import;
+10. backup/rollback;
+11. contagens antes/depois;
+12. validação de endpoints;
+13. validação do frontend Live Tester;
+14. riscos;
+15. pendências;
+16. critérios para considerar demo comercial por IP.
+
+Tarefa 9 — Criar rollback:
+
+Documentar e, se possível, implementar no script:
+
+Rollback:
+
+* restaurar backup pré-import do schema `api_ans`;
+* ou reimportar backup lógico criado em `backups/vps_pre_import_api_ans`;
+* reiniciar API/nginx se necessário;
+* rodar healthcheck.
+
+Não apagar backup automaticamente.
+
+Tarefa 10 — Validar localmente os scripts:
+
+Rodar:
+
+```bash
+bash -n scripts/vps/export_snapshot_core_api_ans.sh
+bash -n scripts/vps/import_snapshot_core_api_ans.sh
+bash -n scripts/vps/copy_snapshot_to_vps.sh
+bash -n scripts/vps/check_hml_ip.sh
+bash -n scripts/vps/check_public_ip.sh
+```
+
+Rodar também:
+
+```bash
+git diff --check
+```
+
+Tarefa 11 — Execução sugerida após criar scripts:
+
+Local:
+
+```bash
+cd /home/diegocosta/Documents/PROJETO/HealthIntel_Suplementar
+
+bash scripts/vps/export_snapshot_core_api_ans.sh
+```
+
+Copiar para VPS:
+
+```bash
+SNAPSHOT_FILE=<arquivo_gerado.sql.gz> \
+VPS_HOST=root@5.189.160.27 \
+bash scripts/vps/copy_snapshot_to_vps.sh
+```
+
+Na VPS:
+
+```bash
+ssh root@5.189.160.27
+
+cd /opt/healthintel
+
+HML_DEV_API_KEY=<CHAVE_HML_DEV_DA_VPS> \
+HML_ADMIN_API_KEY=<CHAVE_HML_ADMIN_DA_VPS> \
+bash scripts/vps/import_snapshot_core_api_ans.sh /opt/healthintel/snapshots/<arquivo_gerado.sql.gz>
+```
+
+Healthcheck na VPS:
+
+```bash
+HML_DEV_API_KEY=<CHAVE_HML_DEV_DA_VPS> \
+HML_ADMIN_API_KEY=<CHAVE_HML_ADMIN_DA_VPS> \
+bash scripts/vps/check_hml_ip.sh
+```
+
+Healthcheck público local:
+
+```bash
+HML_DEV_API_KEY=<CHAVE_HML_DEV_DA_VPS> \
+HML_ADMIN_API_KEY=<CHAVE_HML_ADMIN_DA_VPS> \
+bash scripts/vps/check_public_ip.sh
+```
+
+Tarefa 12 — Critérios de aceite:
+
+A Fase 11 só estará concluída se:
+
+* [ ] Diagnóstico local concluído.
+* [ ] Diagnóstico VPS concluído.
+* [ ] Snapshot gerado localmente.
+* [ ] Manifesto do snapshot gerado.
+* [ ] Snapshot copiado para VPS.
+* [ ] Backup pré-import criado na VPS.
+* [ ] Snapshot importado na VPS.
+* [ ] `api_ans.api_operadora` na VPS tem `count > 0`.
+* [ ] `/v1/operadoras` na VPS retorna dados reais.
+* [ ] `/v1/operadoras` público por IP retorna dados reais.
+* [ ] Frontend Live Tester retorna dados reais da VPS.
+* [ ] Healthcheck diferencia lista vazia de sucesso comercial.
+* [ ] Erro do init `027_fase5_premium_roles.sql` corrigido.
+* [ ] Nenhuma chave local `hi_local_*` usada na VPS HML.
+* [ ] Nenhum segredo commitado.
+* [ ] Nenhum Postgres/Redis/Mongo exposto publicamente.
+* [ ] Documentação da Fase 11 criada.
+* [ ] Rollback documentado.
+
+Saída final obrigatória:
+Responder com:
+
+1. Diagnóstico local.
+2. Diagnóstico da VPS.
+3. Tabelas encontradas localmente.
+4. Tabelas exportadas.
+5. Tabelas ignoradas e motivo.
+6. Arquivo snapshot gerado.
+7. Contagens antes/depois.
+8. Import realizado ou instruções para executar.
+9. Resultado dos endpoints.
+10. Resultado do healthcheck comercial.
+11. Correção do init 027.
+12. Arquivos criados.
+13. Arquivos alterados.
+14. Comandos executados.
+15. Pendências reais.
+16. Riscos.
+17. Rollback.
+18. Se está pronto ou não para demo comercial por IP.
+
+Importante:
+Não declarar produção.
+Declarar no máximo:
+
+* pronto para demo comercial controlada por IP;
+* pronto para migração para domínio/HTTPS;
+  somente se os dados reais estiverem carregados e os endpoints retornarem `total > 0`.
+
+```
+```

@@ -1,0 +1,18 @@
+     schemaname      |  total  
+---------------------+---------
+ plataforma          | 20 MB
+ pg_catalog          | 14 MB
+ public              | 1840 kB
+ nucleo_ans          | 1432 kB
+ bruto_ans           | 1216 kB
+ ref_ans             | 1192 kB
+ api_ans             | 1104 kB
+ consumo_premium_ans | 584 kB
+ information_schema  | 248 kB
+ mdm_ans             | 96 kB
+ consumo_ans         | 88 kB
+ bruto_cliente       | 80 kB
+ mdm_privado         | 64 kB
+ quality_ans         | 56 kB
+(14 rows)
+

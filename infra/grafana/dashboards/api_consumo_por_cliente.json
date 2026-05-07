@@ -1,0 +1,52 @@
+{
+  "uid": "hi-consumo-cliente",
+  "title": "API — Consumo por Cliente",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {"from": "now-24h", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Requisições por cliente (por hora)",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT\n  date_trunc('hour', timestamp_req) AS time,\n  chave_id::text AS cliente,\n  COUNT(*) AS requisicoes\nFROM plataforma.log_uso\nWHERE $__timeFilter(timestamp_req)\nGROUP BY 1, 2\nORDER BY 1",
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Top 10 chaves hoje (por volume)",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 8, "w": 24, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT\n  chave_id::text AS chave,\n  COUNT(*) AS requisicoes,\n  SUM(CASE WHEN codigo_status >= 500 THEN 1 ELSE 0 END) AS erros_5xx,\n  ROUND(AVG(latencia_ms)) AS latencia_media_ms,\n  SUM(CASE WHEN cache_hit THEN 1 ELSE 0 END) AS cache_hits\nFROM plataforma.log_uso\nWHERE date(timestamp_req) = CURRENT_DATE\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10",
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Endpoints mais chamados hoje",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT\n  endpoint,\n  COUNT(*) AS chamadas,\n  ROUND(AVG(latencia_ms)) AS latencia_media_ms\nFROM plataforma.log_uso\nWHERE date(timestamp_req) = CURRENT_DATE\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10",
+          "format": "table"
+        }
+      ]
+    }
+  ]
+}

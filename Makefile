@@ -6,7 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 SQLFLUFF_BIN := ../.venv/bin/sqlfluff
 RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-test-core dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-test-core dbt-seed demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts bootstrap-igr-layouts bootstrap-nip-layouts bootstrap-idss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core smoke-layout-cadop consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -119,6 +119,15 @@ bootstrap-sib-layouts:
 bootstrap-cadop-layouts:
 	$(PYTHON) scripts/bootstrap_layout_registry_cadop.py
 
+bootstrap-igr-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_igr.py
+
+bootstrap-nip-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_nip.py
+
+bootstrap-idss-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_idss.py
+
 billing-close:
 	$(PYTHON) scripts/fechar_ciclo_billing.py --referencia $(REF)
 
@@ -177,6 +186,9 @@ smoke-consumo:
 smoke-core:
 	$(PYTHON) scripts/smoke_core.py
 
+smoke-layout-cadop:
+	$(PYTHON) scripts/smoke_layout_cadop.py
+
 monitor-disco:
 	bash scripts/monitor_disco.sh
 
@@ -205,11 +217,15 @@ elt-validate-all:
 	$(PYTEST_BIN) ingestao/tests/test_elt_loaders.py -v
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) compile --select tag:staging
 
+PLANO ?= growth_local
+RPS ?=
+DURACAO ?=
+
 load-test:
-	bash scripts/run_load_test.sh
+	PLANO=$(PLANO) RPS=$(RPS) DURACAO=$(DURACAO) bash scripts/run_load_test.sh
 
 ci-local: compose-config lint sql-lint test
-	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps && $(DBT_ENV) $(DBT_BIN) compile
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) deps && $(DBT_ENV) $(DBT_BIN) parse && $(DBT_ENV) $(DBT_BIN) compile
 
 test:
 	$(PYTEST_BIN)

@@ -1,0 +1,112 @@
+{
+  "uid": "hi-backup-execucoes",
+  "title": "Backup — Últimas Execuções",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {"from": "now-7d", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Últimas 20 execuções de backup",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 10},
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "status"},
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"sucesso": {"color": "green", "index": 0}}},
+                  {"type": "value", "options": {"falha": {"color": "red", "index": 1}}},
+                  {"type": "value", "options": {"em_execucao": {"color": "blue", "index": 2}}}
+                ]
+              },
+              {"id": "custom.displayMode", "value": "color-background"}
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT\n  iniciado_em,\n  tipo,\n  repositorio,\n  status,\n  duracao_segundos,\n  ROUND(bytes_armazenados::numeric / 1024 / 1024 / 1024, 2) AS gb_armazenados\nFROM plataforma.backup_execucao\nORDER BY iniciado_em DESC\nLIMIT 20",
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Alertas críticos recentes (últimas 24h)",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 10, "w": 24, "h": 8},
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "severidade"},
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"critico": {"color": "red", "index": 0}}},
+                  {"type": "value", "options": {"aviso": {"color": "yellow", "index": 1}}}
+                ]
+              },
+              {"id": "custom.displayMode", "value": "color-background"}
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT\n  verificado_em,\n  check_tipo,\n  severidade,\n  mensagem\nFROM plataforma.backup_alerta\nWHERE verificado_em > NOW() - INTERVAL '24 hours'\nORDER BY verificado_em DESC\nLIMIT 50",
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Backups full nos últimos 7 dias",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 0, "y": 18, "w": 8, "h": 4},
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT COUNT(*) AS total FROM plataforma.backup_execucao WHERE tipo = 'full' AND status = 'sucesso' AND iniciado_em > NOW() - INTERVAL '7 days'",
+          "format": "table"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Alertas críticos últimas 24h",
+      "datasource": {"type": "grafana-postgresql-datasource", "uid": "postgres"},
+      "gridPos": {"x": 8, "y": 18, "w": 8, "h": 4},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "rawSql": "SELECT COUNT(*) AS alertas_criticos FROM plataforma.backup_alerta WHERE severidade = 'critico' AND verificado_em > NOW() - INTERVAL '24 hours'",
+          "format": "table"
+        }
+      ]
+    }
+  ]
+}

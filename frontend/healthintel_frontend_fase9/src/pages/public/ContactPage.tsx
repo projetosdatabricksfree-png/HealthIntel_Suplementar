@@ -84,7 +84,14 @@ export function ContactPage() {
           </label>
           <label>
             Plano de interesse
-            <input value={plano} onChange={(event) => setPlano(event.target.value)} placeholder="Sandbox Técnico, Piloto Assistido, Core API, Core Pro..." />
+            <select value={plano} onChange={(event) => setPlano(event.target.value)}>
+              <option value="">Selecione um plano...</option>
+              <option value="Sandbox Técnico">Sandbox Técnico</option>
+              <option value="Piloto Assistido">Piloto Assistido</option>
+              <option value="Core API">Core API</option>
+              <option value="Core Pro">Core Pro</option>
+              <option value="Enterprise">Enterprise</option>
+            </select>
           </label>
           <label className="full">
             Mensagem

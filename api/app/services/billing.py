@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 from api.app.core.database import SessionLocal
 from api.app.core.security import gerar_hash_sha256
-from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest
+from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest, ChaveCriacaoRequest
 
 REFERENCIA_REGEX = re.compile(r"^\d{4}-\d{2}$")
 
@@ -747,5 +747,105 @@ async def registrar_upgrade_plano(payload: BillingUpgradeRequest) -> dict:
         "meta": {
             "ator": payload.ator,
             "origem": payload.origem,
+        },
+    }
+
+
+async def criar_chave_api(cliente_id: str, payload: "ChaveCriacaoRequest") -> dict:
+    """Cria chave API para um cliente existente. Retorna chave plain-text uma unica vez."""
+    prefixo = "hi_" + secrets.token_urlsafe(7)[:10].replace("-", "x").replace("_", "y")
+    corpo = secrets.token_urlsafe(32)
+    chave_plain = f"{prefixo}_{corpo}"
+    hash_chave = gerar_hash_sha256(chave_plain)
+
+    async with SessionLocal() as session:
+        cliente_row = await session.execute(
+            text(
+                "SELECT id, plano_id, status, nome FROM plataforma.cliente "
+                "WHERE id = cast(:cliente_id as uuid) LIMIT 1"
+            ),
+            {"cliente_id": cliente_id},
+        )
+        cliente = cliente_row.mappings().first()
+        if not cliente:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"codigo": "CLIENTE_NAO_ENCONTRADO", "mensagem": f"Cliente {cliente_id} nao encontrado."},
+            )
+        if cliente["status"] != "ativo":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"codigo": "CLIENTE_INATIVO", "mensagem": "Nao e possivel criar chave para cliente inativo."},
+            )
+
+        plano_row = await session.execute(
+            text("SELECT nome FROM plataforma.plano WHERE id = :plano_id LIMIT 1"),
+            {"plano_id": cliente["plano_id"]},
+        )
+        plano = plano_row.mappings().first()
+        plano_nome = plano["nome"] if plano else "desconhecido"
+
+        chave_id = str(uuid4())
+        await session.execute(
+            text(
+                """
+                INSERT INTO plataforma.chave_api
+                  (id, cliente_id, plano_id, hash_chave, prefixo_chave, status, criado_em)
+                VALUES (
+                  cast(:chave_id as uuid),
+                  cast(:cliente_id as uuid),
+                  :plano_id,
+                  :hash_chave,
+                  :prefixo_chave,
+                  'ativo',
+                  now()
+                )
+                """
+            ),
+            {
+                "chave_id": chave_id,
+                "cliente_id": cliente_id,
+                "plano_id": str(cliente["plano_id"]),
+                "hash_chave": hash_chave,
+                "prefixo_chave": prefixo,
+            },
+        )
+
+        await session.execute(
+            text(
+                """
+                INSERT INTO plataforma.auditoria_cobranca
+                  (evento, cliente_id, chave_id, descricao, criado_em, operador)
+                VALUES (
+                  'chave_criada',
+                  cast(:cliente_id as uuid),
+                  cast(:chave_id as uuid),
+                  :descricao,
+                  now(),
+                  :ator
+                )
+                """
+            ),
+            {
+                "cliente_id": cliente_id,
+                "chave_id": chave_id,
+                "descricao": payload.descricao or f"Criada por {payload.ator}",
+                "ator": payload.ator,
+            },
+        )
+        await session.commit()
+
+    return {
+        "dados": {
+            "chave_id": chave_id,
+            "prefixo": prefixo,
+            "chave_plain": chave_plain,
+            "cliente_id": cliente_id,
+            "plano": plano_nome,
+            "criado_em": datetime.now(tz=UTC).isoformat(),
+        },
+        "meta": {
+            "aviso": "Guarde a chave_plain em local seguro. Ela nao sera exibida novamente.",
+            "ator": payload.ator,
         },
     }

@@ -157,13 +157,19 @@ small {
 }
 
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-  gap: clamp(2rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  gap: clamp(2rem, 5vw, 4rem);
   padding: clamp(4rem, 8vw, 7rem) clamp(1.25rem, 4vw, 4rem);
-  max-width: 1280px;
+  max-width: 960px;
   margin: 0 auto;
+}
+
+.hero .hero-actions,
+.hero .trust-strip {
+  justify-content: center;
 }
 
 .hero h1,

@@ -1,0 +1,21 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: true
+
+  - name: PostgreSQL
+    uid: postgres
+    type: grafana-postgresql-datasource
+    url: postgres:5432
+    database: ${POSTGRES_DB:-healthintel}
+    user: ${POSTGRES_USER:-healthintel}
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD:-healthintel}
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600

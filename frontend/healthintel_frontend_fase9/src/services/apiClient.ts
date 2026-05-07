@@ -1,7 +1,14 @@
 import { sampleResponse } from '../data/mock';
 import { getApiKey } from './storage';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+function getDefaultApiBaseUrl(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  return `${window.location.protocol}//${window.location.hostname}:8080`;
+}
+
+const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL ?? '').trim() || getDefaultApiBaseUrl();
 const ENABLE_DEMO_FALLBACK = String(import.meta.env.VITE_ENABLE_DEMO_FALLBACK ?? 'false') === 'true';
 const ALLOWED_DEMO_MODES = new Set(['development', 'dev', 'local', 'homologacao', 'hml', 'staging', 'test']);
 

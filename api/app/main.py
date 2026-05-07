@@ -1,9 +1,12 @@
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from api.app.core.config import get_settings
@@ -12,6 +15,7 @@ from api.app.middleware.hardening import aplicar_hardening_http
 from api.app.middleware.log_requisicao import registrar_tempo_requisicao
 from api.app.routers import (
     admin_billing,
+    admin_debug,
     admin_layout,
     bronze,
     cnes,
@@ -25,11 +29,31 @@ from api.app.routers import (
     rede,
     regulatorio,
     regulatorio_v2,
+    status_page,
     tiss,
 )
 from api.app.services.health import obter_prontidao
 
 settings = get_settings()
+
+
+def _filtrar_dados_sensiveis(event: dict, hint: dict) -> dict:
+    req = event.get("request", {})
+    headers = req.get("headers", {})
+    for h in ("x-api-key", "authorization"):
+        if h in headers:
+            headers[h] = "[filtered]"
+    return event
+
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        integrations=[FastApiIntegration()],
+        before_send=_filtrar_dados_sensiveis,
+        environment=settings.app_env,
+        traces_sample_rate=0.1,
+    )
 
 
 @asynccontextmanager
@@ -38,6 +62,8 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title=settings.app_nome, version=settings.app_versao, lifespan=lifespan)
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
 app.add_middleware(
     CORSMiddleware,
@@ -63,6 +89,8 @@ app.include_router(cnes.router, prefix=settings.app_prefixo)
 app.include_router(tiss.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)
+app.include_router(admin_debug.router)
+app.include_router(status_page.router)
 
 
 @app.exception_handler(HTTPException)

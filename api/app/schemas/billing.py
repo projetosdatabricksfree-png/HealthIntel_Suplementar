@@ -15,3 +15,8 @@ class BillingUpgradeRequest(BaseModel):
     ator: str = Field(default="sistema")
     origem: str = Field(default="manual")
     rotacionar_chaves: bool = Field(default=False)
+
+
+class ChaveCriacaoRequest(BaseModel):
+    descricao: str = Field(default="", description="Descricao da chave para auditoria.")
+    ator: str = Field(default="admin", description="Operador responsavel pela criacao.")

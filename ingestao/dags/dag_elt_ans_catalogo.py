@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -15,8 +15,14 @@ DBT_ENV = (
 with DAG(
     dag_id="dag_elt_ans_catalogo",
     start_date=datetime(2026, 1, 1),
-    schedule=None,
+    # 0 7 * * * UTC = 04:00 BRT diario (Core); historico via trigger manual com params.escopo
+    # HARDGATE: habilitar na VPS somente apos §15.1 (NIP/IGR/IDSS) e §15.2 (layouts Mongo confirmados)
+    schedule="0 7 * * *",
     catchup=False,
+    default_args={
+        "retries": 2,
+        "retry_delay": timedelta(minutes=10),
+    },
     params={
         "escopo": "sector_core",
         "familias": "",

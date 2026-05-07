@@ -1,3 +1,7 @@
+# APOSENTADO — use bootstrap_layout_registry_regulatorio_v2.py
+# Este script (v1) e mantido como referencia historica. Nao rodar em producao.
+# Para registrar/atualizar layouts de regulatorio, use a versao v2 canonica.
+
 import asyncio
 
 from mongo_layout_service.app.core.database import get_database, get_mongo_client

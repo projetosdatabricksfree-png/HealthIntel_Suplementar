@@ -4,6 +4,12 @@ from typing import Any
 
 import httpx
 
+# Endpoints onde dados: [] em producao sao falha, nao apenas HTTP 200.
+_EXIGE_DADOS_NAO_VAZIOS = {
+    "/v1/operadoras",
+    "/v1/rankings/operadora/score",
+}
+
 
 async def _coletar(
     client: httpx.AsyncClient,
@@ -18,10 +24,24 @@ async def _coletar(
         body: Any = response.json()
     except ValueError:
         body = response.text
+
+    payload_vazio = False
+    if response.is_success and isinstance(body, dict):
+        dados = body.get("dados", body.get("data"))
+        meta = body.get("meta", {})
+        total = meta.get("total", -1) if isinstance(meta, dict) else -1
+        path = url.split("?")[0]
+        if path in _EXIGE_DADOS_NAO_VAZIOS:
+            if isinstance(dados, list) and len(dados) == 0:
+                payload_vazio = True
+            elif total == 0:
+                payload_vazio = True
+
     return {
         "url": url,
         "status_code": response.status_code,
-        "ok": response.is_success,
+        "ok": response.is_success and not payload_vazio,
+        "payload_vazio": payload_vazio,
         "body": body,
     }
 
@@ -75,9 +95,10 @@ async def main() -> None:
         ]
 
     falhas = [r for r in resultados if not r["ok"]]
-    print({"base_url": base_url, "total_checks": len(resultados), "falhas": len(falhas)})
+    vazios = [r for r in resultados if r.get("payload_vazio")]
+    print({"base_url": base_url, "total_checks": len(resultados), "falhas": len(falhas), "payload_vazio": len(vazios)})
     for r in resultados:
-        print({"url": r["url"], "status_code": r["status_code"], "ok": r["ok"]})
+        print({"url": r["url"], "status_code": r["status_code"], "ok": r["ok"], "payload_vazio": r.get("payload_vazio", False)})
     if falhas:
         raise SystemExit(1)
 

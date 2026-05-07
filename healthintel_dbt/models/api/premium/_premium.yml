@@ -8,8 +8,7 @@ models:
       competencia e registro_ans. Owner: engenharia de dados HealthIntel.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["competencia", "registro_ans"]
+          combination_of_columns: ["competencia", "registro_ans"]
     columns:
       - name: competencia
         data_tests:
@@ -24,15 +23,13 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['VALIDO']
+              values: ['VALIDO']
       - name: cnpj_digito_valido
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: [true]
-                quote: false
+              values: [true]
+              quote: false
       - name: quality_score_documental
         data_tests:
           - not_null
@@ -43,8 +40,7 @@ models:
       competencia e cnes_normalizado.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["competencia", "cnes_normalizado"]
+          combination_of_columns: ["competencia", "cnes_normalizado"]
     columns:
       - name: competencia
         data_tests:
@@ -62,22 +58,19 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['VALIDO']
+              values: ['VALIDO']
       - name: cnes_formato_valido
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: [true]
-                quote: false
+              values: [true]
+              quote: false
       - name: cnpj_digito_valido
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: [true]
-                quote: false
+              values: [true]
+              quote: false
       - name: quality_score_cnes
         data_tests:
           - not_null
@@ -88,8 +81,7 @@ models:
       Modo CI sintético — não comercial.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["trimestre", "registro_ans", "cd_procedimento_tuss"]
+          combination_of_columns: ["trimestre", "registro_ans", "cd_procedimento_tuss"]
     columns:
       - name: trimestre
         data_tests:
@@ -139,8 +131,7 @@ models:
       FastAPI deve aplicar filtro de tenant na Sprint 32.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["tenant_id", "contrato_master_id"]
+          combination_of_columns: ["tenant_id", "contrato_master_id"]
     columns:
       - name: tenant_id
         data_tests:
@@ -155,8 +146,7 @@ models:
       FastAPI deve aplicar filtro de tenant na Sprint 32.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["tenant_id", "subfatura_master_id", "competencia"]
+          combination_of_columns: ["tenant_id", "subfatura_master_id", "competencia"]
     columns:
       - name: tenant_id
         data_tests:
@@ -174,8 +164,7 @@ models:
       fonte_documento e documento_quality_status.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns: ["fonte_documento", "documento_quality_status"]
+          combination_of_columns: ["fonte_documento", "documento_quality_status"]
     columns:
       - name: fonte_documento
         data_tests:
@@ -184,8 +173,7 @@ models:
         data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
+              values: ['VALIDO', 'INVALIDO_FORMATO', 'INVALIDO_DIGITO', 'SEQUENCIA_INVALIDA', 'NULO']
       - name: quality_score_documental
         data_tests:
           - not_null

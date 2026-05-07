@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 
 from api.app.dependencia import verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
-from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest
+from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest, ChaveCriacaoRequest
 from api.app.services.billing import (
+    criar_chave_api,
     fechar_ciclo_faturamento,
     listar_resumo_faturamento,
     registrar_upgrade_plano,
@@ -33,3 +34,12 @@ async def post_fechar_ciclo_billing(payload: BillingFechamentoRequest) -> dict:
 @router.post("/upgrade")
 async def post_upgrade_plano(payload: BillingUpgradeRequest) -> dict:
     return await registrar_upgrade_plano(payload)
+
+
+@router.post("/clientes/{cliente_id}/chaves", status_code=201)
+async def post_criar_chave_cliente(
+    payload: ChaveCriacaoRequest,
+    cliente_id: str = Path(..., description="UUID do cliente."),
+) -> dict:
+    """Cria uma chave API para o cliente. A chave plain-text e retornada uma unica vez."""
+    return await criar_chave_api(cliente_id, payload)

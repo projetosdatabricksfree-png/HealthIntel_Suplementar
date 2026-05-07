@@ -33,6 +33,31 @@ Documentação: `docs/produto/fase_9_frontend_portal_cliente.md`
 
 ---
 
+## Deploy VPS por IP / Homologação
+
+A Fase 10 prepara a subida controlada em VPS por IP, sem declarar produção final.
+
+URLs de homologação por IP:
+
+- Frontend: `http://5.189.160.27`
+- API: `http://5.189.160.27:8080`
+
+Arquivos principais:
+
+- `.env.hml.example`
+- `scripts/vps/setup_base_vps.sh`
+- `scripts/vps/deploy_hml_ip.sh`
+- `scripts/vps/check_hml_ip.sh`
+- `scripts/vps/check_public_ip.sh`
+
+Documentação: `docs/infra/fase_10_deploy_vps_ip_homologacao.md`
+
+Migração futura para domínio/HTTPS: `docs/infra/fase_10_migracao_dominio_cloudflare.md`
+
+Acesso SSH e procedimentos de operação na VPS: `docs/infra/acesso_vps.md`
+
+---
+
 ## 1. Visão do Produto
 
 HealthIntel Suplementar é uma **plataforma DaaS** que encapsula todo o ciclo de vida de dados regulatórios da saúde suplementar:

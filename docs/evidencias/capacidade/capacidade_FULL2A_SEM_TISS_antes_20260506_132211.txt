@@ -1,0 +1,67 @@
+=== SNAPSHOT SISTEMA: antes (20260506_132211) ===
+Nível: FULL2A_SEM_TISS
+
+--- DISCO (df -h) ---
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           1.6G  4.4M  1.6G   1% /run
+/dev/nvme0n1p2  468G   75G  370G  17% /
+tmpfs           7.7G   90M  7.6G   2% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+efivarfs        438K  373K   61K  87% /sys/firmware/efi/efivars
+tmpfs           7.7G     0  7.7G   0% /run/qemu
+/dev/nvme0n1p1  1.1G  6.2M  1.1G   1% /boot/efi
+tmpfs           1.6G  3.7M  1.6G   1% /run/user/1000
+
+--- INODES (df -i) ---
+Filesystem       Inodes  IUsed    IFree IUse% Mounted on
+tmpfs           2006584   1811  2004773    1% /run
+/dev/nvme0n1p2 31195136 868040 30327096    3% /
+tmpfs           2006584    278  2006306    1% /dev/shm
+tmpfs           2006584      5  2006579    1% /run/lock
+efivarfs              0      0        0     - /sys/firmware/efi/efivars
+tmpfs           2006584      1  2006583    1% /run/qemu
+/dev/nvme0n1p1        0      0        0     - /boot/efi
+tmpfs            401316    212   401104    1% /run/user/1000
+
+--- MEMÓRIA (free -h) ---
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi        11Gi       586Mi       1.4Gi       4.7Gi       3.9Gi
+Swap:          4.0Gi       3.0Gi       1.0Gi
+
+--- CPU (lscpu resumido) ---
+CPU(s):                                  12
+Model name:                              13th Gen Intel(R) Core(TM) i5-1334U
+Thread(s) per core:                      2
+Core(s) per socket:                      10
+NUMA node0 CPU(s):                       0-11
+
+--- DOCKER SYSTEM DF ---
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          12        11        8.925GB   74.56MB (0%)
+Containers      17        15        658.1MB   53.34MB (8%)
+Local Volumes   14        6         1.487GB   352B (0%)
+Build Cache     60        0         2.394GB   2.276GB
+
+--- DOCKER STATS (no-stream) ---
+CONTAINER ID   NAME                            CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+b676c8efedd9   healthintel_nginx               0.00%     2.219MiB / 15.31GiB   0.01%     135kB / 141kB     127kB / 24.6kB    2
+96b2e9dae33f   healthintel_api                 0.26%     77.83MiB / 15.31GiB   0.50%     26.4MB / 407kB    9.68MB / 172MB    5
+c0aca59b34f3   bibliashorts_beat               0.00%     9.457MiB / 15.31GiB   0.06%     15.2kB / 126B     4.89MB / 43.4MB   3
+c437e60b795e   bibliashorts_api                0.24%     12.22MiB / 15.31GiB   0.08%     15.2kB / 126B     2.42MB / 30.8MB   6
+b2878a26a2c4   bibliashorts_worker             0.10%     36.87MiB / 15.31GiB   0.24%     24.1MB / 26.4MB   9.89MB / 336MB    17
+4fb7ad986321   bibliashorts_nginx              0.00%     2.227MiB / 15.31GiB   0.01%     227kB / 247kB     2.01MB / 12.3kB   2
+a3e5e6baa404   bibliashorts_postgres           0.00%     17.8MiB / 15.31GiB    0.11%     26.7kB / 126B     7.55MB / 6.52MB   6
+e1ad34e975f3   bibliashorts_redis              0.54%     4.488MiB / 15.31GiB   0.03%     27MB / 24.6MB     905kB / 156kB     6
+d97621811f9f   zealous_archimedes              0.00%     6.711MiB / 15.31GiB   0.04%     26.4kB / 3.71kB   655kB / 913kB     14
+65659cb02c05   healthintel_airflow_scheduler   8.79%     298.9MiB / 15.31GiB   1.91%     761MB / 740MB     197MB / 443MB     73
+4f567dd38a8a   healthintel_airflow_webserver   0.28%     225.8MiB / 15.31GiB   1.44%     816kB / 239kB     335MB / 458MB     8
+b557e0e8ea7a   healthintel_layout_service      0.35%     21.86MiB / 15.31GiB   0.14%     3.29MB / 1.19MB   44.2MB / 32.2MB   10
+4cca91d3baf6   healthintel_postgres            1.38%     56.56MiB / 15.31GiB   0.36%     741MB / 763MB     2.49GB / 2.36GB   9
+dc05c024ff4e   healthintel_redis               7.06%     8.969MiB / 15.31GiB   0.06%     56.8kB / 25.7kB   15.3MB / 16.4kB   6
+1c057599c2d2   healthintel_mongo               0.85%     148MiB / 15.31GiB     0.94%     1.19MB / 3.21MB   235MB / 223MB     37
+
+--- TAMANHO PROJETO ---
+486M	.
+
+--- TAMANHO LANDING ZONE ---
+4.0K	data/landing

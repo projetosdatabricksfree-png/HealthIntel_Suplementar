@@ -3,8 +3,16 @@ import random
 
 from locust import HttpUser, between, task
 
+# Registro ANS de amostra para testes de detalhe (substitui por valor real da VPS)
+_REGISTRO_ANS_AMOSTRA = os.getenv("LOCUST_REGISTRO_ANS", "123456")
+
+# UF de amostra para filtros de mercado
+_UF_AMOSTRA = os.getenv("LOCUST_UF", "SP")
+
 
 class ApiUser(HttpUser):
+    """Plano growth_local: mix realista dos 6 endpoints Core MVP."""
+
     wait_time = between(0.5, 1.5)
 
     def on_start(self) -> None:
@@ -33,7 +41,7 @@ class ApiUser(HttpUser):
     @task(2)
     def detalhar_operadora(self) -> None:
         self.client.get(
-            "/v1/operadoras/123456",
+            f"/v1/operadoras/{_REGISTRO_ANS_AMOSTRA}",
             headers=self.headers,
             name="/v1/operadoras/{registro_ans}",
         )
@@ -41,9 +49,27 @@ class ApiUser(HttpUser):
     @task(2)
     def consultar_score(self) -> None:
         self.client.get(
-            "/v1/operadoras/123456/score",
+            f"/v1/operadoras/{_REGISTRO_ANS_AMOSTRA}/score",
             headers=self.headers,
             name="/v1/operadoras/{registro_ans}/score",
+        )
+
+    @task(2)
+    def ranking_score(self) -> None:
+        self.client.get(
+            "/v1/rankings/operadora/score",
+            headers=self.headers,
+            params={"pagina": 1, "tamanho": 20},
+            name="/v1/rankings/operadora/score",
+        )
+
+    @task(1)
+    def mercado_municipio(self) -> None:
+        self.client.get(
+            "/v1/mercado/municipio",
+            headers=self.headers,
+            params={"uf": _UF_AMOSTRA},
+            name="/v1/mercado/municipio",
         )
 
     @task(1)

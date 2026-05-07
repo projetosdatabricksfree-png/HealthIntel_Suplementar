@@ -59,6 +59,7 @@ class Settings(BaseSettings):
 
     api_jwt_admin_secret: str = Field(default="trocar_em_producao", alias="API_JWT_ADMIN_SECRET")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    sentry_dsn: str | None = Field(default=None, alias="SENTRY_DSN")
 
     @property
     def postgres_dsn(self) -> str:
