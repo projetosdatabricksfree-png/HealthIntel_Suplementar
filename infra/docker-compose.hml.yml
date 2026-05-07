@@ -96,3 +96,13 @@ services:
     ports:
       - "${API_EXTERNAL_PORT:?API_EXTERNAL_PORT obrigatorio em hml}:8080"
       - "${LAYOUT_EXTERNAL_PORT:?LAYOUT_EXTERNAL_PORT obrigatorio em hml}:8081"
+
+  grafana:
+    restart: unless-stopped
+    environment:
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL}
+      GRAFANA_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-healthintel}
+    ports:
+      - "127.0.0.1:${GRAFANA_EXTERNAL_PORT:-3001}:3000"

@@ -534,11 +534,11 @@ Existem em paralelo:
 Acao:
 
 - [x] scripts v1 mantidos com aviso no topo redirecionando para v2;
-- [ ] marcar layouts v1 como `status='aposentado'` no Mongo via `POST /layout/layouts/{id}/status` (pendente VPS — consultar `GET /layout/layouts?dataset_codigo=regulatorio` primeiro).
+- [x] N/A nesta VPS: consultado `GET /layout/datasets` em 2026-05-07 — somente layouts tipados novos registrados (cadop, idss, igr, nip, sib_municipio, sib_operadora). Nenhum layout v1 de regulatorio ou financeiro presente no MongoDB para aposentar.
 
 Criterio de aceite:
 
-- [ ] consulta `GET /layout/layouts?status=ativo` nao retorna nenhum layout v1 de regulatorio ou financeiro.
+- [x] consultado `GET /layout/layouts` na VPS: todos os 6 layouts estao `status=ativo` e nenhum e v1 de regulatorio/financeiro.
 
 ### 15.4 landing.py sem retry HTTP nem registro em plataforma.job
 
@@ -760,8 +760,8 @@ Acao:
 
 Criterio de aceite:
 
-- [ ] ciclo completo testado em homologacao com chave admin na VPS (pendente deploy);
-- [x] logica de auditoria implementada.
+- [x] ciclo completo testado em 2026-05-07 na VPS: `POST /admin/billing/clientes/22222222.../chaves` retornou 201 com `chave_plain`, `prefixo` (10 chars) e aviso em `meta`. Dois bugs corrigidos: prefixo truncado em 10 chars (`billing.py:756`) e INSERT `auditoria_cobranca` alinhado ao schema real (`id, ator, origem, payload`);
+- [x] logica de auditoria implementada e validada.
 
 ### 17.4 Runbook de criacao de chave comercial
 
@@ -826,11 +826,12 @@ Caddy renova automaticamente, mas sem alerta em caso de falha de renovacao.
 Acao:
 
 - [x] `scripts/vps/check_tls_expiracao.sh` criado — verifica validade para `api.healthintel.com.br` e `app.healthintel.com.br`, alerta via Slack webhook e/ou email se < 30 dias;
-- [ ] instalar no cron diario da VPS: `0 7 * * * root bash /opt/healthintel/scripts/vps/check_tls_expiracao.sh` (pendente).
+- [x] instalado em `/etc/cron.d/healthintel-tls` na VPS em 2026-05-07: `0 7 * * * root bash /opt/healthintel/scripts/vps/check_tls_expiracao.sh >> /var/log/healthintel/tls_check.log 2>&1`;
+- [x] execucao imediata validada: `api.healthintel.com.br` expira em 89 dias (2026-08-04); `app.healthintel.com.br` expira em 89 dias.
 
 Criterio de aceite:
 
-- [x] script implementado; instalacao no cron pendente VPS.
+- [x] cron instalado e validado na VPS; proxima execucao automatica as 07:00 UTC diariamente.
 
 ### 18.5 Documentar acesso SSH
 
@@ -866,12 +867,16 @@ Acao:
   - [x] `api_consumo_por_cliente.json`
   - [x] `dbt_freshness_por_dataset.json`
   - [x] `backup_ultimas_execucoes.json`
-- [ ] expor Grafana em `app.healthintel.com.br/observabilidade` com auth admin (Caddy — pendente VPS).
+- [x] Grafana exposto em `https://app.healthintel.com.br/observabilidade` via Caddy em 2026-05-07:
+  - Caddyfile atualizado com `handle /observabilidade*` roteando para `127.0.0.1:3001`;
+  - Grafana reconfigurado com `GF_SERVER_ROOT_URL=https://app.healthintel.com.br/observabilidade` e `GF_SERVER_SERVE_FROM_SUB_PATH=true` via `infra/docker-compose.hml.yml`;
+  - `/observabilidade/api/health` responde `{"database":"ok","version":"11.1.0"}`.
 
 Criterio de aceite:
 
-- [x] 5 dashboards versionados em `infra/grafana/dashboards/`; subida na VPS e teste de acesso pendente;
-- [x] metricas API expostas em `/metrics` via `prometheus-fastapi-instrumentator`.
+- [x] 5 dashboards versionados em `infra/grafana/dashboards/`;
+- [x] metricas API expostas em `/metrics` via `prometheus-fastapi-instrumentator`;
+- [x] `https://app.healthintel.com.br/observabilidade/api/health` retorna `ok` (validado 2026-05-07).
 
 ### 19.2 Sentry/error tracking ausente
 
