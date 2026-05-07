@@ -225,7 +225,7 @@ services:
     image: prom/prometheus:v2.53.0
     container_name: healthintel_prometheus
     ports:
-      - "${PROMETHEUS_EXTERNAL_PORT:-9090}:9090"
+      - "127.0.0.1:${PROMETHEUS_EXTERNAL_PORT:-9090}:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -241,7 +241,7 @@ services:
     image: prom/node-exporter:v1.8.1
     container_name: healthintel_node_exporter
     ports:
-      - "9100:9100"
+      - "127.0.0.1:9100:9100"
     pid: host
     volumes:
       - /proc:/host/proc:ro
@@ -257,7 +257,7 @@ services:
     image: grafana/grafana:11.1.0
     container_name: healthintel_grafana
     ports:
-      - "${GRAFANA_EXTERNAL_PORT:-3000}:3000"
+      - "127.0.0.1:${GRAFANA_EXTERNAL_PORT:-3000}:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-healthintel}
