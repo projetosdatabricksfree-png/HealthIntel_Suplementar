@@ -14,8 +14,8 @@ export function LoginPage() {
   const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const { success, error, warning } = useNotification();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('cliente@healthintel.local');
-  const [apiKey, setApiKey] = useState('hi_local_dev_2026_api_key');
+  const [email, setEmail] = useState('');
+  const [apiKey, setApiKey] = useState('');
 
   if (isAuthenticated) {
     return <Navigate to="/app" replace />;
@@ -26,26 +26,6 @@ export function LoginPage() {
       <Card className="login-card">
         <p className="eyebrow">Portal do cliente</p>
         <h1>Entrar no HealthIntel</h1>
-
-        {GOOGLE_CLIENT_ID && (
-          <div className="google-login-wrapper">
-            <GoogleLogin
-              onSuccess={(response) => {
-                if (response.credential) {
-                  loginWithGoogle(response.credential);
-                  success('Login com Google realizado.');
-                  navigate('/app');
-                }
-              }}
-              onError={() => error('Falha no login com Google. Tente novamente.')}
-              text="signin_with"
-              shape="rectangular"
-              size="large"
-              width="100%"
-            />
-            <div className="login-divider"><span>ou entre com API key</span></div>
-          </div>
-        )}
 
         <form onSubmit={(event) => {
           event.preventDefault();
@@ -75,6 +55,26 @@ export function LoginPage() {
           </label>
           <Button type="submit">Entrar no portal</Button>
         </form>
+
+        {GOOGLE_CLIENT_ID && (
+          <div className="google-login-wrapper" style={{ marginTop: '1.5rem' }}>
+            <div className="login-divider" style={{ marginBottom: '1.5rem' }}><span>ou entre com Google</span></div>
+            <GoogleLogin
+              onSuccess={(response) => {
+                if (response.credential) {
+                  loginWithGoogle(response.credential);
+                  success('Login com Google realizado.');
+                  navigate('/app');
+                }
+              }}
+              onError={() => error('Falha no login com Google. Tente novamente.')}
+              text="signin_with"
+              shape="rectangular"
+              size="large"
+              width="100%"
+            />
+          </div>
+        )}
       </Card>
     </section>
   );

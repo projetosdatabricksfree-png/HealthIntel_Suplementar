@@ -1,5 +1,9 @@
 import type { ApiPlan } from '../types/domain';
 
+const STRIPE_PAYMENT_LINK_SANDBOX = String(
+  import.meta.env.VITE_STRIPE_PAYMENT_LINK_SANDBOX ?? ''
+).trim();
+
 export const plans: ApiPlan[] = [
   {
     nome: 'Sandbox Técnico',
@@ -17,7 +21,7 @@ export const plans: ApiPlan[] = [
       'Sem SLA',
       'Sem suporte dedicado'
     ],
-    stripePaymentLink: '',
+    stripePaymentLink: STRIPE_PAYMENT_LINK_SANDBOX,
     planoBd: 'starter_local'
   },
   {

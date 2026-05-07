@@ -92,10 +92,10 @@ printf '[setup_pgbackrest_repo2] materializando %s -> %s\n' "$CONF_TEMPLATE" "$C
 mkdir -p "$(dirname "$CONF_DEST")"
 envsubst < "$CONF_TEMPLATE" > "${CONF_DEST}.tmp"
 
-# Verificar que nao ha variaveis nao expandidas
-if grep -q '\${' "${CONF_DEST}.tmp"; then
+# Verificar que nao ha variaveis nao expandidas (ignorando comentarios)
+if grep -E "^[^#]*\${" "${CONF_DEST}.tmp"; then
   printf 'ERRO: conf materializado ainda contem variaveis nao expandidas:\n' >&2
-  grep '\${' "${CONF_DEST}.tmp" >&2
+  grep -E "^[^#]*\${" "${CONF_DEST}.tmp" >&2
   rm -f "${CONF_DEST}.tmp"
   exit 1
 fi
@@ -107,23 +107,26 @@ printf '[setup_pgbackrest_repo2] OK: %s materializado\n' "$CONF_DEST"
 
 # --- pgbackrest check para validar repo2 ---
 printf '\n[setup_pgbackrest_repo2] executando pgbackrest check...\n'
-if ! sudo -u postgres pgbackrest --stanza="$STANZA" check; then
+if ! pgbackrest --stanza="$STANZA" check; then
   printf 'ERRO: pgbackrest check falhou. Verificar conectividade S3 e credenciais.\n' >&2
-  printf 'Dicas:\n'
-  printf '  - PGBACKREST_REPO2_ENDPOINT deve incluir o host sem "https://"\n'
-  printf '  - Para Cloudflare R2: endpoint = <account_id>.r2.cloudflarestorage.com\n'
-  printf '  - Verificar permissoes do bucket (ListBucket, GetObject, PutObject, DeleteObject)\n'
+  printf 'Dicas:\n' >&2
+  printf '  - PGBACKREST_REPO2_ENDPOINT deve incluir o host sem "https://"\n' >&2
+  printf '  - Para Cloudflare R2: endpoint = <account_id>.r2.cloudflarestorage.com\n' >&2
+  printf '  - Verificar permissoes do bucket (ListBucket, GetObject, PutObject, DeleteObject)\n' >&2
   exit 1
 fi
-printf '[setup_pgbackrest_repo2] OK: pgbackrest check passou\n'
+
+# --- Criar stanza no repo2 se necessário ---
+printf '\n[setup_pgbackrest_repo2] inicializando stanza no repo2...\n'
+pgbackrest --stanza="$STANZA" --repo=2 stanza-create
 
 # --- Primeiro backup full no repo2 ---
 printf '\n[setup_pgbackrest_repo2] executando primeiro backup full no repo2...\n'
 printf 'Este processo pode levar vários minutos dependendo do tamanho do banco.\n'
-sudo -u postgres pgbackrest --stanza="$STANZA" --repo=2 backup --type=full
+pgbackrest --stanza="$STANZA" --repo=2 backup --type=full
 
 printf '\n[setup_pgbackrest_repo2] verificando repo2 em pgbackrest info...\n'
-sudo -u postgres pgbackrest --stanza="$STANZA" info
+pgbackrest --stanza="$STANZA" info
 
 printf '\n[setup_pgbackrest_repo2] concluido em %s\n' "$(date --iso-8601=seconds)"
 printf '\nPROXIMOS PASSOS:\n'

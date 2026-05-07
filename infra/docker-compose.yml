@@ -6,11 +6,22 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-healthintel}
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
+    command: 
+      - "postgres"
+      - "-c"
+      - "archive_mode=on"
+      - "-c"
+      - "archive_command=true # pgbackrest"
+      - "-c"
+      - "max_wal_senders=10"
+      - "-c"
+      - "wal_level=replica"
     ports:
       - "${POSTGRES_EXTERNAL_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d
+      - /var/run/postgresql:/var/run/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-healthintel} -d ${POSTGRES_DB:-healthintel}"]
       interval: 10s
@@ -74,6 +85,7 @@ services:
       API_MAX_REQUEST_SIZE_BYTES: ${API_MAX_REQUEST_SIZE_BYTES:-1048576}
       LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:-healthintel_layout_service_local_token_2026}
       SENTRY_DSN: ${SENTRY_DSN:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
     volumes:
       - ..:/workspace
     depends_on:
@@ -218,6 +230,7 @@ services:
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_STRIPE_PAYMENT_LINK_SANDBOX: ${VITE_STRIPE_PAYMENT_LINK_SANDBOX:-}
     container_name: healthintel_frontend
     ports:
       - "${FRONTEND_EXTERNAL_PORT:-5173}:80"
