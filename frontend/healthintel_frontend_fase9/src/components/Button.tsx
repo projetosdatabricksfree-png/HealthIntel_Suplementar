@@ -39,3 +39,18 @@ export function LinkButton({ to, variant = 'primary', children, className, onCli
     </Link>
   );
 }
+
+interface ExternalLinkButtonProps {
+  href: string;
+  variant?: ButtonVariant;
+  children: ReactNode;
+  className?: string;
+}
+
+export function ExternalLinkButton({ href, variant = 'primary', children, className }: ExternalLinkButtonProps) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={cn(variantClass[variant], className)}>
+      {children}
+    </a>
+  );
+}

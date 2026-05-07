@@ -25,6 +25,7 @@ from api.app.routers import (
     operadora,
     prata,
     premium,
+    public_checkout,
     ranking,
     rede,
     regulatorio,
@@ -87,6 +88,7 @@ app.include_router(prata.router, prefix=settings.app_prefixo)
 app.include_router(premium.router, prefix=settings.app_prefixo)
 app.include_router(cnes.router, prefix=settings.app_prefixo)
 app.include_router(tiss.router, prefix=settings.app_prefixo)
+app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)
 app.include_router(admin_debug.router)

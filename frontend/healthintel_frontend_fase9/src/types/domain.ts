@@ -38,6 +38,8 @@ export interface ApiPlan {
   destaque?: boolean;
   features: string[];
   limits: string[];
+  stripePaymentLink?: string;
+  planoBd?: string;
 }
 
 export interface PortalUser {

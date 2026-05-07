@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
@@ -7,10 +8,12 @@ import { useAuth } from '../../hooks/useAuth';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedLocalKeys = new Set(['hi_local_dev_2026_api_key', 'hi_local_admin_2026_api_key']);
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const { success, error, warning } = useNotification();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('cliente@healthintel.local');
   const [apiKey, setApiKey] = useState('hi_local_dev_2026_api_key');
 
@@ -23,10 +26,27 @@ export function LoginPage() {
       <Card className="login-card">
         <p className="eyebrow">Portal do cliente</p>
         <h1>Entrar no HealthIntel</h1>
-        <p>
-          Nesta versão, o portal usa e-mail + API key para habilitar testes. Em produção,
-          substitua por autenticação com sessão segura e gestão real de usuários.
-        </p>
+
+        {GOOGLE_CLIENT_ID && (
+          <div className="google-login-wrapper">
+            <GoogleLogin
+              onSuccess={(response) => {
+                if (response.credential) {
+                  loginWithGoogle(response.credential);
+                  success('Login com Google realizado.');
+                  navigate('/app');
+                }
+              }}
+              onError={() => error('Falha no login com Google. Tente novamente.')}
+              text="signin_with"
+              shape="rectangular"
+              size="large"
+              width="100%"
+            />
+            <div className="login-divider"><span>ou entre com API key</span></div>
+          </div>
+        )}
+
         <form onSubmit={(event) => {
           event.preventDefault();
           const normalizedEmail = email.trim();
@@ -43,7 +63,7 @@ export function LoginPage() {
             warning('Chave salva para teste. A API validará permissões reais no Live Tester.');
           }
           login(normalizedEmail, normalizedKey);
-          success('Login local realizado. Use o Live Tester para validar a API key na API real.');
+          success('Login realizado.');
         }}>
           <label>
             E-mail

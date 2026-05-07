@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './hooks/useAuth';
 
 function ScrollToTop() {
@@ -19,6 +20,7 @@ import { PublicDocsPage } from './pages/public/PublicDocsPage';
 import { SecurityPage } from './pages/public/SecurityPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { LoginPage } from './pages/public/LoginPage';
+import { CheckoutSuccessPage } from './pages/public/CheckoutSuccessPage';
 import { DashboardPage } from './pages/portal/DashboardPage';
 import { EndpointsPage } from './pages/portal/EndpointsPage';
 import { ExplorerPage } from './pages/portal/ExplorerPage';
@@ -32,40 +34,45 @@ import { PortalSecurityPage } from './pages/portal/PortalSecurityPage';
 import { AdminBillingPage } from './pages/portal/AdminBillingPage';
 import { AdminLayoutsPage } from './pages/portal/AdminLayoutsPage';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 export function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/produto" element={<ProductPage />} />
-            <Route path="/precos" element={<PricingPage />} />
-            <Route path="/documentacao" element={<PublicDocsPage />} />
-            <Route path="/seguranca" element={<SecurityPage />} />
-            <Route path="/contato" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Route>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/produto" element={<ProductPage />} />
+              <Route path="/precos" element={<PricingPage />} />
+              <Route path="/documentacao" element={<PublicDocsPage />} />
+              <Route path="/seguranca" element={<SecurityPage />} />
+              <Route path="/contato" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
+            </Route>
 
-          <Route path="/app" element={<PortalLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="endpoints" element={<EndpointsPage />} />
-            <Route path="explorer" element={<ExplorerPage />} />
-            <Route path="api-keys" element={<ApiKeysPage />} />
-            <Route path="uso" element={<UsagePage />} />
-            <Route path="datasets" element={<DatasetsPage />} />
-            <Route path="billing" element={<BillingPage />} />
-            <Route path="equipe" element={<TeamPage />} />
-            <Route path="perfil" element={<ProfilePage />} />
-            <Route path="seguranca" element={<PortalSecurityPage />} />
-            <Route path="admin/billing" element={<AdminBillingPage />} />
-            <Route path="admin/layouts" element={<AdminLayoutsPage />} />
-          </Route>
+            <Route path="/app" element={<PortalLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="endpoints" element={<EndpointsPage />} />
+              <Route path="explorer" element={<ExplorerPage />} />
+              <Route path="api-keys" element={<ApiKeysPage />} />
+              <Route path="uso" element={<UsagePage />} />
+              <Route path="datasets" element={<DatasetsPage />} />
+              <Route path="billing" element={<BillingPage />} />
+              <Route path="equipe" element={<TeamPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
+              <Route path="seguranca" element={<PortalSecurityPage />} />
+              <Route path="admin/billing" element={<AdminBillingPage />} />
+              <Route path="admin/layouts" element={<AdminLayoutsPage />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }

@@ -215,6 +215,9 @@ services:
   frontend:
     build:
       context: ../frontend/healthintel_frontend_fase9
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     container_name: healthintel_frontend
     ports:
       - "${FRONTEND_EXTERNAL_PORT:-5173}:80"

@@ -8,6 +8,7 @@ interface AuthContextValue {
   user: PortalUser | null;
   isAuthenticated: boolean;
   login: (email: string, apiKey: string) => void;
+  loginWithGoogle: (credential: string) => void;
   logout: () => void;
   updateUser: (user: PortalUser) => void;
 }
@@ -34,6 +35,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         status: 'sucesso'
       });
       setUser(nextUser);
+    },
+    loginWithGoogle: (credential: string) => {
+      try {
+        const payloadB64 = credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(payloadB64)) as { email?: string; name?: string };
+        const email = payload.email || '';
+        const nome = payload.name || email.split('@')[0];
+        const existing = getUser();
+        const nextUser: PortalUser = existing?.email === email
+          ? { ...existing, nome }
+          : { ...demoUser, email, nome, apiKey: undefined };
+        saveUser(nextUser);
+        addAuditEvent({
+          tipo: 'login',
+          usuario: email,
+          detalhe: 'Login via Google OAuth.',
+          status: 'sucesso'
+        });
+        setUser(nextUser);
+      } catch {
+        // ignore decode errors
+      }
     },
     logout: () => {
       addAuditEvent({

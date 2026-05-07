@@ -1,6 +1,6 @@
 import type { ApiPlan } from '../types/domain';
 import { CheckCircle2 } from 'lucide-react';
-import { LinkButton } from './Button';
+import { ExternalLinkButton, LinkButton } from './Button';
 import { cn } from '../utils/format';
 
 export function PlanCard({ plan }: { plan: ApiPlan }) {
@@ -18,12 +18,18 @@ export function PlanCard({ plan }: { plan: ApiPlan }) {
       <div className="plan-limits">
         {plan.limits.map((item) => <small key={item}>{item}</small>)}
       </div>
-      <LinkButton
-        to={`/contato?plano=${encodeURIComponent(plan.nome)}`}
-        variant={plan.destaque ? 'primary' : 'secondary'}
-      >
-        Solicitar acesso
-      </LinkButton>
+      {plan.stripePaymentLink ? (
+        <ExternalLinkButton href={plan.stripePaymentLink} variant={plan.destaque ? 'primary' : 'secondary'}>
+          Contratar agora
+        </ExternalLinkButton>
+      ) : (
+        <LinkButton
+          to={`/contato?plano=${encodeURIComponent(plan.nome)}`}
+          variant={plan.destaque ? 'primary' : 'secondary'}
+        >
+          Solicitar acesso
+        </LinkButton>
+      )}
     </article>
   );
 }
