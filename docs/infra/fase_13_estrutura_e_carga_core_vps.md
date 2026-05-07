@@ -506,8 +506,8 @@ Para fechar Fase 13 com score regulatorio funcional, prioridade e **NIP, IGR e I
 Criterio de aceite:
 
 - [x] DAGs `dag_ingest_nip`, `dag_ingest_igr`, `dag_anual_idss` implementadas com BashOperator real;
-- [ ] rodar end-to-end na VPS e confirmar `bruto_ans.{nip,igr,idss}` com ao menos uma competencia real (pendente execucao na VPS);
-- [ ] `plataforma.job` registra cada execucao com `status in ('sucesso','sucesso_com_alertas')` (pendente VPS).
+- [x] rodar end-to-end na VPS e confirmar `bruto_ans.{nip,igr,idss}` com registros reais;
+- [x] `plataforma.job` registra cada execucao com `status='sucesso'`.
 
 ### 15.2 Layouts faltantes no Mongo (IGR, NIP, IDSS) sem recriar o que ja existe
 
@@ -517,8 +517,8 @@ Acao (preservando layouts existentes):
 
 - [x] scripts criados: `bootstrap_layout_registry_igr.py`, `bootstrap_layout_registry_nip.py`, `bootstrap_layout_registry_idss.py` — todos com GUARD que falha se layout ativo ja existir;
 - [x] Makefile: `make bootstrap-igr-layouts`, `make bootstrap-nip-layouts`, `make bootstrap-idss-layouts` adicionados;
-- [ ] consultar `GET /layout/datasets` na VPS antes de rodar qualquer bootstrap (pendente VPS);
-- [ ] se layout ja existir na VPS, usar `POST /layout/layouts/{id}/aliases` (nao rodar bootstrap).
+- [x] consultar `GET /layout/datasets` na VPS antes de rodar qualquer bootstrap usando `X-Service-Token`;
+- [x] como `igr`, `nip` e `idss` estavam ausentes, bootstraps dedicados foram executados uma unica vez.
 
 Hardgate:
 
@@ -583,7 +583,7 @@ Acao em `infra/docker-compose.yml`:
 
 Criterio de aceite:
 
-- [ ] `docker compose ps` mostra `(healthy)` para webserver e scheduler na VPS (pendente: deploy e subida na VPS);
+- [x] `docker compose ps` mostra `(healthy)` para webserver e scheduler na VPS;
 - [ ] alerta em §19.3 dispara se algum container ficar `unhealthy` por mais de 5 min.
 
 ### 15.7 AIRFLOW_FERNET_KEY com chave forte
@@ -594,11 +594,77 @@ Politica:
 
 - [x] chave gerada nao pode ir para o git — `.gitignore` ja exclui `.env.hml`;
 - [x] rotacao documentada em `docs/runbooks/rotacao_secrets.md`;
-- [ ] gravar valor em `.env.hml` na VPS com `chmod 600` (pendente VPS).
+- [x] gravar valor em `.env.hml` na VPS com `chmod 600` — executado em 2026-05-07 com backup previo.
 
 Criterio de aceite:
 
-- [ ] `grep AIRFLOW_FERNET_KEY .env.hml` na VPS retorna valor base64 de 44 chars, nao o placeholder.
+- [x] `AIRFLOW_FERNET_KEY` foi trocada na VPS por valor valido, sem imprimir o segredo e com backup previo de `.env.hml`;
+- [x] `.env.hml` permanece fora do git e com `chmod 600`.
+
+### 15.8 Evidencia de execucao Airflow NIP/IGR/IDSS em 2026-05-07
+
+Ordem executada na VPS:
+
+1. Validacao do layout service com header `X-Service-Token`.
+2. Bootstrap dedicado apenas para layouts ausentes: `igr`, `nip`, `idss`.
+3. Correcao de `AIRFLOW_FERNET_KEY` real na `.env.hml` da VPS.
+4. Subida/restart de `airflow-init`, `airflow-webserver` e `airflow-scheduler`.
+5. Trigger manual das DAGs `dag_ingest_nip`, `dag_ingest_igr` e `dag_anual_idss`.
+6. Pausa das DAGs ao final para evitar schedule continuo antes da fase de operacao.
+
+Correcoes operacionais aplicadas:
+
+- `layout_service` na VPS responde em `127.0.0.1:8081`, nao `localhost:8001`.
+- `.env.hml` nao deve ser carregado com `source` porque contem valores com espacos; a execucao usou parser seguro sem imprimir segredos.
+- Airflow precisava de ambiente Python do projeto com SQLAlchemy 2.x e dbt 1.8; a `.venv` da VPS foi recriada e validada.
+- `data/landing/ans` recebeu permissao para UID `50000`, usuario do container Airflow.
+- O registro de `plataforma.job` nas DAGs foi alinhado ao schema real (`dag_id`, `nome_job`, `fonte_ans`, `camada`).
+- Seletores dbt de NIP/IGR foram reduzidos ao escopo controlado e depois ampliados apenas para a cadeia regulatoria necessaria (`stg_rn623_lista`, `int_regulatorio_operadora_trimestre`, `fat_monitoramento_regulatorio_trimestral`, `api_regulatorio_operadora_trimestral`), sem carregar RN623.
+
+Materializacao tipada a partir de Bronze generico:
+
+- O ELT real carregou NIP/IGR/IDSS em `bruto_ans.ans_linha_generica`.
+- Como os modelos dbt consomem as tabelas tipadas, foi criado `scripts/materializar_regulatorio_generico.py`.
+- O script materializa de forma idempotente apenas as linhas com `_layout_id='layout_materializado_generico_v1'`.
+- Backup previo das tabelas tipadas criado em `/opt/healthintel/backups/fase15/regulatorio_tipado_before_materialize_*.sql.gz`.
+
+Contagens finais:
+
+| Camada | Tabela | Registros |
+|---|---:|---:|
+| Bronze | `bruto_ans.igr_operadora_trimestral` | `149.519` |
+| Bronze | `bruto_ans.idss` | `13.072` |
+| Bronze | `bruto_ans.nip_operadora_trimestral` | `53.637` |
+| API Prata | `api_ans.api_prata_igr` | `136.009` |
+| API Prata | `api_ans.api_prata_idss` | `13.072` |
+| API Prata | `api_ans.api_prata_nip` | `53.637` |
+| Nucleo | `nucleo_ans.fat_reclamacao_operadora` | `368` |
+| Nucleo | `nucleo_ans.fat_idss_operadora` | `10.409` |
+| Nucleo | `nucleo_ans.fat_monitoramento_regulatorio_trimestral` | `160.274` |
+| API | `api_ans.api_regulatorio_operadora_trimestral` | `124.376` |
+
+Runs Airflow manuais concluídos com sucesso:
+
+| DAG | Run ID | Status |
+|---|---|---|
+| `dag_ingest_igr` | `fase15b_dag_ingest_igr_20260507T134235` | `success` |
+| `dag_anual_idss` | `fase15b_dag_anual_idss_20260507T134235` | `success` |
+| `dag_ingest_nip` | `fase15b_dag_ingest_nip_20260507T134235` | `success` |
+
+Registros em `plataforma.job`:
+
+| DAG | Fonte | Nome job | Status |
+|---|---|---|---|
+| `dag_ingest_nip` | `nip` | `ingestao_trimestral_nip` | `sucesso` |
+| `dag_ingest_igr` | `igr` | `ingestao_trimestral_igr` | `sucesso` |
+| `dag_anual_idss` | `idss` | `ingestao_anual_idss` | `sucesso` |
+
+Validacoes finais:
+
+- `check_public_domain_https.sh`: passou.
+- `check_api_core_comercial.sh`: passou com dados em `/v1/operadoras`, `/v1/rankings/operadora/score` e `/v1/mercado/municipio`.
+- `/v1/operadoras/000582/regulatorio`: passou com payload real de IGR `202603`.
+- `ufw`: somente `22`, `80` e `443` publicos; `8080` continua fechado publicamente.
 
 ## 16. Bloqueantes em dbt e camada de serving (P0/P1)
 
