@@ -1,4 +1,5 @@
 from functools import lru_cache
+from urllib.parse import quote_plus
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
     def mongo_dsn(self) -> str:
         if self.mongo_user and self.mongo_password:
             return (
-                f"mongodb://{self.mongo_user}:{self.mongo_password}"
+                f"mongodb://{quote_plus(self.mongo_user)}:{quote_plus(self.mongo_password)}"
                 f"@{self.mongo_host}:{self.mongo_port}/?authSource=admin"
             )
         return f"mongodb://{self.mongo_host}:{self.mongo_port}"
