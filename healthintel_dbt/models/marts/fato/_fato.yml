@@ -35,6 +35,13 @@ models:
     description: Historico de regime especial por operadora e vigencia.
   - name: fat_score_regulatorio_operadora_mensal
     description: Score regulatorio composto por operadora e competencia.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
   - name: fat_financeiro_operadora_trimestral
     description: Fato financeiro trimestral harmonizado por operadora.
   - name: fat_vda_operadora_mensal
