@@ -1,5 +1,5 @@
 -- depends_on: {{ ref('ref_competencia') }}
-
+-- depends_on: {{ ref('stg_sib_operadora') }}
 {{
     config(
         unique_key=['operadora_id', 'competencia'],
@@ -7,7 +7,6 @@
         on_schema_change='sync_all_columns'
     )
 }}
-
 select
     operadora_id,
     registro_ans,
@@ -23,8 +22,8 @@ select
 from {{ ref('int_beneficiario_operadora_enriquecido') }}
 {% if is_incremental() %}
 where competencia in (
-    select competencia
-    from {{ ref('ref_competencia') }}
+    select distinct competencia
+    from {{ ref('stg_sib_operadora') }}
     order by competencia desc
     limit 3
 )
