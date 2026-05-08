@@ -23,9 +23,10 @@ export_csv() {
     local output_file="$2"
 
     psql "$DATABASE_URL" \
+        -X \
+        -q \
         -v ON_ERROR_STOP=1 \
-        -v output_file="$output_file" \
-        -f "$sql_file"
+        -f "$sql_file" > "$output_file"
 }
 
 schema_file="$OUT_DIR/catalogo_schema_${AUDIT_TIMESTAMP}.csv"

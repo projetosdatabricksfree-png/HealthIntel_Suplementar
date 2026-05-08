@@ -1,4 +1,4 @@
-\copy (
+copy (
     with scoped_schemas(schema_name) as (
         values
             ('bruto_ans'),
@@ -84,4 +84,4 @@
         object_type,
         object_name,
         object_identity
-) to :'output_file' with (format csv, header true)
+) to stdout with (format csv, header true);

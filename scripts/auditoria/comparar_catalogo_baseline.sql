@@ -1,5 +1,7 @@
-\copy (
-    with baseline as (
+drop table if exists auditoria_diferencas_baseline;
+
+create temp table auditoria_diferencas_baseline as
+with baseline as (
         select
             table_schema,
             table_name,
@@ -180,10 +182,22 @@
     where column_exists
         and expected_ordinal_position is distinct from actual_ordinal_position
 
+order by
+    severity,
+    check_type,
+    table_schema,
+    table_name,
+    column_name;
+
+\o :output_file
+copy (
+    select *
+    from auditoria_diferencas_baseline
     order by
         severity,
         check_type,
         table_schema,
         table_name,
         column_name
-) to :'output_file' with (format csv, header true)
+) to stdout with (format csv, header true);
+\o

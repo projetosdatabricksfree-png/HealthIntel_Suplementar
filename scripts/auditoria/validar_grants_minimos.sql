@@ -1,5 +1,7 @@
-\copy (
-    with relevant_roles(role_name, role_purpose) as (
+drop table if exists auditoria_validacao_grants;
+
+create temp table auditoria_validacao_grants as
+with relevant_roles(role_name, role_purpose) as (
         values
             ('healthintel_cliente_reader', 'leitura legado consumo_ans'),
             ('healthintel_premium_reader', 'leitura premium consumo_premium_ans')
@@ -120,21 +122,27 @@
             on n.nspname = obs.schema_name
         where er.role_exists
     )
+select *
+from role_missing
+union all
+select *
+from required_schema_usage
+union all
+select *
+from required_table_select
+union all
+select *
+from observational_schema_usage;
+
+\o :output_file
+copy (
     select *
-    from role_missing
-    union all
-    select *
-    from required_schema_usage
-    union all
-    select *
-    from required_table_select
-    union all
-    select *
-    from observational_schema_usage
+    from auditoria_validacao_grants
     order by
         severity,
         check_type,
         role_name,
         object_schema,
         object_name
-) to :'output_file' with (format csv, header true)
+) to stdout with (format csv, header true);
+\o

@@ -1,4 +1,4 @@
-\copy (
+copy (
     select
         c.table_schema,
         c.table_name,
@@ -24,4 +24,4 @@
         c.table_schema,
         c.table_name,
         c.ordinal_position
-) to :'output_file' with (format csv, header true)
+) to stdout with (format csv, header true);
