@@ -20,6 +20,13 @@ alter default privileges in schema consumo_premium_ans
     grant select on tables to healthintel_premium_reader;
 
 -- Superficies internas da Fase 5 nao sao produto SQL direto.
+-- Criar schemas antecipadamente para que revoke nao falhe em banco limpo.
+create schema if not exists quality_ans;
+create schema if not exists mdm_ans;
+create schema if not exists bruto_cliente;
+create schema if not exists stg_cliente;
+create schema if not exists mdm_privado;
+
 revoke all on schema quality_ans from healthintel_premium_reader;
 revoke all on schema mdm_ans from healthintel_premium_reader;
 revoke all on schema bruto_cliente from healthintel_premium_reader;
