@@ -188,6 +188,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healthintel}
       ANS_ANOS_CARGA_HOT: ${ANS_ANOS_CARGA_HOT:-2}
+      LAYOUT_SERVICE_BASE_URL: http://mongo_layout_service:8001
+      LAYOUT_SERVICE_TOKEN: ${LAYOUT_SERVICE_TOKEN:-healthintel_layout_service_local_token_2026}
       _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres==1.8.2"
       PYTHONPATH: /workspace
     volumes:
