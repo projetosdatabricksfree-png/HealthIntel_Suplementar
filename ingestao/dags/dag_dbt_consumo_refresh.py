@@ -78,7 +78,7 @@ with DAG(
     run_marts = BashOperator(
         task_id="dbt_run_marts",
         cwd="/workspace/healthintel_dbt",
-        bash_command=f"{DBT_ENV} dbt run --select tag:mart",
+        bash_command=f"{DBT_ENV} dbt run --select +tag:mart",
     )
     run_consumo = BashOperator(
         task_id="dbt_run_consumo",
