@@ -46,9 +46,9 @@ with DAG(
 import asyncio
 from ingestao.app.ingestao_real import executar_ingestao_sib_uf_streaming
 
-competencia_conf = '{{{{ dag_run.conf.get(\"competencia\", \"\") }}}}'
+competencia_conf = '{{{{ dag_run.conf.get("competencia", "") }}}}'
 competencia = competencia_conf or '{{{{ ds_nodash[:6] }}}}'
-ufs_conf = '{{{{ dag_run.conf.get(\"ufs\", \"SP\") }}}}'
+ufs_conf = '{{{{ dag_run.conf.get("ufs", "SP") }}}}'
 ufs = [uf.strip().upper() for uf in ufs_conf.split(',') if uf.strip()]
 
 async def main():
