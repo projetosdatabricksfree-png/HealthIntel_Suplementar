@@ -288,12 +288,14 @@ services:
     image: grafana/grafana:11.1.0
     container_name: healthintel_grafana
     ports:
-      - "127.0.0.1:${GRAFANA_EXTERNAL_PORT:-3000}:3000"
+      - "127.0.0.1:${GRAFANA_EXTERNAL_PORT:-3001}:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-healthintel}
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
-      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+      GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:-healthintel.com.br}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://healthintel.com.br/grafana/}
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
       GF_USERS_ALLOW_SIGN_UP: "false"
       POSTGRES_DB: ${POSTGRES_DB:-healthintel}
       POSTGRES_USER: ${POSTGRES_USER:-healthintel}
