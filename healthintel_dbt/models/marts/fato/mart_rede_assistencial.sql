@@ -16,10 +16,10 @@ select
     gap.severidade_gap as classificacao_vazio
 from {{ ref('fat_cobertura_rede_municipio') }} as rede
 left join {{ ref('dim_operadora_atual') }} as op
-    on op.registro_ans = rede.registro_ans
+    on rede.registro_ans = op.registro_ans
 left join {{ ref('fat_densidade_rede_operadora') }} as dens
-    on dens.registro_ans = rede.registro_ans
-    and dens.competencia = rede.competencia
+    on rede.registro_ans = dens.registro_ans
+    and rede.competencia = dens.competencia
 left join {{ ref('fat_cnes_rede_gap_municipio') }} as gap
-    on gap.cd_municipio = rede.cd_municipio
-    and gap.competencia = rede.competencia
+    on rede.cd_municipio = gap.cd_municipio
+    and rede.competencia = gap.competencia

@@ -15,11 +15,11 @@ with origem as (
         s.codigo_subfatura_normalizado,
         sub.subfatura_master_id,
         sub.contrato_master_id
-    from {{ ref('stg_cliente_subfatura') }} s
-    left join {{ ref('mdm_subfatura_master') }} sub
-        on sub.tenant_id = s.tenant_id
-       and sub.numero_contrato_normalizado = s.numero_contrato_normalizado
-       and sub.codigo_subfatura_normalizado = s.codigo_subfatura_normalizado
+    from {{ ref('stg_cliente_subfatura') }} as s
+    left join {{ ref('mdm_subfatura_master') }} as sub
+        on s.tenant_id = sub.tenant_id
+       and s.numero_contrato_normalizado = sub.numero_contrato_normalizado
+       and s.codigo_subfatura_normalizado = sub.codigo_subfatura_normalizado
     where s.tenant_id is not null
       and s.numero_contrato_normalizado is not null
       and s.codigo_subfatura_normalizado is not null

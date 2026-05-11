@@ -40,7 +40,7 @@ select
     cobertura.versao_dataset
 from {{ ref('fat_cobertura_rede_municipio') }} as cobertura
 left join {{ ref('fat_densidade_rede_operadora') }} as densidade
-    on densidade.operadora_id = cobertura.operadora_id
-    and densidade.competencia = cobertura.competencia
+    on cobertura.operadora_id = densidade.operadora_id
+    and cobertura.competencia = densidade.competencia
 inner join {{ ref('dim_operadora_atual') }} as dim
-    on dim.operadora_id = cobertura.operadora_id
+    on cobertura.operadora_id = dim.operadora_id

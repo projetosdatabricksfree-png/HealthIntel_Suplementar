@@ -19,4 +19,4 @@ select
     end as tendencia_regulatoria
 from {{ ref('fat_monitoramento_regulatorio_trimestral') }} as reg
 left join {{ ref('dim_operadora_atual') }} as op
-    on op.registro_ans = reg.registro_ans
+    on reg.registro_ans = op.registro_ans

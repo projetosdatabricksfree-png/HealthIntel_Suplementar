@@ -68,7 +68,7 @@ select
     base._hash_arquivo,
     base._hash_estrutura,
     base._status_parse,
-    case when municipio.codigo_ibge is null then false else true end as municipio_valido
+    not coalesce(municipio.codigo_ibge is null, false) as municipio_valido
 from base
 left join {{ ref('ref_municipio_ibge') }} as municipio
     on lpad(regexp_replace(cast(municipio.codigo_ibge as text), '[^0-9]', '', 'g'), 6, '0') = base.cd_municipio

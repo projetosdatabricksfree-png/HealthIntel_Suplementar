@@ -10,6 +10,6 @@ select
     t_dim.total as total_operadoras_dim,
     t_mdm.total as total_operadoras_mdm,
     cast(t_mdm.total as float) / nullif(t_dim.total, 0) as taxa_cobertura
-from total_dim t_dim
-cross join total_mdm t_mdm
+from total_dim as t_dim
+cross join total_mdm as t_mdm
 where (cast(t_mdm.total as float) / nullif(t_dim.total, 0)) < 0.95

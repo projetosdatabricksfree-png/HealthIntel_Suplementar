@@ -47,10 +47,10 @@ resolvido as (
         s.vigencia_fim,
         s.status_subfatura,
         c.contrato_master_id
-    from stg s
-    left join contrato c
-        on c.tenant_id = s.tenant_id
-       and c.numero_contrato_normalizado = s.numero_contrato_normalizado
+    from stg as s
+    left join contrato as c
+        on s.tenant_id = c.tenant_id
+       and s.numero_contrato_normalizado = c.numero_contrato_normalizado
 ),
 
 agregado as (
@@ -86,10 +86,7 @@ scored as (
         a.*,
         a.contrato_master_id is not null as is_contrato_resolvido,
         d.duplicada_competencia,
-        case
-            when a.contrato_master_id is null then true
-            else false
-        end as has_excecao_bloqueante,
+        coalesce(a.contrato_master_id is null, false) as has_excecao_bloqueante,
         (
             case when a.tenant_id is not null then 20 else 0 end
           + case when a.codigo_subfatura_normalizado is not null then 25 else 0 end
@@ -98,8 +95,12 @@ scored as (
           + case when a.vigencia_inicio is not null or a.vigencia_fim is not null then 10 else 0 end
           + case when a.status_subfatura is not null then 5 else 0 end
         ) as score_calculado
-    from agregado a
-    left join duplicidade d using (tenant_id, numero_contrato_normalizado, codigo_subfatura_normalizado, competencia)
+    from agregado as a
+    left join duplicidade as d
+        on a.tenant_id = d.tenant_id
+        and a.numero_contrato_normalizado = d.numero_contrato_normalizado
+        and a.codigo_subfatura_normalizado = d.codigo_subfatura_normalizado
+        and a.competencia = d.competencia
 )
 
 select

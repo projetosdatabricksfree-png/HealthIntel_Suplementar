@@ -39,8 +39,8 @@ unificada as (
         c.documento_quality_status,
         c.status_mdm,
         c.confidence_score
-    from cnes c
-    left join stg s on c.cnes_canonico = s.cnes_join and s.rn_cnes = 1
+    from cnes as c
+    left join stg as s on c.cnes_canonico = s.cnes_join and s.rn_cnes = 1
 )
 
 select

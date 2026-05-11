@@ -74,15 +74,20 @@ ex_duplicado as (
         'BLOCKING' as exception_severity,
         'Mesmo número de contrato duplicado no tenant sem crosswalk aprovado' as exception_message,
         true as is_blocking
-    from contrato c
-    inner join duplicidade d using (tenant_id, numero_contrato_normalizado)
+    from contrato as c
+    inner join duplicidade
+        on c.tenant_id = duplicidade.tenant_id
+        and c.numero_contrato_normalizado = duplicidade.numero_contrato_normalizado
 ),
 
 todas as (
     select * from ex_tenant
-    union all select * from ex_sem_operadora
-    union all select * from ex_cnpj_divergente
-    union all select * from ex_duplicado
+    union all
+    select * from ex_sem_operadora
+    union all
+    select * from ex_cnpj_divergente
+    union all
+    select * from ex_duplicado
 )
 
 select

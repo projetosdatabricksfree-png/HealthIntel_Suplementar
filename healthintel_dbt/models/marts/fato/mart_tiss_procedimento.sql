@@ -16,6 +16,6 @@ select
     tiss.rank_por_valor
 from {{ ref('fat_tiss_procedimento_operadora') }} as tiss
 left join {{ ref('fat_sinistralidade_procedimento') }} as sin
-    on sin.registro_ans = tiss.registro_ans
-    and sin.trimestre = tiss.trimestre
-    and sin.grupo_procedimento = tiss.grupo_procedimento
+    on tiss.registro_ans = sin.registro_ans
+    and tiss.trimestre = sin.trimestre
+    and tiss.grupo_procedimento = sin.grupo_procedimento

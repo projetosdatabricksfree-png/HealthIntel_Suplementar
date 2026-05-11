@@ -29,7 +29,7 @@ select
     cp.cnpj_cadop,
     op.nome_operadora,
     cp.nome_cadop
-from operadora_valida op
-inner join cadop_valido cp
+from operadora_valida as op
+inner join cadop_valido as cp
     on op.registro_ans_normalizado = cp.registro_ans_normalizado
 where op.cnpj_operadora <> cp.cnpj_cadop

@@ -11,4 +11,3 @@ from information_schema.tables
 where table_schema = 'consumo_premium_ans'
   and table_name like 'consumo_premium_%'
   and false
-

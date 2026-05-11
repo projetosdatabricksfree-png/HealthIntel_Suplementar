@@ -42,8 +42,8 @@ select
         else 'DIVERGENTE'
     end as status_comparacao,
     current_timestamp as _auditado_em
-from operadora_valida op
-inner join cadop_valido cp
+from operadora_valida as op
+inner join cadop_valido as cp
     on op.registro_ans_normalizado = cp.registro_ans_normalizado
    and op.cnpj_normalizado = cp.cnpj_normalizado
 where lower(trim(op.nome_operadora)) <> lower(trim(cp.nome_cadop))

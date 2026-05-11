@@ -26,4 +26,4 @@ select
     'regulatorio_v2' as versao_dataset
 from {{ ref('stg_portabilidade') }} as s
 inner join {{ ref('dim_operadora_atual') }} as d
-    on d.registro_ans = s.registro_ans
+    on s.registro_ans = d.registro_ans

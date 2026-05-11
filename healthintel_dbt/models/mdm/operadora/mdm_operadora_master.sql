@@ -45,8 +45,8 @@ unificada as (
             when v.cnpj_normalizado is null then 50
             else 20
         end as confidence_score
-    from operadora o
-    left join validacao v on o.registro_ans = v.registro_ans
+    from operadora as o
+    left join validacao as v on o.registro_ans = v.registro_ans
 )
 
 select

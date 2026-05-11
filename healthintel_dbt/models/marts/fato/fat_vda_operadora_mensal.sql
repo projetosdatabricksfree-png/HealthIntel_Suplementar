@@ -73,4 +73,4 @@ select
     'vda_v1' as versao_dataset
 from calculado
 inner join {{ ref('dim_operadora_atual') }} as d
-    on d.registro_ans = calculado.registro_ans
+    on calculado.registro_ans = d.registro_ans

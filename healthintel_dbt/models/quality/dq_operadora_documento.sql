@@ -72,7 +72,5 @@ select
         when 'INVALIDO_FORMATO' then 'CNPJ normalizado diferente de 14 digitos'
         when 'SEQUENCIA_INVALIDA' then 'CNPJ composto por sequencia repetida'
         when 'INVALIDO_DIGITO' then 'CNPJ com digito verificador invalido'
-        else null
     end as motivo_invalidade_documento
 from classificado
-

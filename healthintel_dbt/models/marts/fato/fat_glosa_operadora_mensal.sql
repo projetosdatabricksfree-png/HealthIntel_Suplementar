@@ -51,5 +51,5 @@ select
     'glosa_v1' as versao_dataset
 from base
 inner join {{ ref('dim_operadora_atual') }} as d
-    on d.registro_ans = base.registro_ans
+    on base.registro_ans = d.registro_ans
 where base.rn = 1

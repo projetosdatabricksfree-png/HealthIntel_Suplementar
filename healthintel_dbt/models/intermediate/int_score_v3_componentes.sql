@@ -74,8 +74,8 @@ select
     'v3.0' as versao_metodologia
 from base
 left join rede
-    on rede.operadora_id = base.operadora_id
-    and rede.competencia = base.competencia
+    on base.operadora_id = rede.operadora_id
+    and base.competencia = rede.competencia
 left join componente_estrutural
-    on componente_estrutural.operadora_id = base.operadora_id
-    and componente_estrutural.competencia = base.competencia
+    on base.operadora_id = componente_estrutural.operadora_id
+    and base.competencia = componente_estrutural.competencia

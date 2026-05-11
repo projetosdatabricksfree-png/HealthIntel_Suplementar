@@ -100,7 +100,6 @@ select
         when documento_quality_status = 'INVALIDO_FORMATO' then 'CNPJ normalizado diferente de 14 digitos'
         when documento_quality_status = 'SEQUENCIA_INVALIDA' then 'CNPJ composto por sequencia repetida'
         when documento_quality_status = 'INVALIDO_DIGITO' then 'CNPJ com digito verificador invalido'
-        else null
     end as motivo_invalidade_documento,
     razao_social,
     nome_fantasia,
@@ -118,4 +117,3 @@ select
     _hash_estrutura,
     _status_parse
 from classificado
-

@@ -66,18 +66,20 @@ ex_dup as (
         'WARNING' as exception_severity,
         'Duplicidade de subfatura por contrato + código + competência' as exception_message,
         false as is_blocking
-    from subfatura s
-    inner join dup_competencia d
-        on d.tenant_id = s.tenant_id
-       and d.contrato_master_id = s.contrato_master_id
-       and d.codigo_subfatura_normalizado = s.codigo_subfatura_normalizado
+    from subfatura as s
+    inner join dup_competencia as d
+        on s.tenant_id = d.tenant_id
+       and s.contrato_master_id = d.contrato_master_id
+       and s.codigo_subfatura_normalizado = d.codigo_subfatura_normalizado
        and d.competencia is not distinct from s.competencia
 ),
 
 todas as (
     select * from ex_tenant
-    union all select * from ex_sem_contrato
-    union all select * from ex_dup
+    union all
+    select * from ex_sem_contrato
+    union all
+    select * from ex_dup
 )
 
 select

@@ -3,10 +3,14 @@
 }}
 
 with chaves as (
-    select distinct registro_ans, trimestre
+    select distinct
+registro_ans,
+trimestre
     from {{ ref('stg_diops') }}
     union
-    select distinct registro_ans, trimestre
+    select distinct
+registro_ans,
+trimestre
     from {{ ref('stg_fip') }}
 ),
 base as (
@@ -20,7 +24,7 @@ base as (
         k.trimestre
     from chaves as k
     inner join {{ ref('dim_operadora_atual') }} as d
-        on d.registro_ans = k.registro_ans
+        on k.registro_ans = d.registro_ans
 ),
 diops as (
     select
@@ -121,10 +125,7 @@ metricas as (
             when sinistro_total = 0 then 0
             else provisao_tecnica / nullif(sinistro_total / 4, 0)
         end as cobertura_provisao,
-        case
-            when resultado_operacional is null then 0
-            else resultado_operacional
-        end as resultado_operacional_bruto
+        coalesce(resultado_operacional, 0) as resultado_operacional_bruto
     from base_harmonizada
 )
 

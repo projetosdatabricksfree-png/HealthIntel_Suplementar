@@ -46,8 +46,8 @@ unificada as (
             when v.cnes_formato_valido = true then 50
             else 20
         end as confidence_score
-    from cnes c
-    inner join validacao v on c.cnes_join = v.cnes_normalizado and v.rn_val = 1
+    from cnes as c
+    inner join validacao as v on c.cnes_join = v.cnes_normalizado and v.rn_val = 1
     where c.rn_cnes = 1
 )
 

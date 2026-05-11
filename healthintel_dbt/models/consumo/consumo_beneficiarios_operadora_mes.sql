@@ -21,4 +21,4 @@ select
     ben.volatilidade_24m
 from {{ ref('fat_beneficiario_operadora') }} as ben
 left join {{ ref('dim_operadora_atual') }} as op
-    on op.registro_ans = ben.registro_ans
+    on ben.registro_ans = op.registro_ans

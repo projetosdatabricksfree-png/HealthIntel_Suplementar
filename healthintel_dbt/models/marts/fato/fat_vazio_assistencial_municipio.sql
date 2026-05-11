@@ -22,7 +22,7 @@ with base as (
         count(distinct case when not tem_cobertura then operadora_id end) as qt_operadora_sem_cobertura,
         count(distinct operadora_id) as qt_operadora_total
     from {{ ref('fat_cobertura_rede_municipio') }}
-    group by 1, 2, 3, 4, 5, 6
+    group by cd_municipio, nm_municipio, sg_uf, nm_regiao, competencia, segmento
 )
 
 select
@@ -43,11 +43,8 @@ select
         coalesce((qt_operadora_sem_cobertura::numeric / nullif(qt_operadora_total, 0)) * 100, 0),
         2
     ) as pct_operadoras_sem_cobertura,
-    case when qt_operadora_presente = 0 then true else false end as vazio_total,
-    case
-        when qt_operadora_sem_cobertura > 0 and qt_operadora_presente > 0 then true
-        else false
-    end as vazio_parcial,
+    coalesce(qt_operadora_presente = 0, false) as vazio_total,
+    coalesce(qt_operadora_sem_cobertura > 0 and qt_operadora_presente > 0, false) as vazio_parcial,
     'vazio_v1' as versao_dataset
 from base
 {% if is_incremental() %}

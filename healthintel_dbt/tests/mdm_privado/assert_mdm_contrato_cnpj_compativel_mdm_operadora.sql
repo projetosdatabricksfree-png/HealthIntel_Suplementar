@@ -10,12 +10,14 @@ with contrato as (
         c.cnpj_operadora_canonico,
         c.mdm_status,
         op.cnpj_canonico as cnpj_publico
-    from {{ ref('mdm_contrato_master') }} c
-    left join {{ ref('mdm_operadora_master') }} op
-        on op.operadora_master_id = c.operadora_master_id
+    from {{ ref('mdm_contrato_master') }} as c
+    left join {{ ref('mdm_operadora_master') }} as op
+        on c.operadora_master_id = op.operadora_master_id
 )
 
-select contrato_master_id, tenant_id
+select
+contrato_master_id,
+tenant_id
 from contrato
 where mdm_status = 'GOLDEN'
   and cnpj_operadora_canonico is not null

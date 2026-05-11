@@ -15,10 +15,7 @@ with base as (
         _carregado_em,
         _arquivo_origem,
         _lote_id,
-        case
-            when coalesce(saldo_devedor, 0) > 0 then true
-            else false
-        end as inadimplente,
+        coalesce(coalesce(saldo_devedor, 0) > 0, false) as inadimplente,
         row_number() over (
             partition by upper(trim(competencia)), {{ normalizar_registro_ans('registro_ans') }}
             order by _carregado_em desc, _lote_id desc

@@ -64,12 +64,9 @@ select
         end,
         2
     ) as gap_pct,
-    case
-        when cnes.total_estabelecimentos - coalesce(rede.qt_prestador_rede, 0) >
-            greatest(10, cnes.total_estabelecimentos * 0.25) then true
-        else false
-    end as flag_gap_critico
+    coalesce(cnes.total_estabelecimentos - coalesce(rede.qt_prestador_rede, 0)
+            > greatest(10, cnes.total_estabelecimentos * 0.25), false) as flag_gap_critico
 from cnes
 left join rede
-    on rede.competencia = cnes.competencia
-    and rede.cd_municipio = cnes.cd_municipio
+    on cnes.competencia = rede.competencia
+    and cnes.cd_municipio = rede.cd_municipio

@@ -28,4 +28,4 @@ select
     gap.versao_dataset
 from {{ ref('fat_cnes_rede_gap_municipio') }} as gap
 left join {{ ref('ref_uf') }} as uf
-    on uf.uf = gap.sg_uf
+    on gap.sg_uf = uf.uf

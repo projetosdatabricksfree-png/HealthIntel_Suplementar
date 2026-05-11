@@ -31,4 +31,4 @@ select
     cnes.versao_dataset
 from {{ ref('fat_cnes_estabelecimento_municipio') }} as cnes
 left join {{ ref('ref_uf') }} as uf
-    on uf.uf = cnes.sg_uf
+    on cnes.sg_uf = uf.uf

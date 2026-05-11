@@ -36,7 +36,7 @@ glosa as (
         string_agg(distinct tipo_glosa, ', ' order by tipo_glosa) as tipos_glosa,
         max(versao_dataset) as versao_dataset
     from {{ ref('fat_glosa_operadora_mensal') }}
-    group by 1, 2, 3
+    group by operadora_id, registro_ans, competencia
 )
 
 select
@@ -86,10 +86,10 @@ select
     coalesce(vda.versao_dataset, glosa.versao_dataset, financeiro.versao_financeira) as versao_dataset
 from vda
 inner join {{ ref('dim_operadora_atual') }} as d
-    on d.registro_ans = vda.registro_ans
+    on vda.registro_ans = d.registro_ans
 left join glosa
-    on glosa.operadora_id = d.operadora_id
-    and glosa.competencia = vda.competencia
+    on d.operadora_id = glosa.operadora_id
+    and vda.competencia = glosa.competencia
 left join lateral (
     select
         financeiro_base.ativo_total,

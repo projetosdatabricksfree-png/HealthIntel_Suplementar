@@ -20,7 +20,7 @@ select
     score.versao_metodologia
 from {{ ref('fat_beneficiario_operadora') }} as ben
 left join {{ ref('dim_operadora_atual') }} as op
-    on op.registro_ans = ben.registro_ans
+    on ben.registro_ans = op.registro_ans
 left join {{ ref('fat_score_v3_operadora_mensal') }} as score
-    on score.registro_ans = ben.registro_ans
-    and score.competencia_id = ben.competencia
+    on ben.registro_ans = score.registro_ans
+    and ben.competencia = score.competencia_id

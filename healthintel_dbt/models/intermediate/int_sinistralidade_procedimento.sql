@@ -64,16 +64,13 @@ select
         ) over (partition by tiss.trimestre, tiss.registro_ans),
         2
     ) as desvio_padrao_sinistralidade,
-    case
-        when (
+    coalesce((
             case
                 when coalesce(diops.receita_total, 0) = 0 then 0
                 else (tiss.valor_total / nullif(diops.receita_total, 0)) * 100
             end
-        ) > 80 then true
-        else false
-    end as flag_sinistralidade_alta
+        ) > 80, false) as flag_sinistralidade_alta
 from tiss
 inner join diops
-    on diops.trimestre = tiss.trimestre
-    and diops.registro_ans = tiss.registro_ans
+    on tiss.trimestre = diops.trimestre
+    and tiss.registro_ans = diops.registro_ans

@@ -23,4 +23,4 @@ select
     vazio_parcial,
     versao_dataset
 from {{ ref('fat_vazio_assistencial_municipio') }}
-order by competencia desc, vazio_total desc, pct_operadoras_sem_cobertura desc, nm_municipio
+order by competencia desc, vazio_total desc, pct_operadoras_sem_cobertura desc, nm_municipio asc

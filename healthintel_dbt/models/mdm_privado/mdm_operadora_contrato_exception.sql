@@ -50,7 +50,8 @@ ex_cnpj as (
 
 todas as (
     select * from ex_nao_resolvida
-    union all select * from ex_cnpj
+    union all
+    select * from ex_cnpj
 )
 
 select

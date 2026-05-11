@@ -8,4 +8,3 @@ select
     motivo_invalidade_documento
 from {{ ref('dq_cnes_documento') }}
 where not cnes_formato_valido
-

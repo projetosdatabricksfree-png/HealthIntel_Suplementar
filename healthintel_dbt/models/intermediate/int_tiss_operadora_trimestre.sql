@@ -75,6 +75,6 @@ select
     operadora_snap.uf_sede
 from operadora
 inner join operadora_snap
-    on operadora_snap.registro_ans = operadora.registro_ans
+    on operadora.registro_ans = operadora_snap.registro_ans
 inner join {{ ref('dim_operadora_atual') }} as operadora_dim
-    on operadora_dim.registro_ans = operadora.registro_ans
+    on operadora.registro_ans = operadora_dim.registro_ans

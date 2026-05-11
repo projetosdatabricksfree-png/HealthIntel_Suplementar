@@ -45,7 +45,7 @@ select
     base._carregado_em,
     base._arquivo_origem,
     base._lote_id,
-    case when municipio.codigo_ibge is null then false else true end as municipio_valido
+    not coalesce(municipio.codigo_ibge is null, false) as municipio_valido
 from base
 left join {{ ref('ref_municipio_ibge') }} as municipio
     on cast(municipio.codigo_ibge as text) = base.cd_municipio

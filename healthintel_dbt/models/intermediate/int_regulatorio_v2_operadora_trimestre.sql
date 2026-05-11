@@ -4,25 +4,39 @@
 
 with
 chaves as (
-    select distinct registro_ans, {{ trimestre_para_competencia('trimestre') }} as competencia
+    select distinct
+registro_ans,
+{{ trimestre_para_competencia('trimestre') }} as competencia
     from {{ ref('stg_igr') }}
     union
-    select distinct registro_ans, {{ trimestre_para_competencia('trimestre') }} as competencia
+    select distinct
+registro_ans,
+{{ trimestre_para_competencia('trimestre') }} as competencia
     from {{ ref('stg_nip') }}
     union
-    select distinct registro_ans, {{ trimestre_para_competencia('trimestre') }} as competencia
+    select distinct
+registro_ans,
+{{ trimestre_para_competencia('trimestre') }} as competencia
     from {{ ref('stg_rn623_lista') }}
     union
-    select distinct registro_ans, trimestre as competencia
+    select distinct
+registro_ans,
+trimestre as competencia
     from {{ ref('stg_regime_especial') }}
     union
-    select distinct registro_ans, trimestre as competencia
+    select distinct
+registro_ans,
+trimestre as competencia
     from {{ ref('stg_prudencial') }}
     union
-    select distinct registro_ans, competencia
+    select distinct
+registro_ans,
+competencia
     from {{ ref('stg_portabilidade') }}
     union
-    select distinct registro_ans, trimestre as competencia
+    select distinct
+registro_ans,
+trimestre as competencia
     from {{ ref('stg_taxa_resolutividade') }}
 ),
 base as (
@@ -36,7 +50,7 @@ base as (
         d.uf_sede
     from chaves as k
     inner join {{ ref('dim_operadora_atual') }} as d
-        on d.registro_ans = k.registro_ans
+        on k.registro_ans = d.registro_ans
 ),
 igr as (
     select

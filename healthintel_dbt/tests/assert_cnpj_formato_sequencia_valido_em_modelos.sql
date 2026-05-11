@@ -4,17 +4,32 @@
 -- invalida. Ignora CNPJ nulo (classificado como NULO pela macro), que nao
 -- quebra o CI nesta sprint.
 with documento as (
-    select 'dq_cadop_documento' as modelo_nome, registro_ans as chave, cnpj_normalizado, cnpj_tamanho_valido, cnpj_is_sequencia_invalida
+    select
+'dq_cadop_documento' as modelo_nome,
+registro_ans as chave,
+cnpj_normalizado,
+cnpj_tamanho_valido,
+cnpj_is_sequencia_invalida
     from {{ ref('dq_cadop_documento') }}
 
     union all
 
-    select 'dq_operadora_documento' as modelo_nome, registro_ans as chave, cnpj_normalizado, cnpj_tamanho_valido, cnpj_is_sequencia_invalida
+    select
+'dq_operadora_documento' as modelo_nome,
+registro_ans as chave,
+cnpj_normalizado,
+cnpj_tamanho_valido,
+cnpj_is_sequencia_invalida
     from {{ ref('dq_operadora_documento') }}
 
     union all
 
-    select 'dq_cnes_documento' as modelo_nome, cnes as chave, cnpj_normalizado, cnpj_tamanho_valido, cnpj_is_sequencia_invalida
+    select
+'dq_cnes_documento' as modelo_nome,
+cnes as chave,
+cnpj_normalizado,
+cnpj_tamanho_valido,
+cnpj_is_sequencia_invalida
     from {{ ref('dq_cnes_documento') }}
 )
 

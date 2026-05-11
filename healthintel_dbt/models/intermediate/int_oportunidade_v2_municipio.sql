@@ -74,7 +74,7 @@ operadora_relevante as (
         score_v2.score_v2,
         row_number() over (
             partition by cobertura.cd_municipio, cobertura.competencia
-            order by score_v2.score_v2 desc nulls last, score_v2.operadora_id
+            order by score_v2.score_v2 desc nulls last, score_v2.operadora_id asc
         ) as linha
     from (
         select distinct
@@ -84,8 +84,8 @@ operadora_relevante as (
         from {{ ref('fat_cobertura_rede_municipio') }}
     ) as cobertura
     inner join {{ ref('fat_score_v2_operadora_mensal') }} as score_v2
-        on score_v2.operadora_id = cobertura.operadora_id
-        and score_v2.competencia = cobertura.competencia
+        on cobertura.operadora_id = score_v2.operadora_id
+        and cobertura.competencia = score_v2.competencia
 ),
 score_v2_municipio as (
     select
@@ -153,11 +153,11 @@ select
     'v2.0' as versao_algoritmo
 from oportunidade_v1 as v1
 left join cobertura_municipal
-    on cobertura_municipal.cd_municipio = v1.cd_municipio
-    and cobertura_municipal.competencia = v1.competencia
+    on v1.cd_municipio = cobertura_municipal.cd_municipio
+    and v1.competencia = cobertura_municipal.competencia
 left join vazio_presenca
-    on vazio_presenca.cd_municipio = v1.cd_municipio
-    and vazio_presenca.competencia = v1.competencia
+    on v1.cd_municipio = vazio_presenca.cd_municipio
+    and v1.competencia = vazio_presenca.competencia
 left join score_v2_municipio
-    on score_v2_municipio.cd_municipio = v1.cd_municipio
-    and score_v2_municipio.competencia = v1.competencia
+    on v1.cd_municipio = score_v2_municipio.cd_municipio
+    and v1.competencia = score_v2_municipio.competencia

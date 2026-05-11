@@ -46,12 +46,12 @@ resolvido as (
         op_reg.operadora_master_id  as operadora_master_id_por_registro,
         op_cnpj.operadora_master_id as operadora_master_id_por_cnpj,
         op_reg.cnpj_canonico        as cnpj_publico_por_registro
-    from stg s
-    left join operadora_publica op_reg
-        on op_reg.registro_ans_canonico = s.registro_ans_canonico
+    from stg as s
+    left join operadora_publica as op_reg
+        on s.registro_ans_canonico = op_reg.registro_ans_canonico
        and s.registro_ans_canonico is not null
-    left join operadora_publica op_cnpj
-        on op_cnpj.cnpj_canonico = s.cnpj_operadora_canonico
+    left join operadora_publica as op_cnpj
+        on s.cnpj_operadora_canonico = op_cnpj.cnpj_canonico
        and s.cnpj_operadora_canonico is not null
 ),
 
@@ -95,7 +95,7 @@ scored as (
           + case when a.vigencia_inicio is not null or a.vigencia_fim is not null then 10 else 0 end
           + case when a.status_contrato is not null then 10 else 0 end
         ) as score_calculado
-    from agregado a
+    from agregado as a
 )
 
 select

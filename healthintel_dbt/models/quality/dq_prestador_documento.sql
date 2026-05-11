@@ -50,4 +50,3 @@ select
     _arquivo_origem,
     _lote_id
 from fonte
-

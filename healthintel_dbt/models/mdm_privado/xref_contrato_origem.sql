@@ -14,10 +14,10 @@ with origem as (
         s.registro_ans_origem,
         s.cnpj_operadora_origem,
         c.contrato_master_id
-    from {{ ref('stg_cliente_contrato') }} s
-    left join {{ ref('mdm_contrato_master') }} c
-        on c.tenant_id = s.tenant_id
-       and c.numero_contrato_normalizado = s.numero_contrato_normalizado
+    from {{ ref('stg_cliente_contrato') }} as s
+    left join {{ ref('mdm_contrato_master') }} as c
+        on s.tenant_id = c.tenant_id
+       and s.numero_contrato_normalizado = c.numero_contrato_normalizado
     where s.tenant_id is not null
       and s.numero_contrato_normalizado is not null
 )

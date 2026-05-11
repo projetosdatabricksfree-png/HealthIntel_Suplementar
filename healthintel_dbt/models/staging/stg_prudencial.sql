@@ -15,11 +15,7 @@ with base as (
         _carregado_em,
         _arquivo_origem,
         _lote_id,
-        case
-            when lower(trim(coalesce(situacao_prudencial, ''))) in ('inadequada', 'critica', 'risco')
-                then true
-            else false
-        end as situacao_inadequada,
+        coalesce(lower(trim(coalesce(situacao_prudencial, ''))) in ('inadequada', 'critica', 'risco'), false) as situacao_inadequada,
         row_number() over (
             partition by upper(trim(trimestre)), {{ normalizar_registro_ans('registro_ans') }}
             order by _carregado_em desc, _lote_id desc

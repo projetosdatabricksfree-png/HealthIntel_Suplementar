@@ -44,21 +44,21 @@ agregado as (
         end as qt_prestador_por_10k_beneficiarios
     from rede
     inner join {{ ref('dim_operadora_atual') }} as operadora
-        on operadora.registro_ans = rede.registro_ans
+        on rede.registro_ans = operadora.registro_ans
     left join {{ ref('dim_localidade') }} as localidade
-        on localidade.cd_municipio = rede.cd_municipio
+        on rede.cd_municipio = localidade.cd_municipio
     left join beneficios
-        on beneficios.registro_ans = rede.registro_ans
-        and beneficios.competencia = rede.competencia
-        and beneficios.cd_municipio = rede.cd_municipio
+        on rede.registro_ans = beneficios.registro_ans
+        and rede.competencia = beneficios.competencia
+        and rede.cd_municipio = beneficios.cd_municipio
     group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 ),
 parametrizado as (
     select
         agregado.*,
         case
-            when coalesce(pop_estimada_ibge, 0) < 100000 then 'pequeno'
-            when coalesce(pop_estimada_ibge, 0) < 500000 then 'medio'
+            when coalesce(agregado.pop_estimada_ibge, 0) < 100000 then 'pequeno'
+            when coalesce(agregado.pop_estimada_ibge, 0) < 500000 then 'medio'
             else 'grande'
         end as porte_parametrizado
     from agregado
@@ -68,13 +68,9 @@ select
     agregado.*,
     coalesce(parametro.limiar_prestador_por_10k, 0) as limiar_prestador_por_10k,
     coalesce(parametro.limiar_especialidade_por_10k, 0) as limiar_especialidade_por_10k,
-    case when agregado.qt_prestador > 0 then true else false end as tem_cobertura,
-    case
-        when agregado.qt_prestador_por_10k_beneficiarios >= coalesce(parametro.limiar_prestador_por_10k, 0)
-            then true
-        else false
-    end as cobertura_minima_atendida
+    coalesce(agregado.qt_prestador > 0, false) as tem_cobertura,
+    coalesce(agregado.qt_prestador_por_10k_beneficiarios >= coalesce(parametro.limiar_prestador_por_10k, 0), false) as cobertura_minima_atendida
 from parametrizado as agregado
 left join {{ ref('ref_parametro_rede') }} as parametro
-    on parametro.segmento = agregado.segmento
-    and parametro.porte_municipio = agregado.porte_parametrizado
+    on agregado.segmento = parametro.segmento
+    and agregado.porte_parametrizado = parametro.porte_municipio

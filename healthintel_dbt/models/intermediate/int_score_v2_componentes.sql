@@ -3,16 +3,24 @@
 }}
 
 with chaves as (
-    select distinct registro_ans, competencia
+    select distinct
+registro_ans,
+competencia
     from {{ ref('fat_score_operadora_mensal') }}
     union
-    select distinct registro_ans, competencia
+    select distinct
+registro_ans,
+competencia
     from {{ ref('fat_score_regulatorio_operadora_mensal') }}
     union
-    select distinct registro_ans, competencia
+    select distinct
+registro_ans,
+competencia
     from {{ ref('fat_vda_operadora_mensal') }}
     union
-    select distinct registro_ans, competencia
+    select distinct
+registro_ans,
+competencia
     from {{ ref('fat_glosa_operadora_mensal') }}
 ),
 base as (
@@ -27,7 +35,7 @@ base as (
         {{ competencia_para_trimestre('k.competencia') }} as trimestre_financeiro
     from chaves as k
     inner join {{ ref('dim_operadora_atual') }} as d
-        on d.registro_ans = k.registro_ans
+        on k.registro_ans = d.registro_ans
 ),
 score_core as (
     select
@@ -52,8 +60,8 @@ financeiro as (
     from base
     left join lateral (
         select
-            score_financeiro_base,
-            versao_financeira
+            financeiro_base.score_financeiro_base,
+            financeiro_base.versao_financeira
         from {{ ref('fat_financeiro_operadora_trimestral') }} as financeiro_base
         where financeiro_base.operadora_id = base.operadora_id
           and financeiro_base.trimestre <= base.trimestre_financeiro
@@ -82,7 +90,7 @@ glosa as (
         sum(coalesce(valor_faturado, 0)) as valor_faturado_total,
         'glosa_v1' as versao_dataset
     from {{ ref('fat_glosa_operadora_mensal') }}
-    group by 1, 2
+    group by operadora_id, competencia
 )
 
 select
@@ -96,7 +104,7 @@ select
     base.trimestre_financeiro,
     coalesce(score_core.score_core, 0) as score_core,
     coalesce(score_regulatorio.score_regulatorio, 0) as score_regulatorio,
-    financeiro.score_financeiro_trimestral as score_financeiro_trimestral,
+    financeiro.score_financeiro_trimestral,
     coalesce(vda.inadimplente, false) as inadimplente,
     coalesce(vda.saldo_devedor, 0) as saldo_devedor,
     coalesce(vda.valor_devido, 0) as valor_devido,
@@ -115,7 +123,7 @@ select
     end as penalizacao_glosa,
     coalesce(vda.versao_dataset, 'vda_v1') as versao_vda,
     coalesce(glosa.versao_dataset, 'glosa_v1') as versao_glosa,
-    financeiro.versao_financeiro as versao_financeiro
+    financeiro.versao_financeiro
 from base
 left join score_core
     on base.operadora_id = score_core.operadora_id

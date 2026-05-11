@@ -15,6 +15,6 @@ select
     max(oport.operadora_melhor_score_v2) as operadora_dominante
 from {{ ref('fat_market_share_mensal') }} as mercado
 left join {{ ref('fat_oportunidade_v2_municipio_mensal') }} as oport
-    on oport.cd_municipio = mercado.cd_municipio
-    and oport.competencia = mercado.competencia
+    on mercado.cd_municipio = oport.cd_municipio
+    and mercado.competencia = oport.competencia
 group by 1, 2

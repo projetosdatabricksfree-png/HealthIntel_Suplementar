@@ -37,4 +37,4 @@ select
     sinal_vazio,
     versao_algoritmo
 from {{ ref('fat_oportunidade_v2_municipio_mensal') }}
-order by ranking_posicao asc, nm_municipio
+order by ranking_posicao asc, nm_municipio asc

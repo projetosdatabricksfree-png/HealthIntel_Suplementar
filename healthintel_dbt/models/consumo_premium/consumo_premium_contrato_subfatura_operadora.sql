@@ -102,9 +102,9 @@ select
         (coalesce(c.mdm_confidence_score, 0) + coalesce(s.mdm_confidence_score, 0)) / 2.0
     ))::numeric(5, 2) as quality_score_publicacao,
     current_timestamp as dt_processamento
-from contrato c
-left join subfatura s
+from contrato as c
+left join subfatura as s
     on c.tenant_id = s.tenant_id
    and c.contrato_master_id = s.contrato_master_id
-left join operadora o
+left join operadora as o
     on c.operadora_master_id = o.operadora_master_id

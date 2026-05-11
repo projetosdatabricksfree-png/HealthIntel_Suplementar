@@ -55,4 +55,4 @@ select
     agregado.pct_vinculo_sus
 from agregado
 left join {{ ref('dim_localidade') }} as localidade
-    on localidade.cd_municipio = agregado.cd_municipio
+    on agregado.cd_municipio = localidade.cd_municipio
