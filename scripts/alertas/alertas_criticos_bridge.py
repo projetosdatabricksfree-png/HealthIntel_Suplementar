@@ -25,7 +25,6 @@ from email.message import EmailMessage
 
 import asyncpg
 
-
 POSTGRES_DSN = (
     f"postgresql://{os.getenv('POSTGRES_USER', 'healthintel')}"
     f":{os.getenv('POSTGRES_PASSWORD', 'healthintel')}"

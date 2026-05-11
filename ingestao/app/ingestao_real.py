@@ -13,7 +13,6 @@ from ingestao.app.identificar_layout import identificar_layout
 from ingestao.app.landing import baixar_arquivo
 from ingestao.app.pipeline_bronze import (
     processar_arquivo_bruto,
-    processar_arquivo_bruto_streaming,
 )
 
 # ---------------------------------------------------------------------------

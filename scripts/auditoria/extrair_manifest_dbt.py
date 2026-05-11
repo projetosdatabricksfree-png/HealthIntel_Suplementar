@@ -13,7 +13,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 EXPECTED_RESOURCE_TYPES = {"model", "seed", "snapshot"}
 
 

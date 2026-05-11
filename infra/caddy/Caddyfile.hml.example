@@ -1,0 +1,32 @@
+{
+    # email ops@healthintel.com.br
+}
+
+# Domínio Raiz: Redireciona para o App (Evita conflitos históricos com Grafana)
+healthintel.com.br, www.healthintel.com.br {
+    redir https://app.healthintel.com.br{uri} permanent
+}
+
+# Frontend (Portal de Homologação/Produção)
+app.healthintel.com.br {
+    # Aponta para o frontend (Vite/Next.js) na porta 3000
+    reverse_proxy 127.0.0.1:3000
+    
+    header {
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Strict-Transport-Security "max-age=31536000;"
+    }
+}
+
+# API e Orquestração (Nginx como gateway interno)
+api.healthintel.com.br {
+    # Aponta para o Nginx (porta 8080) que faz o roteamento interno para os containers
+    reverse_proxy 127.0.0.1:8080
+}
+
+# Grafana (Acesso direto via subdomínio isolado)
+grafana.healthintel.com.br {
+    # Aponta para o Grafana (porta 3001 configurada no docker-compose)
+    reverse_proxy 127.0.0.1:3001
+}

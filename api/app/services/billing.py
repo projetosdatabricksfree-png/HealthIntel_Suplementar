@@ -11,7 +11,11 @@ from sqlalchemy import text
 
 from api.app.core.database import SessionLocal
 from api.app.core.security import gerar_hash_sha256
-from api.app.schemas.billing import BillingFechamentoRequest, BillingUpgradeRequest, ChaveCriacaoRequest
+from api.app.schemas.billing import (
+    BillingFechamentoRequest,
+    BillingUpgradeRequest,
+    ChaveCriacaoRequest,
+)
 
 REFERENCIA_REGEX = re.compile(r"^\d{4}-\d{2}$")
 
