@@ -14,7 +14,10 @@ router = APIRouter(
 
 @router.post("/_debug/raise")
 async def debug_raise() -> dict:
-    """Dispara excecao artificial para validar integracao com Sentry. Disponivel apenas em ambientes nao-prod."""
+    """Dispara excecao artificial para validar integracao com Sentry.
+
+    Disponivel apenas em ambientes nao-prod.
+    """
     settings = get_settings()
     if settings.app_env.lower() == "prod":
         from fastapi import HTTPException

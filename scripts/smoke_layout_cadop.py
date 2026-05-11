@@ -37,9 +37,11 @@ with httpx.Client(base_url=BASE_URL, headers=headers, timeout=10.0) as client:
     if resp.status_code != 200:
         _fail(f"GET /layout/datasets retornou {resp.status_code}")
     else:
-        datasets = {d.get("codigo") for d in resp.json()} if isinstance(resp.json(), list) else set()
+        resp_json = resp.json()
+        datasets = {d.get("codigo") for d in resp_json} if isinstance(resp_json, list) else set()
         if DATASET not in datasets:
-            _fail(f"dataset '{DATASET}' ausente em /layout/datasets (encontrados: {sorted(datasets)})")
+            found = sorted(datasets)
+            _fail(f"dataset '{DATASET}' ausente em /layout/datasets (encontrados: {found})")
         else:
             _ok(f"dataset '{DATASET}' presente")
 
@@ -49,7 +51,7 @@ with httpx.Client(base_url=BASE_URL, headers=headers, timeout=10.0) as client:
         _fail(f"GET /layout/layouts?dataset_codigo={DATASET} retornou {resp2.status_code}")
     else:
         layouts = resp2.json() if isinstance(resp2.json(), list) else []
-        ativos = [l for l in layouts if l.get("status") == "ativo"]
+        ativos = [layout for layout in layouts if layout.get("status") == "ativo"]
         if not ativos:
             _fail(f"nenhum layout com status='ativo' para dataset '{DATASET}'")
         else:
@@ -78,7 +80,7 @@ with httpx.Client(base_url=BASE_URL, headers=headers, timeout=10.0) as client:
                         alias_encontrado = alias_data.get(ALIAS_ESPERADO_DE) == ALIAS_ESPERADO_PARA
                     elif isinstance(alias_data, list):
                         alias_encontrado = any(
-                            a.get("de") == ALIAS_ESPERADO_DE and a.get("para") == ALIAS_ESPERADO_PARA
+                            a.get("de") == ALIAS_ESPERADO_DE and a.get("para") == ALIAS_ESPERADO_PARA  # noqa: E501
                             for a in alias_data
                         )
 

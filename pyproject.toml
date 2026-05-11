@@ -51,6 +51,7 @@ select = ["E", "F", "I", "B"]
 [tool.ruff.lint.per-file-ignores]
 "scripts/seed_dados_completos.py" = ["E501"]
 "scripts/smoke_premium.py" = ["E501"]
+"scripts/materializar_regulatorio_generico.py" = ["E501"]
 "api/tests/integration/test_premium.py" = ["E501"]
 "testes/regressao/test_endpoints_fase5.py" = ["E501"]
 

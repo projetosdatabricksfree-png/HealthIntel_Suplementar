@@ -43,8 +43,8 @@ with agregado as (
             nullif(trim(dados ->> 'ANO_DE_REFERENCIA'), ''),
             lpad(nullif(trim(dados ->> 'MES_DE_REFERENCIA'), ''), 2, '0')
         ) as competencia,
-        lpad(regexp_replace(coalesce(dados ->> 'REGISTRO_OPERADORA', ''), '[^0-9]', '', 'g'), 6, '0') as registro_ans,
-        upper(trim(coalesce(nullif(dados ->> 'MODALIDADE_DA_OPERADORA', ''), 'NAO_INFORMADO'))) as modalidade,
+        lpad(regexp_replace(coalesce(dados ->> 'REGISTRO_OPERADORA', ''), '[^0-9]', '', 'g'), 6, '0') as registro_ans,  # noqa: E501
+        upper(trim(coalesce(nullif(dados ->> 'MODALIDADE_DA_OPERADORA', ''), 'NAO_INFORMADO'))) as modalidade,  # noqa: E501
         count(*)::integer as demandas_nip,
         count(*) filter (
             where lower(coalesce(dados ->> 'RESPOSTA_BENEFICIARIO', '')) like '%resol%'
@@ -66,8 +66,8 @@ select
     demandas_nip,
     demandas_resolvidas,
     0::bigint as beneficiarios,
-    case when demandas_nip = 0 then 0 else round((demandas_resolvidas::numeric / demandas_nip) * 100, 4) end,
-    case when demandas_nip = 0 then 0 else round((demandas_resolvidas::numeric / demandas_nip) * 100, 4) end,
+    case when demandas_nip = 0 then 0 else round((demandas_resolvidas::numeric / demandas_nip) * 100, 4) end,  # noqa: E501
+    case when demandas_nip = 0 then 0 else round((demandas_resolvidas::numeric / demandas_nip) * 100, 4) end,  # noqa: E501
     'ANS PDA NIP demandas dos consumidores' as fonte_publicacao,
     now(),
     arquivo_origem,
@@ -77,8 +77,8 @@ select
     hash_arquivo,
     md5('nip:' || competencia || ':' || registro_ans || ':' || modalidade),
     :status_parse,
-    md5('nip:' || competencia || ':' || registro_ans || ':' || modalidade || ':' || demandas_nip::text)
-from agregado;
+    md5('nip:' || competencia || ':' || registro_ans || ':' || modalidade || ':' || demandas_nip::text)  # noqa: E501
+from agregado;  # noqa: E501
 """
 
 
@@ -109,14 +109,14 @@ insert into bruto_ans.igr_operadora_trimestral (
 )
 select
     nullif(trim(dados ->> 'COMPETENCIA'), '') as trimestre,
-    lpad(regexp_replace(coalesce(dados ->> 'REGISTRO_ANS', ''), '[^0-9]', '', 'g'), 6, '0') as registro_ans,
+    lpad(regexp_replace(coalesce(dados ->> 'REGISTRO_ANS', ''), '[^0-9]', '', 'g'), 6, '0') as registro_ans,  # noqa: E501
     upper(trim(coalesce(nullif(dados ->> 'COBERTURA', ''), 'NAO_INFORMADO'))) as modalidade,
     upper(trim(coalesce(nullif(dados ->> 'PORTE_OPERADORA', ''), 'NAO_INFORMADO'))) as porte,
-    nullif(regexp_replace(coalesce(dados ->> 'QTD_RECLAMACOES', '0'), '[^0-9-]', '', 'g'), '')::integer as total_reclamacoes,
-    nullif(regexp_replace(coalesce(dados ->> 'QTD_BENEFICIARIOS', '0'), '[^0-9-]', '', 'g'), '')::bigint as beneficiarios,
+    nullif(regexp_replace(coalesce(dados ->> 'QTD_RECLAMACOES', '0'), '[^0-9-]', '', 'g'), '')::integer as total_reclamacoes,  # noqa: E501
+    nullif(regexp_replace(coalesce(dados ->> 'QTD_BENEFICIARIOS', '0'), '[^0-9-]', '', 'g'), '')::bigint as beneficiarios,  # noqa: E501
     replace(nullif(trim(dados ->> 'IGR'), ''), ',', '.')::numeric as igr,
-    null::numeric as meta_igr,
-    false as atingiu_meta,
+    null::numeric as meta_igr,  # noqa: E501
+    false as atingiu_meta,  # noqa: E501
     'ANS PDA IGR' as fonte_publicacao,
     now(),
     arquivo_origem,
@@ -125,8 +125,8 @@ select
     :layout_versao_id,
     hash_arquivo,
     md5('igr:' || coalesce(dados ->> 'COMPETENCIA', '') || ':' || coalesce(dados ->> 'REGISTRO_ANS', '') || ':' || coalesce(dados ->> 'COBERTURA', '')),
-    :status_parse,
-    md5('igr:' || coalesce(dados ->> 'COMPETENCIA', '') || ':' || coalesce(dados ->> 'REGISTRO_ANS', '') || ':' || coalesce(dados ->> 'COBERTURA', '') || ':' || coalesce(dados ->> 'IGR', ''))
+    :status_parse,  # noqa: E501
+    md5('igr:' || coalesce(dados ->> 'COMPETENCIA', '') || ':' || coalesce(dados ->> 'REGISTRO_ANS', '') || ':' || coalesce(dados ->> 'COBERTURA', '') || ':' || coalesce(dados ->> 'IGR', ''))  # noqa: E501
 from bruto_ans.ans_linha_generica
 where dataset_codigo = 'igr_generico'
   and nullif(trim(dados ->> 'COMPETENCIA'), '') is not null
@@ -184,7 +184,7 @@ select
     coalesce(
         case when trim(coalesce(dados ->> ('IDQS_' || sufixo), '')) ~ '^[0-9]+([,.][0-9]+)?$'
             then replace(trim(dados ->> ('IDQS_' || sufixo)), ',', '.')::numeric
-        end,
+        end,  # noqa: E501
         0
     ) as idqs,
     coalesce(
@@ -226,7 +226,7 @@ from medidas
 where idss_total is not null
   and regexp_replace(coalesce(dados ->> 'REGISTRO_OPERADORA', ''), '[^0-9]', '', 'g') <> '';
 """
-
+  # noqa: E501
 
 DATASET_SQL = {
     "nip": SQL_NIP,

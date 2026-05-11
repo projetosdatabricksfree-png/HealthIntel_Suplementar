@@ -69,15 +69,15 @@ async def bootstrap() -> None:
         LayoutAliasCreate(nome_fisico="Competencia", destino_raw="competencia"),
         LayoutAliasCreate(nome_fisico="Bairro", destino_raw="_ignorado_bairro"),
         LayoutAliasCreate(nome_fisico="CEP", destino_raw="_ignorado_cep"),
-        LayoutAliasCreate(nome_fisico="Cargo_Representante", destino_raw="_ignorado_cargo_representante"),
+        LayoutAliasCreate(nome_fisico="Cargo_Representante", destino_raw="_ignorado_cargo_representante"),  # noqa: E501
         LayoutAliasCreate(nome_fisico="Complemento", destino_raw="_ignorado_complemento"),
         LayoutAliasCreate(nome_fisico="DDD", destino_raw="_ignorado_ddd"),
-        LayoutAliasCreate(nome_fisico="Data_Registro_ANS", destino_raw="_ignorado_data_registro_ans"),
-        LayoutAliasCreate(nome_fisico="Endereco_eletronico", destino_raw="_ignorado_endereco_eletronico"),
+        LayoutAliasCreate(nome_fisico="Data_Registro_ANS", destino_raw="_ignorado_data_registro_ans"),  # noqa: E501
+        LayoutAliasCreate(nome_fisico="Endereco_eletronico", destino_raw="_ignorado_endereco_eletronico"),  # noqa: E501
         LayoutAliasCreate(nome_fisico="Fax", destino_raw="_ignorado_fax"),
         LayoutAliasCreate(nome_fisico="Logradouro", destino_raw="_ignorado_logradouro"),
         LayoutAliasCreate(nome_fisico="Numero", destino_raw="_ignorado_numero"),
-        LayoutAliasCreate(nome_fisico="Regiao_de_Comercializacao", destino_raw="_ignorado_regiao_comercializacao"),
+        LayoutAliasCreate(nome_fisico="Regiao_de_Comercializacao", destino_raw="_ignorado_regiao_comercializacao"),  # noqa: E501
         LayoutAliasCreate(nome_fisico="Representante", destino_raw="_ignorado_representante"),
         LayoutAliasCreate(nome_fisico="Telefone", destino_raw="_ignorado_telefone"),
     ]:

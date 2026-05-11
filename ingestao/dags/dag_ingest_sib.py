@@ -81,8 +81,8 @@ async def main():
             text(\"\"\"
                 INSERT INTO plataforma.job (id, dag_id, nome_job, fonte_ans, status, iniciado_em,
                     registro_processado, registro_com_falha)
-                VALUES (:id, 'dag_ingest_sib', 'limpeza_genericos_sib', 'sib_operadora,sib_municipio',
-                    'iniciado', :iniciado_em, 0, 0)
+                VALUES (:id, 'dag_ingest_sib', 'limpeza_genericos_sib',
+                    'sib_operadora,sib_municipio', 'iniciado', :iniciado_em, 0, 0)
             \"\"\"),
             {{'id': job_id, 'iniciado_em': iniciado_em}}
         )

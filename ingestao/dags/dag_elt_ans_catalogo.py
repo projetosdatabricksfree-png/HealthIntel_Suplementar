@@ -16,7 +16,7 @@ with DAG(
     dag_id="dag_elt_ans_catalogo",
     start_date=datetime(2026, 1, 1),
     # 0 7 * * * UTC = 04:00 BRT diario (Core); historico via trigger manual com params.escopo
-    # HARDGATE: habilitar na VPS somente apos §15.1 (NIP/IGR/IDSS) e §15.2 (layouts Mongo confirmados)
+    # HARDGATE: habilitar na VPS somente apos §15.1 (NIP/IGR/IDSS) e §15.2 (layouts Mongo confirmados)  # noqa: E501
     schedule="0 7 * * *",
     catchup=False,
     default_args={

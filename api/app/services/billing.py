@@ -774,12 +774,12 @@ async def criar_chave_api(cliente_id: str, payload: "ChaveCriacaoRequest") -> di
         if not cliente:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"codigo": "CLIENTE_NAO_ENCONTRADO", "mensagem": f"Cliente {cliente_id} nao encontrado."},
+                detail={"codigo": "CLIENTE_NAO_ENCONTRADO", "mensagem": f"Cliente {cliente_id} nao encontrado."},  # noqa: E501
             )
         if cliente["status"] != "ativo":
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail={"codigo": "CLIENTE_INATIVO", "mensagem": "Nao e possivel criar chave para cliente inativo."},
+                detail={"codigo": "CLIENTE_INATIVO", "mensagem": "Nao e possivel criar chave para cliente inativo."},  # noqa: E501
             )
 
         plano_row = await session.execute(
@@ -834,7 +834,7 @@ async def criar_chave_api(cliente_id: str, payload: "ChaveCriacaoRequest") -> di
             {
                 "cliente_id": cliente_id,
                 "ator": payload.ator,
-                "payload": json.dumps({"chave_id": chave_id, "descricao": payload.descricao or f"Criada por {payload.ator}"}),
+                "payload": json.dumps({"chave_id": chave_id, "descricao": payload.descricao or f"Criada por {payload.ator}"}),  # noqa: E501
             },
         )
         await session.commit()

@@ -17,7 +17,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
     if not settings.stripe_secret_key:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"codigo": "STRIPE_NAO_CONFIGURADO", "mensagem": "Checkout nao disponivel neste ambiente."},
+            detail={"codigo": "STRIPE_NAO_CONFIGURADO", "mensagem": "Checkout nao disponivel neste ambiente."},  # noqa: E501
         )
 
     try:
@@ -38,7 +38,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
     if getattr(session, "payment_status", None) != "paid":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={"codigo": "PAGAMENTO_NAO_CONFIRMADO", "mensagem": "Pagamento ainda nao confirmado no Stripe."},
+            detail={"codigo": "PAGAMENTO_NAO_CONFIRMADO", "mensagem": "Pagamento ainda nao confirmado no Stripe."},  # noqa: E501
         )
 
     customer_details = getattr(session, "customer_details", None)
@@ -50,7 +50,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
     if not email:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"codigo": "EMAIL_AUSENTE", "mensagem": "Email nao encontrado na sessao Stripe."},
+            detail={"codigo": "EMAIL_AUSENTE", "mensagem": "Email nao encontrado na sessao Stripe."},  # noqa: E501
         )
 
     prefixo = ("hi_" + secrets.token_urlsafe(7).replace("-", "x").replace("_", "y"))[:10]
@@ -71,7 +71,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
                     "codigo": "SESSAO_JA_PROCESSADA",
-                    "mensagem": "Esta sessao Stripe ja foi processada. Acesse o portal com sua chave existente.",
+                    "mensagem": "Esta sessao Stripe ja foi processada. Acesse o portal com sua chave existente.",  # noqa: E501
                 },
             )
 
@@ -83,7 +83,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
         if not plano_rec:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail={"codigo": "PLANO_NAO_ENCONTRADO", "mensagem": f"Plano '{plano_bd}' nao cadastrado em plataforma.plano."},
+                detail={"codigo": "PLANO_NAO_ENCONTRADO", "mensagem": f"Plano '{plano_bd}' nao cadastrado em plataforma.plano."},  # noqa: E501
             )
         plano_id = str(plano_rec["id"])
 
@@ -96,7 +96,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
             cliente_id = str(cliente_rec["id"])
             await db.execute(
                 text(
-                    "UPDATE plataforma.cliente SET plano_id = cast(:plano_id as uuid), status = 'ativo' "
+                    "UPDATE plataforma.cliente SET plano_id = cast(:plano_id as uuid), status = 'ativo' "  # noqa: E501
                     "WHERE id = cast(:cliente_id as uuid)"
                 ),
                 {"plano_id": plano_id, "cliente_id": cliente_id},
@@ -106,7 +106,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
             await db.execute(
                 text(
                     "INSERT INTO plataforma.cliente (id, nome, email, status, plano_id, criado_em) "
-                    "VALUES (cast(:id as uuid), :nome, :email, 'ativo', cast(:plano_id as uuid), now())"
+                    "VALUES (cast(:id as uuid), :nome, :email, 'ativo', cast(:plano_id as uuid), now())"  # noqa: E501
                 ),
                 {"id": cliente_id, "nome": nome, "email": email, "plano_id": plano_id},
             )
@@ -146,7 +146,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str) -> dict:
             {
                 "cliente_id": cliente_id,
                 "ator": email,
-                "payload": json.dumps({"session_id": session_id, "plano_bd": plano_bd, "chave_id": chave_id}),
+                "payload": json.dumps({"session_id": session_id, "plano_bd": plano_bd, "chave_id": chave_id}),  # noqa: E501
             },
         )
         await db.commit()

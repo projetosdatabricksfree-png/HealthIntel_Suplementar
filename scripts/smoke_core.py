@@ -96,9 +96,19 @@ async def main() -> None:
 
     falhas = [r for r in resultados if not r["ok"]]
     vazios = [r for r in resultados if r.get("payload_vazio")]
-    print({"base_url": base_url, "total_checks": len(resultados), "falhas": len(falhas), "payload_vazio": len(vazios)})
+    print({
+        "base_url": base_url,
+        "total_checks": len(resultados),
+        "falhas": len(falhas),
+        "payload_vazio": len(vazios),
+    })
     for r in resultados:
-        print({"url": r["url"], "status_code": r["status_code"], "ok": r["ok"], "payload_vazio": r.get("payload_vazio", False)})
+        print({
+            "url": r["url"],
+            "status_code": r["status_code"],
+            "ok": r["ok"],
+            "payload_vazio": r.get("payload_vazio", False),
+        })
     if falhas:
         raise SystemExit(1)
 

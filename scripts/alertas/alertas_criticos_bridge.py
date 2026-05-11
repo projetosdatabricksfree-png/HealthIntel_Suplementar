@@ -69,7 +69,7 @@ def _enviar_slack(alertas: list[dict]) -> None:
         for a in alertas
     )
     payload = {
-        "text": f":rotating_light: *[HealthIntel] {len(alertas)} alerta(s) critico(s) nos ultimos {ALERTAS_JANELA_MIN} min*\n{linhas}"
+        "text": f":rotating_light: *[HealthIntel] {len(alertas)} alerta(s) critico(s) nos ultimos {ALERTAS_JANELA_MIN} min*\n{linhas}"  # noqa: E501
     }
     req = urllib.request.Request(
         SLACK_WEBHOOK_URL,
