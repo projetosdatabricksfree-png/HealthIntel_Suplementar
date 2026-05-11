@@ -1648,3 +1648,41 @@ As seguintes pendências foram formalmente avaliadas e classificadas como **não
 **Decisão:** Não bloqueia localmente.  
 **Motivo:** Esses gates só são verificáveis após os DAGs Airflow rodarem na VPS com dados reais da ANS. A estrutura dos modelos (schema, tipos, índices) foi validada pelo dbt build. Os testes dbt de `not_null` e `unique` rodarão automaticamente após a primeira carga.  
 **Próximo passo:** Monitorar DAGs na VPS; verificar logs de `plataforma.job` após primeira carga.
+
+---
+
+## 12. Atualização Sprint 42 — Validação Pós-Carga Real (2026-05-11)
+
+Resultado da execução de `scripts/validar_pos_carga_real_sprint_42.sh` na VPS:
+
+| Item | Status |
+|---|---|
+| Ambiente VPS (containers) | ✅ Up/healthy |
+| API `/saude` | ✅ HTTP 200 |
+| DAGs delta carregados no Airflow | ✅ 9/9 carregados, is_active=True |
+| DAGs delta executados (runs) | ❌ Nenhum executado |
+| `plataforma.arquivo_fonte_ans` | ❌ Vazia (0 rows) |
+| Tabelas delta `api_ans` (20) | ❌ Ausentes — dbt build não executado na VPS |
+| Tabelas delta `consumo_ans` (11) | ❌ Ausentes — dbt build não executado na VPS |
+| TISS/RPC 24 meses | ⏳ Não validável — tabelas ausentes |
+| TUSS oficial por código/descrição | ⏳ Não validável — tabela ausente |
+| Grants finais — acesso comercial | ✅ cliente_reader: consumo_ans(8), premium_reader: consumo_premium_ans(11) |
+| Grants indevidos em camadas internas | ✅ Zero registros |
+| Monitoramento pós-carga real | ✅ Executado — diagnóstico registrado |
+
+**Decisão:** Não OK para demonstração comercial com dados reais.  
+**Evidências:** `docs/evidencias/ans_100_delta/pos_carga_real_relatorio_final.md`
+
+**Pendências ativas (não marcar [x] até execução real):**
+- [ ] DAGs delta executados com sucesso na VPS
+- [ ] `plataforma.arquivo_fonte_ans` com registros das famílias delta
+- [ ] Tabelas `api_ans` delta existentes com linhas
+- [ ] Tabelas `consumo_ans` delta existentes com linhas
+- [ ] TISS/RPC validados com janela 24 meses
+- [ ] TUSS validada por código e descrição sem duplicidades
+
+**Itens validados sem pendência:**
+- [x] Ambiente VPS íntegro (containers Up/healthy)
+- [x] API operacional (`/saude` → 200)
+- [x] DAGs delta carregados no Airflow (9/9)
+- [x] Grants finais corretos — zero acesso indevido em schemas internos
