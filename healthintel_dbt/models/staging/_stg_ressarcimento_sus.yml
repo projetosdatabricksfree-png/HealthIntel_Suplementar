@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: stg_ressarcimento_sus_operadora_plano
+    description: >
+      Totais de ressarcimento ao SUS por operadora e plano. Valores cobrados, pagos e pendentes.
+      Fonte: bruto_ans.ressarcimento_sus_operadora_plano (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, ressarcimento_sus]
+    columns:
+      - name: registro_ans
+        description: Registro ANS da operadora (6 dígitos).
+        tests:
+          - not_null
+      - name: competencia
+        description: Competência YYYYMM.
+        tests:
+          - not_null
+
+  - name: stg_ressarcimento_beneficiario_abi
+    description: >
+      Ressarcimento ao SUS por beneficiário e ABI (Autorização de Internação Hospitalar).
+      Fonte: bruto_ans.ressarcimento_beneficiario_abi (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, ressarcimento_sus]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_ressarcimento_hc
+    description: >
+      Habilitações de crédito do ressarcimento ao SUS por operadora.
+      Fonte: bruto_ans.ressarcimento_hc (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, ressarcimento_sus]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_ressarcimento_cobranca_arrecadacao
+    description: >
+      Totais de cobrança e arrecadação do ressarcimento ao SUS por operadora.
+      Fonte: bruto_ans.ressarcimento_cobranca_arrecadacao (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, ressarcimento_sus]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_ressarcimento_indice_pagamento
+    description: >
+      Índice de efetivo pagamento do ressarcimento ao SUS por operadora.
+      Fonte: bruto_ans.ressarcimento_indice_pagamento (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, ressarcimento_sus]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+      - name: indice_efetivo_pagamento
+        description: Índice entre 0 e 1 representando proporção paga.

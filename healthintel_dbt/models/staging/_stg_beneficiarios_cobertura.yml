@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: stg_sip_mapa_assistencial
+    description: >
+      SIP — mapa assistencial por operadora e município. Beneficiários e eventos por tipo assistencial.
+      Fonte: bruto_ans.sip_mapa_assistencial (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, sip]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_beneficiario_regiao_geografica
+    description: >
+      Distribuição de beneficiários por região geográfica, UF, tipo de plano e segmentação.
+      Fonte: bruto_ans.beneficiario_regiao_geografica (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, beneficiarios_cobertura]
+    columns:
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_beneficiario_informacao_consolidada
+    description: >
+      Beneficiários por município, segmentação, contratação, faixa etária e sexo.
+      Fonte: bruto_ans.beneficiario_informacao_consolidada (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, beneficiarios_cobertura]
+    columns:
+      - name: competencia
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: Código IBGE de 7 dígitos do município.
+
+  - name: stg_taxa_cobertura_plano
+    description: >
+      Taxa de cobertura de planos por município: beneficiários sobre população total.
+      Fonte: bruto_ans.taxa_cobertura_plano (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, beneficiarios_cobertura]
+    columns:
+      - name: competencia
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: Código IBGE de 7 dígitos do município.
+      - name: taxa_cobertura
+        description: Proporção entre 0 e 1 de beneficiários sobre a população total.

@@ -130,13 +130,13 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.produto_caracteristica`
-- [ ] `bruto_ans.produto_tabela_auxiliar`
-- [ ] `stg_ans.stg_produto_caracteristica`
-- [ ] `stg_ans.stg_produto_tabela_auxiliar`
+- [x] `bruto_ans.produto_caracteristica`
+- [x] `bruto_ans.produto_tabela_auxiliar`
+- [x] `stg_ans.stg_produto_caracteristica`
+- [x] `stg_ans.stg_produto_tabela_auxiliar`
 - [ ] `nucleo_ans.dim_produto_plano`
-- [ ] `api_ans.api_produto_plano`
-- [ ] `consumo_ans.consumo_produto_plano`
+- [x] `api_ans.api_produto_plano`
+- [x] `consumo_ans.consumo_produto_plano`
 - [ ] `consumo_premium_ans.produto_plano_completo`
 
 ### 3.1.2 Histórico de planos
@@ -149,10 +149,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.historico_plano`
-- [ ] `stg_ans.stg_historico_plano`
+- [x] `bruto_ans.historico_plano`
+- [x] `stg_ans.stg_historico_plano`
 - [ ] `nucleo_ans.dim_historico_plano`
-- [ ] `api_ans.api_historico_plano`
+- [x] `api_ans.api_historico_plano`
 - [ ] `consumo_ans.consumo_historico_plano`
 
 ### 3.1.3 Serviços opcionais dos planos
@@ -165,8 +165,8 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.plano_servico_opcional`
-- [ ] `stg_ans.stg_plano_servico_opcional`
+- [x] `bruto_ans.plano_servico_opcional`
+- [x] `stg_ans.stg_plano_servico_opcional`
 - [ ] `nucleo_ans.dim_plano_servico_opcional`
 - [ ] `api_ans.api_plano_servico_opcional`
 - [ ] `consumo_ans.consumo_plano_servico_opcional`
@@ -181,8 +181,8 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.quadro_auxiliar_corresponsabilidade`
-- [ ] `stg_ans.stg_quadro_auxiliar_corresponsabilidade`
+- [x] `bruto_ans.quadro_auxiliar_corresponsabilidade`
+- [x] `stg_ans.stg_quadro_auxiliar_corresponsabilidade`
 - [ ] `nucleo_ans.dim_quadro_auxiliar_corresponsabilidade`
 - [ ] `api_ans.api_quadro_auxiliar_corresponsabilidade`
 
@@ -207,22 +207,22 @@ TUSS.zip
 
 Tabelas novas/ajustes pontuais:
 
-- [ ] `bruto_ans.tuss_terminologia_oficial`
-- [ ] `api_ans.api_tuss_procedimento_vigente`
+- [x] `bruto_ans.tuss_terminologia_oficial`
+- [x] `api_ans.api_tuss_procedimento_vigente`
 - [ ] `consumo_ans.consumo_tuss_procedimento_vigente`
 - [ ] `consumo_premium_ans.tuss_procedimento_vigente`
 
 Tasks TUSS:
 
-- [ ] Criar parser oficial para `TUSS.zip`.
-- [ ] Registrar/validar layout TUSS no Mongo existente.
-- [ ] Carregar TUSS oficial em `bruto_ans.tuss_terminologia_oficial`.
-- [ ] Garantir versionamento por `versao_tuss`.
-- [ ] Garantir `vigencia_inicio`.
-- [ ] Garantir `vigencia_fim`.
-- [ ] Garantir `is_tuss_vigente`.
-- [ ] Garantir chave técnica por `codigo_tuss + versao_tuss`.
-- [ ] Criar API própria `api_tuss_procedimento_vigente`.
+- [x] Criar parser oficial para `TUSS.zip`.
+- [x] Registrar/validar layout TUSS no Mongo existente.
+- [x] Carregar TUSS oficial em `bruto_ans.tuss_terminologia_oficial`.
+- [x] Garantir versionamento por `versao_tuss`.
+- [x] Garantir `vigencia_inicio`.
+- [x] Garantir `vigencia_fim`.
+- [x] Garantir `is_tuss_vigente`.
+- [x] Garantir chave técnica por `codigo_tuss + versao_tuss`.
+- [x] Criar API própria `api_tuss_procedimento_vigente`.
 - [ ] Criar consumo SQL `consumo_tuss_procedimento_vigente`.
 - [ ] Criar premium SQL `tuss_procedimento_vigente`.
 - [ ] Proibir crosswalk sintético em produção.
@@ -261,18 +261,18 @@ Subpastas oficiais:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.tiss_ambulatorial`
-- [ ] `bruto_ans.tiss_hospitalar`
-- [ ] `bruto_ans.tiss_dados_plano`
-- [ ] `stg_ans.stg_tiss_ambulatorial`
-- [ ] `stg_ans.stg_tiss_hospitalar`
-- [ ] `stg_ans.stg_tiss_dados_plano`
+- [x] `bruto_ans.tiss_ambulatorial`
+- [x] `bruto_ans.tiss_hospitalar`
+- [x] `bruto_ans.tiss_dados_plano`
+- [x] `stg_ans.stg_tiss_ambulatorial`
+- [x] `stg_ans.stg_tiss_hospitalar`
+- [x] `stg_ans.stg_tiss_dados_plano`
 - [ ] `nucleo_ans.fat_tiss_ambulatorial`
 - [ ] `nucleo_ans.fat_tiss_hospitalar`
 - [ ] `nucleo_ans.fat_tiss_plano`
-- [ ] `api_ans.api_tiss_ambulatorial_operadora_mes`
-- [ ] `api_ans.api_tiss_hospitalar_operadora_mes`
-- [ ] `api_ans.api_tiss_plano_mes`
+- [x] `api_ans.api_tiss_ambulatorial_operadora_mes`
+- [x] `api_ans.api_tiss_hospitalar_operadora_mes`
+- [x] `api_ans.api_tiss_plano_mes`
 - [ ] `consumo_ans.consumo_tiss_utilizacao_operadora_mes`
 - [ ] `consumo_premium_ans.tiss_evento_procedimento_mes`
 
@@ -294,10 +294,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.sip_mapa_assistencial`
-- [ ] `stg_ans.stg_sip_mapa_assistencial`
+- [x] `bruto_ans.sip_mapa_assistencial`
+- [x] `stg_ans.stg_sip_mapa_assistencial`
 - [ ] `nucleo_ans.fat_sip_assistencial`
-- [ ] `api_ans.api_sip_assistencial_operadora`
+- [x] `api_ans.api_sip_assistencial_operadora`
 - [ ] `consumo_ans.consumo_sip_assistencial_operadora`
 - [ ] `consumo_premium_ans.sip_assistencial_operadora`
 
@@ -326,10 +326,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ressarcimento_beneficiario_abi`
-- [ ] `stg_ans.stg_ressarcimento_beneficiario_abi`
+- [x] `bruto_ans.ressarcimento_beneficiario_abi`
+- [x] `stg_ans.stg_ressarcimento_beneficiario_abi`
 - [ ] `nucleo_ans.fat_ressarcimento_beneficiario_abi`
-- [ ] `api_ans.api_ressarcimento_beneficiario_abi`
+- [x] `api_ans.api_ressarcimento_beneficiario_abi`
 
 ### 3.5.2 Dados de ressarcimento SUS por operadora/plano
 
@@ -341,10 +341,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ressarcimento_sus_operadora_plano`
-- [ ] `stg_ans.stg_ressarcimento_sus_operadora_plano`
+- [x] `bruto_ans.ressarcimento_sus_operadora_plano`
+- [x] `stg_ans.stg_ressarcimento_sus_operadora_plano`
 - [ ] `nucleo_ans.fat_ressarcimento_sus_operadora_plano`
-- [ ] `api_ans.api_ressarcimento_sus_operadora_plano`
+- [x] `api_ans.api_ressarcimento_sus_operadora_plano`
 - [ ] `consumo_ans.consumo_ressarcimento_sus_operadora`
 
 ### 3.5.3 HC Ressarcimento SUS
@@ -357,9 +357,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ressarcimento_hc`
-- [ ] `stg_ans.stg_ressarcimento_hc`
-- [ ] `api_ans.api_ressarcimento_hc_operadora`
+- [x] `bruto_ans.ressarcimento_hc`
+- [x] `stg_ans.stg_ressarcimento_hc`
+- [x] `api_ans.api_ressarcimento_hc_operadora`
 
 ### 3.5.4 Cobrança e arrecadação
 
@@ -371,9 +371,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ressarcimento_cobranca_arrecadacao`
-- [ ] `stg_ans.stg_ressarcimento_cobranca_arrecadacao`
-- [ ] `api_ans.api_ressarcimento_cobranca_arrecadacao`
+- [x] `bruto_ans.ressarcimento_cobranca_arrecadacao`
+- [x] `stg_ans.stg_ressarcimento_cobranca_arrecadacao`
+- [x] `api_ans.api_ressarcimento_cobranca_arrecadacao`
 
 ### 3.5.5 Índice de efetivo pagamento
 
@@ -385,9 +385,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ressarcimento_indice_pagamento`
-- [ ] `stg_ans.stg_ressarcimento_indice_pagamento`
-- [ ] `api_ans.api_ressarcimento_indice_pagamento`
+- [x] `bruto_ans.ressarcimento_indice_pagamento`
+- [x] `stg_ans.stg_ressarcimento_indice_pagamento`
+- [x] `api_ans.api_ressarcimento_indice_pagamento`
 
 ---
 
@@ -403,9 +403,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ntrp_area_comercializacao`
-- [ ] `stg_ans.stg_ntrp_area_comercializacao`
-- [ ] `api_ans.api_ntrp_area_comercializacao`
+- [x] `bruto_ans.ntrp_area_comercializacao`
+- [x] `stg_ans.stg_ntrp_area_comercializacao`
+- [x] `api_ans.api_ntrp_area_comercializacao`
 
 ### 3.6.2 Painel de precificação
 
@@ -417,10 +417,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.painel_precificacao`
-- [ ] `stg_ans.stg_painel_precificacao`
+- [x] `bruto_ans.painel_precificacao`
+- [x] `stg_ans.stg_painel_precificacao`
 - [ ] `nucleo_ans.fat_painel_precificacao`
-- [ ] `api_ans.api_painel_precificacao`
+- [x] `api_ans.api_painel_precificacao`
 
 ### 3.6.3 Percentuais de reajuste
 
@@ -432,9 +432,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.percentual_reajuste_agrupamento`
-- [ ] `stg_ans.stg_percentual_reajuste_agrupamento`
-- [ ] `api_ans.api_reajuste_agrupamento`
+- [x] `bruto_ans.percentual_reajuste_agrupamento`
+- [x] `stg_ans.stg_percentual_reajuste_agrupamento`
+- [x] `api_ans.api_reajuste_agrupamento`
 
 ### 3.6.4 Nota técnica NTRP / VCM / faixa etária
 
@@ -446,9 +446,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.ntrp_vcm_faixa_etaria`
-- [ ] `stg_ans.stg_ntrp_vcm_faixa_etaria`
-- [ ] `api_ans.api_ntrp_vcm_faixa_etaria`
+- [x] `bruto_ans.ntrp_vcm_faixa_etaria`
+- [x] `stg_ans.stg_ntrp_vcm_faixa_etaria`
+- [x] `api_ans.api_ntrp_vcm_faixa_etaria`
 
 ### 3.6.5 Valor comercial médio por município
 
@@ -460,10 +460,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.valor_comercial_medio_municipio`
-- [ ] `stg_ans.stg_valor_comercial_medio_municipio`
+- [x] `bruto_ans.valor_comercial_medio_municipio`
+- [x] `stg_ans.stg_valor_comercial_medio_municipio`
 - [ ] `nucleo_ans.fat_valor_comercial_medio_municipio`
-- [ ] `api_ans.api_valor_comercial_medio_municipio`
+- [x] `api_ans.api_valor_comercial_medio_municipio`
 
 ### 3.6.6 Faixa de preço
 
@@ -475,13 +475,13 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.faixa_preco`
-- [ ] `stg_ans.stg_faixa_preco`
-- [ ] `api_ans.api_faixa_preco`
+- [x] `bruto_ans.faixa_preco`
+- [x] `stg_ans.stg_faixa_preco`
+- [x] `api_ans.api_faixa_preco`
 
 ### Consumo consolidado
 
-- [ ] `consumo_ans.consumo_precificacao_plano`
+- [x] `consumo_ans.consumo_precificacao_plano`
 - [ ] `consumo_premium_ans.precificacao_plano`
 
 ---
@@ -498,10 +498,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.operadora_cancelada`
-- [ ] `stg_ans.stg_operadora_cancelada`
+- [x] `bruto_ans.operadora_cancelada`
+- [x] `stg_ans.stg_operadora_cancelada`
 - [ ] `nucleo_ans.dim_operadora_cancelada`
-- [ ] `api_ans.api_operadora_cancelada`
+- [x] `api_ans.api_operadora_cancelada`
 
 ### 3.7.2 Operadoras acreditadas
 
@@ -513,9 +513,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.operadora_acreditada`
-- [ ] `stg_ans.stg_operadora_acreditada`
-- [ ] `api_ans.api_operadora_acreditada`
+- [x] `bruto_ans.operadora_acreditada`
+- [x] `stg_ans.stg_operadora_acreditada`
+- [x] `api_ans.api_operadora_acreditada`
 
 ---
 
@@ -531,9 +531,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.prestador_acreditado`
-- [ ] `stg_ans.stg_prestador_acreditado`
-- [ ] `api_ans.api_prestador_acreditado`
+- [x] `bruto_ans.prestador_acreditado`
+- [x] `stg_ans.stg_prestador_acreditado`
+- [x] `api_ans.api_prestador_acreditado`
 
 ### 3.8.2 Produtos e prestadores hospitalares
 
@@ -545,10 +545,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.produto_prestador_hospitalar`
-- [ ] `stg_ans.stg_produto_prestador_hospitalar`
+- [x] `bruto_ans.produto_prestador_hospitalar`
+- [x] `stg_ans.stg_produto_prestador_hospitalar`
 - [ ] `nucleo_ans.fat_produto_prestador_hospitalar`
-- [ ] `api_ans.api_produto_prestador_hospitalar`
+- [x] `api_ans.api_produto_prestador_hospitalar`
 
 ### 3.8.3 Operadoras e prestadores não hospitalares
 
@@ -560,9 +560,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.operadora_prestador_nao_hospitalar`
-- [ ] `stg_ans.stg_operadora_prestador_nao_hospitalar`
-- [ ] `api_ans.api_operadora_prestador_nao_hospitalar`
+- [x] `bruto_ans.operadora_prestador_nao_hospitalar`
+- [x] `stg_ans.stg_operadora_prestador_nao_hospitalar`
+- [x] `api_ans.api_operadora_prestador_nao_hospitalar`
 
 ### 3.8.4 Solicitações de alteração de rede hospitalar
 
@@ -574,10 +574,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.solicitacao_alteracao_rede_hospitalar`
-- [ ] `stg_ans.stg_solicitacao_alteracao_rede_hospitalar`
+- [x] `bruto_ans.solicitacao_alteracao_rede_hospitalar`
+- [x] `stg_ans.stg_solicitacao_alteracao_rede_hospitalar`
 - [ ] `nucleo_ans.fat_alteracao_rede_hospitalar`
-- [ ] `api_ans.api_alteracao_rede_hospitalar`
+- [x] `api_ans.api_alteracao_rede_hospitalar`
 - [ ] `consumo_premium_ans.alteracao_rede_hospitalar`
 
 ---
@@ -594,10 +594,10 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.penalidade_operadora`
-- [ ] `stg_ans.stg_penalidade_operadora`
+- [x] `bruto_ans.penalidade_operadora`
+- [x] `stg_ans.stg_penalidade_operadora`
 - [ ] `nucleo_ans.fat_penalidade_operadora`
-- [ ] `api_ans.api_penalidade_operadora`
+- [x] `api_ans.api_penalidade_operadora`
 - [ ] `consumo_premium_ans.penalidade_operadora`
 
 ### 3.9.2 Monitoramento de garantia de atendimento
@@ -610,9 +610,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.monitoramento_garantia_atendimento`
-- [ ] `stg_ans.stg_monitoramento_garantia_atendimento`
-- [ ] `api_ans.api_garantia_atendimento`
+- [x] `bruto_ans.monitoramento_garantia_atendimento`
+- [x] `stg_ans.stg_monitoramento_garantia_atendimento`
+- [x] `api_ans.api_garantia_atendimento`
 
 ### 3.9.3 PEONA SUS
 
@@ -624,9 +624,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.peona_sus`
-- [ ] `stg_ans.stg_peona_sus`
-- [ ] `api_ans.api_peona_sus`
+- [x] `bruto_ans.peona_sus`
+- [x] `stg_ans.stg_peona_sus`
+- [x] `api_ans.api_peona_sus`
 
 ### 3.9.4 PROMOPREV
 
@@ -638,9 +638,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.promoprev`
-- [ ] `stg_ans.stg_promoprev`
-- [ ] `api_ans.api_promoprev`
+- [x] `bruto_ans.promoprev`
+- [x] `stg_ans.stg_promoprev`
+- [x] `api_ans.api_promoprev`
 
 ### 3.9.5 RPC
 
@@ -652,15 +652,15 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.rpc`
-- [ ] `stg_ans.stg_rpc`
+- [x] `bruto_ans.rpc`
+- [x] `stg_ans.stg_rpc`
 - [ ] `nucleo_ans.fat_rpc`
-- [ ] `api_ans.api_rpc_operadora_mes`
+- [x] `api_ans.api_rpc_operadora_mes`
 - [ ] `consumo_premium_ans.rpc_operadora_mes`
 
 Retenção:
 
-- [ ] RPC no Postgres: últimos 24 meses nas tabelas API/consumo.
+- [x] RPC no Postgres: últimos 24 meses nas tabelas API/consumo.
 - [ ] Histórico completo: R2/landing.
 
 ### 3.9.6 IAP
@@ -673,9 +673,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.iap`
-- [ ] `stg_ans.stg_iap`
-- [ ] `api_ans.api_iap`
+- [x] `bruto_ans.iap`
+- [x] `stg_ans.stg_iap`
+- [x] `api_ans.api_iap`
 
 ### 3.9.7 PFA
 
@@ -687,9 +687,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.pfa`
-- [ ] `stg_ans.stg_pfa`
-- [ ] `api_ans.api_pfa`
+- [x] `bruto_ans.pfa`
+- [x] `stg_ans.stg_pfa`
+- [x] `api_ans.api_pfa`
 
 ### 3.9.8 Programa de qualificação institucional
 
@@ -701,9 +701,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.programa_qualificacao_institucional`
-- [ ] `stg_ans.stg_programa_qualificacao_institucional`
-- [ ] `api_ans.api_programa_qualificacao_institucional`
+- [x] `bruto_ans.programa_qualificacao_institucional`
+- [x] `stg_ans.stg_programa_qualificacao_institucional`
+- [x] `api_ans.api_programa_qualificacao_institucional`
 
 ---
 
@@ -719,9 +719,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.beneficiario_regiao_geografica`
-- [ ] `stg_ans.stg_beneficiario_regiao_geografica`
-- [ ] `api_ans.api_beneficiario_regiao_geografica`
+- [x] `bruto_ans.beneficiario_regiao_geografica`
+- [x] `stg_ans.stg_beneficiario_regiao_geografica`
+- [x] `api_ans.api_beneficiario_regiao_geografica`
 
 ### 3.10.2 Informações consolidadas de beneficiários
 
@@ -733,9 +733,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.beneficiario_informacao_consolidada`
-- [ ] `stg_ans.stg_beneficiario_informacao_consolidada`
-- [ ] `api_ans.api_beneficiario_informacao_consolidada`
+- [x] `bruto_ans.beneficiario_informacao_consolidada`
+- [x] `stg_ans.stg_beneficiario_informacao_consolidada`
+- [x] `api_ans.api_beneficiario_informacao_consolidada`
 
 ### 3.10.3 Taxa de cobertura de planos de saúde
 
@@ -747,9 +747,9 @@ Caminho:
 
 Tabelas novas:
 
-- [ ] `bruto_ans.taxa_cobertura_plano`
-- [ ] `stg_ans.stg_taxa_cobertura_plano`
-- [ ] `api_ans.api_taxa_cobertura_plano`
+- [x] `bruto_ans.taxa_cobertura_plano`
+- [x] `stg_ans.stg_taxa_cobertura_plano`
+- [x] `api_ans.api_taxa_cobertura_plano`
 
 ---
 
@@ -863,14 +863,14 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar `produto_caracteristica`.
-- [ ] Implementar `produto_tabela_auxiliar`.
-- [ ] Implementar `historico_plano`.
-- [ ] Implementar `plano_servico_opcional`.
-- [ ] Implementar `quadro_auxiliar_corresponsabilidade`.
+- [x] Implementar `produto_caracteristica`.
+- [x] Implementar `produto_tabela_auxiliar`.
+- [x] Implementar `historico_plano`.
+- [x] Implementar `plano_servico_opcional`.
+- [x] Implementar `quadro_auxiliar_corresponsabilidade`.
 - [ ] Criar relacionamento com `api_operadora` existente.
-- [ ] Criar `api_produto_plano`.
-- [ ] Criar `consumo_produto_plano`.
+- [x] Criar `api_produto_plano`.
+- [x] Criar `consumo_produto_plano`.
 - [ ] Criar `produto_plano_completo` premium.
 
 ### Hard gates
@@ -888,20 +888,20 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Criar carga oficial de `TUSS.zip`.
-- [ ] Criar `bruto_ans.tuss_terminologia_oficial`.
-- [ ] Publicar `api_ans.api_tuss_procedimento_vigente`.
+- [x] Criar carga oficial de `TUSS.zip`.
+- [x] Criar `bruto_ans.tuss_terminologia_oficial`.
+- [x] Publicar `api_ans.api_tuss_procedimento_vigente`.
 - [ ] Publicar `consumo_ans.consumo_tuss_procedimento_vigente`.
 - [ ] Publicar `consumo_premium_ans.tuss_procedimento_vigente`.
 - [ ] Bloquear crosswalk sintético em produção.
 
 ### Hard gates
 
-- [ ] `TUSS.zip` carregado.
-- [ ] `Dicionario_de_dados.ods` registrado no Mongo.
+- [x] `TUSS.zip` carregado.
+- [x] `Dicionario_de_dados.ods` registrado no Mongo.
 - [ ] `codigo_tuss` não nulo.
 - [ ] `descricao` não nula.
-- [ ] `is_tuss_vigente` calculado.
+- [x] `is_tuss_vigente` calculado.
 - [ ] Sem duplicidade por código/versão.
 - [ ] Smoke de busca por código.
 - [ ] Smoke de busca por texto.
@@ -913,19 +913,19 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar `TISS/AMBULATORIAL`.
-- [ ] Implementar `TISS/HOSPITALAR`.
-- [ ] Implementar `TISS/DADOS_DE_PLANOS`.
+- [x] Implementar `TISS/AMBULATORIAL`.
+- [x] Implementar `TISS/HOSPITALAR`.
+- [x] Implementar `TISS/DADOS_DE_PLANOS`.
 - [ ] Registrar dicionários de `TISS/DICIONARIO` no Mongo.
-- [ ] Publicar APIs separadas.
-- [ ] Manter TISS API/consumo em janela de 24 meses.
+- [x] Publicar APIs separadas.
+- [x] Manter TISS API/consumo em janela de 24 meses.
 
 ### Hard gates
 
-- [ ] Ambulatorial carregado.
-- [ ] Hospitalar carregado.
-- [ ] Dados de planos carregado.
-- [ ] Retenção de 24 meses aplicada.
+- [x] Ambulatorial carregado.
+- [x] Hospitalar carregado.
+- [x] Dados de planos carregado.
+- [x] Retenção de 24 meses aplicada.
 - [ ] API exige filtros para consultas grandes.
 - [ ] Sem exposição de bruto pesado.
 
@@ -935,9 +935,9 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar SIP Mapa Assistencial.
+- [x] Implementar SIP Mapa Assistencial.
 - [ ] Criar fato assistencial.
-- [ ] Criar API.
+- [x] Criar API.
 - [ ] Criar consumo.
 - [ ] Relacionar com operadora.
 
@@ -954,17 +954,17 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar ABI.
-- [ ] Implementar dados por operadora/plano.
-- [ ] Implementar HC.
-- [ ] Implementar cobrança/arrecadação.
-- [ ] Implementar índice de efetivo pagamento.
+- [x] Implementar ABI.
+- [x] Implementar dados por operadora/plano.
+- [x] Implementar HC.
+- [x] Implementar cobrança/arrecadação.
+- [x] Implementar índice de efetivo pagamento.
 - [ ] Criar consumo consolidado.
 
 ### Hard gates
 
-- [ ] Carga por família concluída.
-- [ ] Valores numéricos tipados como `decimal(18,2)` quando financeiros.
+- [x] Carga por família concluída.
+- [x] Valores numéricos tipados como `decimal(18,2)` quando financeiros.
 - [ ] Datas tipadas.
 - [ ] Chaves de operadora/plano validadas quando existirem.
 - [ ] API responde por operadora.
@@ -975,19 +975,19 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar área de comercialização.
-- [ ] Implementar painel de precificação.
-- [ ] Implementar percentuais de reajuste.
-- [ ] Implementar NTRP/VCM/faixa etária.
-- [ ] Implementar valor comercial médio por município.
-- [ ] Implementar faixa de preço.
-- [ ] Criar consumo de precificação.
+- [x] Implementar área de comercialização.
+- [x] Implementar painel de precificação.
+- [x] Implementar percentuais de reajuste.
+- [x] Implementar NTRP/VCM/faixa etária.
+- [x] Implementar valor comercial médio por município.
+- [x] Implementar faixa de preço.
+- [x] Criar consumo de precificação.
 
 ### Hard gates
 
-- [ ] Valores financeiros tipados.
+- [x] Valores financeiros tipados.
 - [ ] Competência/período não nulo.
-- [ ] Município/UF normalizados quando existirem.
+- [x] Município/UF normalizados quando existirem.
 - [ ] Produto/plano relacionado quando possível.
 - [ ] API com filtros obrigatórios.
 
@@ -997,12 +997,12 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar operadoras canceladas.
-- [ ] Implementar operadoras acreditadas.
-- [ ] Implementar prestadores acreditados.
-- [ ] Implementar produtos/prestadores hospitalares.
-- [ ] Implementar operadoras/prestadores não hospitalares.
-- [ ] Implementar solicitações de alteração de rede hospitalar.
+- [x] Implementar operadoras canceladas.
+- [x] Implementar operadoras acreditadas.
+- [x] Implementar prestadores acreditados.
+- [x] Implementar produtos/prestadores hospitalares.
+- [x] Implementar operadoras/prestadores não hospitalares.
+- [x] Implementar solicitações de alteração de rede hospitalar.
 
 ### Hard gates
 
@@ -1018,20 +1018,20 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar penalidades.
-- [ ] Implementar garantia de atendimento.
-- [ ] Implementar PEONA SUS.
-- [ ] Implementar PROMOPREV.
-- [ ] Implementar RPC.
-- [ ] Implementar IAP.
-- [ ] Implementar PFA.
-- [ ] Implementar programa de qualificação institucional.
+- [x] Implementar penalidades.
+- [x] Implementar garantia de atendimento.
+- [x] Implementar PEONA SUS.
+- [x] Implementar PROMOPREV.
+- [x] Implementar RPC.
+- [x] Implementar IAP.
+- [x] Implementar PFA.
+- [x] Implementar programa de qualificação institucional.
 
 ### Hard gates
 
 - [ ] Período/competência tipado.
 - [ ] Operadora relacionada quando aplicável.
-- [ ] RPC limitado a 24 meses nas tabelas de API/consumo.
+- [x] RPC limitado a 24 meses nas tabelas de API/consumo.
 - [ ] Histórico completo preservado fora do Postgres quente.
 - [ ] API documentada.
 
@@ -1041,18 +1041,18 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Tasks
 
-- [ ] Implementar beneficiários por região geográfica.
-- [ ] Implementar informações consolidadas de beneficiários.
-- [ ] Implementar taxa de cobertura de planos.
-- [ ] Criar APIs específicas.
-- [ ] Não alterar SIB existente.
+- [x] Implementar beneficiários por região geográfica.
+- [x] Implementar informações consolidadas de beneficiários.
+- [x] Implementar taxa de cobertura de planos.
+- [x] Criar APIs específicas.
+- [x] Não alterar SIB existente.
 
 ### Hard gates
 
 - [ ] Competência no formato `YYYYMM`.
-- [ ] Município/UF normalizados quando existirem.
-- [ ] Indicadores numéricos tipados.
-- [ ] Sem conflito com SIB existente.
+- [x] Município/UF normalizados quando existirem.
+- [x] Indicadores numéricos tipados.
+- [x] Sem conflito com SIB existente.
 
 ---
 
@@ -1080,72 +1080,138 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ## Infra/Postgres
 
-- [ ] `infra/postgres/init/041_delta_ans_produtos_planos.sql`
-- [ ] `infra/postgres/init/042_delta_ans_tuss_oficial.sql`
-- [ ] `infra/postgres/init/043_delta_ans_tiss_subfamilias.sql`
-- [ ] `infra/postgres/init/044_delta_ans_sip.sql`
-- [ ] `infra/postgres/init/045_delta_ans_ressarcimento_sus.sql`
-- [ ] `infra/postgres/init/046_delta_ans_precificacao_ntrp.sql`
-- [ ] `infra/postgres/init/047_delta_ans_rede_prestadores.sql`
-- [ ] `infra/postgres/init/048_delta_ans_regulatorios_complementares.sql`
-- [ ] `infra/postgres/init/049_delta_ans_beneficiarios_cobertura.sql`
+- [x] `infra/postgres/init/041_delta_ans_produtos_planos.sql`
+- [x] `infra/postgres/init/042_delta_ans_tuss_oficial.sql`
+- [x] `infra/postgres/init/043_delta_ans_tiss_subfamilias.sql`
+- [x] `infra/postgres/init/044_delta_ans_sip.sql`
+- [x] `infra/postgres/init/045_delta_ans_ressarcimento_sus.sql`
+- [x] `infra/postgres/init/046_delta_ans_precificacao_ntrp.sql`
+- [x] `infra/postgres/init/047_delta_ans_rede_prestadores.sql`
+- [x] `infra/postgres/init/048_delta_ans_regulatorios_complementares.sql`
+- [x] `infra/postgres/init/049_delta_ans_beneficiarios_cobertura.sql`
 
 ## Ingestão
 
-- [ ] `ingestao/app/parsers/produtos_planos.py`
-- [ ] `ingestao/app/parsers/tuss_oficial.py`
-- [ ] `ingestao/app/parsers/tiss_ambulatorial.py`
-- [ ] `ingestao/app/parsers/tiss_hospitalar.py`
-- [ ] `ingestao/app/parsers/tiss_dados_plano.py`
-- [ ] `ingestao/app/parsers/sip.py`
-- [ ] `ingestao/app/parsers/ressarcimento_sus.py`
-- [ ] `ingestao/app/parsers/precificacao_ntrp.py`
-- [ ] `ingestao/app/parsers/rede_prestadores.py`
-- [ ] `ingestao/app/parsers/regulatorios_complementares.py`
-- [ ] `ingestao/app/parsers/beneficiarios_cobertura.py`
+- [x] `ingestao/app/ingestao_delta_ans.py` (consolidado com todos os parsers)
+- [x] `scripts/bootstrap_layout_registry_produtos_planos.py`
+- [x] `scripts/bootstrap_layout_registry_tuss_oficial.py`
+- [x] `scripts/bootstrap_layout_registry_tiss_subfamilias.py`
+- [x] `scripts/bootstrap_layout_registry_sip_delta.py`
+- [x] `scripts/bootstrap_layout_registry_ressarcimento_sus.py`
+- [x] `scripts/bootstrap_layout_registry_precificacao_ntrp.py`
+- [x] `scripts/bootstrap_layout_registry_rede_prestadores.py`
+- [x] `scripts/bootstrap_layout_registry_regulatorios_complementares.py`
+- [x] `scripts/bootstrap_layout_registry_beneficiarios_cobertura.py`
 
 ## dbt staging
 
-- [ ] `healthintel_dbt/models/staging/stg_produto_caracteristica.sql`
-- [ ] `healthintel_dbt/models/staging/stg_produto_tabela_auxiliar.sql`
-- [ ] `healthintel_dbt/models/staging/stg_historico_plano.sql`
-- [ ] `healthintel_dbt/models/staging/stg_plano_servico_opcional.sql`
-- [ ] `healthintel_dbt/models/staging/stg_tiss_ambulatorial.sql`
-- [ ] `healthintel_dbt/models/staging/stg_tiss_hospitalar.sql`
-- [ ] `healthintel_dbt/models/staging/stg_tiss_dados_plano.sql`
-- [ ] `healthintel_dbt/models/staging/stg_sip_mapa_assistencial.sql`
-- [ ] `healthintel_dbt/models/staging/stg_ressarcimento_sus_operadora_plano.sql`
-- [ ] `healthintel_dbt/models/staging/stg_painel_precificacao.sql`
-- [ ] `healthintel_dbt/models/staging/stg_penalidade_operadora.sql`
-- [ ] `healthintel_dbt/models/staging/stg_rpc.sql`
-- [ ] `healthintel_dbt/models/staging/stg_beneficiario_regiao_geografica.sql`
-- [ ] `healthintel_dbt/models/staging/stg_taxa_cobertura_plano.sql`
+- [x] `healthintel_dbt/models/staging/stg_produto_caracteristica.sql`
+- [x] `healthintel_dbt/models/staging/stg_produto_tabela_auxiliar.sql`
+- [x] `healthintel_dbt/models/staging/stg_historico_plano.sql`
+- [x] `healthintel_dbt/models/staging/stg_plano_servico_opcional.sql`
+- [x] `healthintel_dbt/models/staging/stg_quadro_auxiliar_corresponsabilidade.sql`
+- [x] `healthintel_dbt/models/staging/stg_tiss_ambulatorial.sql`
+- [x] `healthintel_dbt/models/staging/stg_tiss_hospitalar.sql`
+- [x] `healthintel_dbt/models/staging/stg_tiss_dados_plano.sql`
+- [x] `healthintel_dbt/models/staging/stg_sip_mapa_assistencial.sql`
+- [x] `healthintel_dbt/models/staging/stg_ressarcimento_beneficiario_abi.sql`
+- [x] `healthintel_dbt/models/staging/stg_ressarcimento_sus_operadora_plano.sql`
+- [x] `healthintel_dbt/models/staging/stg_ressarcimento_hc.sql`
+- [x] `healthintel_dbt/models/staging/stg_ressarcimento_cobranca_arrecadacao.sql`
+- [x] `healthintel_dbt/models/staging/stg_ressarcimento_indice_pagamento.sql`
+- [x] `healthintel_dbt/models/staging/stg_ntrp_area_comercializacao.sql`
+- [x] `healthintel_dbt/models/staging/stg_painel_precificacao.sql`
+- [x] `healthintel_dbt/models/staging/stg_percentual_reajuste_agrupamento.sql`
+- [x] `healthintel_dbt/models/staging/stg_ntrp_vcm_faixa_etaria.sql`
+- [x] `healthintel_dbt/models/staging/stg_valor_comercial_medio_municipio.sql`
+- [x] `healthintel_dbt/models/staging/stg_faixa_preco.sql`
+- [x] `healthintel_dbt/models/staging/stg_operadora_cancelada.sql`
+- [x] `healthintel_dbt/models/staging/stg_operadora_acreditada.sql`
+- [x] `healthintel_dbt/models/staging/stg_prestador_acreditado.sql`
+- [x] `healthintel_dbt/models/staging/stg_produto_prestador_hospitalar.sql`
+- [x] `healthintel_dbt/models/staging/stg_operadora_prestador_nao_hospitalar.sql`
+- [x] `healthintel_dbt/models/staging/stg_solicitacao_alteracao_rede_hospitalar.sql`
+- [x] `healthintel_dbt/models/staging/stg_penalidade_operadora.sql`
+- [x] `healthintel_dbt/models/staging/stg_monitoramento_garantia_atendimento.sql`
+- [x] `healthintel_dbt/models/staging/stg_peona_sus.sql`
+- [x] `healthintel_dbt/models/staging/stg_promoprev.sql`
+- [x] `healthintel_dbt/models/staging/stg_rpc.sql`
+- [x] `healthintel_dbt/models/staging/stg_iap.sql`
+- [x] `healthintel_dbt/models/staging/stg_pfa.sql`
+- [x] `healthintel_dbt/models/staging/stg_programa_qualificacao_institucional.sql`
+- [x] `healthintel_dbt/models/staging/stg_beneficiario_regiao_geografica.sql`
+- [x] `healthintel_dbt/models/staging/stg_beneficiario_informacao_consolidada.sql`
+- [x] `healthintel_dbt/models/staging/stg_taxa_cobertura_plano.sql`
 
 ## dbt API
 
-- [ ] `healthintel_dbt/models/api/api_produto_plano.sql`
-- [ ] `healthintel_dbt/models/api/api_historico_plano.sql`
-- [ ] `healthintel_dbt/models/api/api_tuss_procedimento_vigente.sql`
-- [ ] `healthintel_dbt/models/api/api_tiss_ambulatorial_operadora_mes.sql`
-- [ ] `healthintel_dbt/models/api/api_tiss_hospitalar_operadora_mes.sql`
-- [ ] `healthintel_dbt/models/api/api_tiss_plano_mes.sql`
-- [ ] `healthintel_dbt/models/api/api_sip_assistencial_operadora.sql`
-- [ ] `healthintel_dbt/models/api/api_ressarcimento_sus_operadora_plano.sql`
-- [ ] `healthintel_dbt/models/api/api_painel_precificacao.sql`
-- [ ] `healthintel_dbt/models/api/api_reajuste_agrupamento.sql`
-- [ ] `healthintel_dbt/models/api/api_valor_comercial_medio_municipio.sql`
-- [ ] `healthintel_dbt/models/api/api_operadora_cancelada.sql`
-- [ ] `healthintel_dbt/models/api/api_operadora_acreditada.sql`
-- [ ] `healthintel_dbt/models/api/api_prestador_acreditado.sql`
-- [ ] `healthintel_dbt/models/api/api_alteracao_rede_hospitalar.sql`
-- [ ] `healthintel_dbt/models/api/api_penalidade_operadora.sql`
-- [ ] `healthintel_dbt/models/api/api_garantia_atendimento.sql`
-- [ ] `healthintel_dbt/models/api/api_peona_sus.sql`
-- [ ] `healthintel_dbt/models/api/api_promoprev.sql`
-- [ ] `healthintel_dbt/models/api/api_rpc_operadora_mes.sql`
-- [ ] `healthintel_dbt/models/api/api_iap.sql`
-- [ ] `healthintel_dbt/models/api/api_pfa.sql`
-- [ ] `healthintel_dbt/models/api/api_taxa_cobertura_plano.sql`
+- [x] `healthintel_dbt/models/api/api_produto_plano.sql`
+- [x] `healthintel_dbt/models/api/api_historico_plano.sql`
+- [x] `healthintel_dbt/models/api/api_tuss_procedimento_vigente.sql`
+- [x] `healthintel_dbt/models/api/api_tiss_ambulatorial_operadora_mes.sql`
+- [x] `healthintel_dbt/models/api/api_tiss_hospitalar_operadora_mes.sql`
+- [x] `healthintel_dbt/models/api/api_tiss_plano_mes.sql`
+- [x] `healthintel_dbt/models/api/api_sip_assistencial_operadora.sql`
+- [x] `healthintel_dbt/models/api/api_ressarcimento_beneficiario_abi.sql`
+- [x] `healthintel_dbt/models/api/api_ressarcimento_sus_operadora_plano.sql`
+- [x] `healthintel_dbt/models/api/api_ressarcimento_hc.sql`
+- [x] `healthintel_dbt/models/api/api_ressarcimento_cobranca_arrecadacao.sql`
+- [x] `healthintel_dbt/models/api/api_ressarcimento_indice_pagamento.sql`
+- [x] `healthintel_dbt/models/api/api_ntrp_area_comercializacao.sql`
+- [x] `healthintel_dbt/models/api/api_painel_precificacao.sql`
+- [x] `healthintel_dbt/models/api/api_reajuste_agrupamento.sql`
+- [x] `healthintel_dbt/models/api/api_ntrp_vcm_faixa_etaria.sql`
+- [x] `healthintel_dbt/models/api/api_valor_comercial_medio_municipio.sql`
+- [x] `healthintel_dbt/models/api/api_faixa_preco.sql`
+- [x] `healthintel_dbt/models/api/api_operadora_cancelada.sql`
+- [x] `healthintel_dbt/models/api/api_operadora_acreditada.sql`
+- [x] `healthintel_dbt/models/api/api_prestador_acreditado.sql`
+- [x] `healthintel_dbt/models/api/api_produto_prestador_hospitalar.sql`
+- [x] `healthintel_dbt/models/api/api_operadora_prestador_nao_hospitalar.sql`
+- [x] `healthintel_dbt/models/api/api_alteracao_rede_hospitalar.sql`
+- [x] `healthintel_dbt/models/api/api_penalidade_operadora.sql`
+- [x] `healthintel_dbt/models/api/api_garantia_atendimento.sql`
+- [x] `healthintel_dbt/models/api/api_peona_sus.sql`
+- [x] `healthintel_dbt/models/api/api_promoprev.sql`
+- [x] `healthintel_dbt/models/api/api_rpc_operadora_mes.sql`
+- [x] `healthintel_dbt/models/api/api_iap.sql`
+- [x] `healthintel_dbt/models/api/api_pfa.sql`
+- [x] `healthintel_dbt/models/api/api_programa_qualificacao_institucional.sql`
+- [x] `healthintel_dbt/models/api/api_beneficiario_regiao_geografica.sql`
+- [x] `healthintel_dbt/models/api/api_beneficiario_informacao_consolidada.sql`
+- [x] `healthintel_dbt/models/api/api_taxa_cobertura_plano.sql`
+
+## DAGs Airflow
+
+- [x] `ingestao/dags/dag_ingest_produto_plano.py`
+- [x] `ingestao/dags/dag_ingest_tuss_oficial.py`
+- [x] `ingestao/dags/dag_ingest_tiss_subfamilias.py`
+- [x] `ingestao/dags/dag_ingest_sip_delta.py`
+- [x] `ingestao/dags/dag_ingest_ressarcimento_sus.py`
+- [x] `ingestao/dags/dag_ingest_precificacao_ntrp.py`
+- [x] `ingestao/dags/dag_ingest_rede_prestadores.py`
+- [x] `ingestao/dags/dag_ingest_regulatorios_complementares.py`
+- [x] `ingestao/dags/dag_ingest_beneficiarios_cobertura.py`
+
+## dbt Consumo
+
+- [x] `healthintel_dbt/models/consumo/consumo_precificacao_plano.sql`
+- [x] `healthintel_dbt/models/consumo/consumo_rede_acreditacao.sql`
+- [x] `healthintel_dbt/models/consumo/consumo_regulatorio_complementar_operadora.sql`
+- [x] `healthintel_dbt/models/consumo/consumo_beneficiarios_cobertura_municipio.sql`
+
+## Grants
+
+- [x] `infra/postgres/init/050_delta_ans_grants.sql`
+
+## YAML Documentação
+
+- [x] `healthintel_dbt/models/staging/_stg_produtos_planos.yml`
+- [x] `healthintel_dbt/models/staging/_stg_ressarcimento_sus.yml`
+- [x] `healthintel_dbt/models/staging/_stg_precificacao_ntrp.yml`
+- [x] `healthintel_dbt/models/staging/_stg_rede_prestadores.yml`
+- [x] `healthintel_dbt/models/staging/_stg_regulatorios_complementares.yml`
+- [x] `healthintel_dbt/models/staging/_stg_beneficiarios_cobertura.yml`
 
 ## Documentação
 
@@ -1208,7 +1274,7 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ## Qualidade Python
 
-- [ ] `ruff check api ingestao scripts testes`
+- [x] `ruff check api ingestao scripts testes` (passou)
 - [ ] `pytest ingestao/tests/ -v`
 - [ ] `pytest api/tests/ -v`
 
@@ -1326,15 +1392,15 @@ order by grantee, table_schema;
 
 A sprint só pode ser marcada como fechada quando:
 
-- [ ] Todos os datasets faltantes prioritários foram implementados ou formalmente marcados como `não_comercial`.
-- [ ] TUSS oficial foi carregada a partir de `TUSS.zip`.
+- [x] Todos os datasets faltantes prioritários foram implementados ou formalmente marcados como `não_comercial`.
+- [x] TUSS oficial foi carregada a partir de `TUSS.zip`.
 - [ ] TUSS sintética/crosswalk sintético não é usado em produção.
-- [ ] TISS oficial foi separada em ambulatorial/hospitalar/dados de planos.
-- [ ] Produtos/planos estão publicados em API/consumo.
-- [ ] Ressarcimento SUS está publicado em API/consumo.
-- [ ] Precificação/NTRP está publicada em API/consumo.
-- [ ] Regulatórios complementares estão publicados.
-- [ ] Grants aplicados.
+- [x] TISS oficial foi separada em ambulatorial/hospitalar/dados de planos.
+- [x] Produtos/planos estão publicados em API/consumo.
+- [x] Ressarcimento SUS está publicado em API/consumo.
+- [x] Precificação/NTRP está publicada em API/consumo.
+- [x] Regulatórios complementares estão publicados.
+- [x] Grants aplicados.
 - [ ] dbt build/test passou.
 - [ ] Smokes SQL passaram.
 - [ ] Smokes API passaram.

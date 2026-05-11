@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: stg_operadora_cancelada
+    description: >
+      Operadoras com registro ANS cancelado — deduplicado pelo mais recente por registro_ans.
+      Fonte: bruto_ans.operadora_cancelada (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_operadora_acreditada
+    description: >
+      Operadoras com acreditação de qualidade vigente — deduplicado por registro_ans.
+      Fonte: bruto_ans.operadora_acreditada (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_prestador_acreditado
+    description: >
+      Prestadores de saúde com acreditação vigente — deduplicado por CNES.
+      Fonte: bruto_ans.prestador_acreditado (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: cnes
+        description: Código CNES do prestador (7 dígitos).
+        tests:
+          - not_null
+          - unique
+
+  - name: stg_produto_prestador_hospitalar
+    description: >
+      Vínculos entre produtos de saúde suplementar e prestadores hospitalares.
+      Fonte: bruto_ans.produto_prestador_hospitalar (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_operadora_prestador_nao_hospitalar
+    description: >
+      Vínculos entre operadoras e prestadores não hospitalares.
+      Fonte: bruto_ans.operadora_prestador_nao_hospitalar (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_solicitacao_alteracao_rede_hospitalar
+    description: >
+      Solicitações de inclusão/exclusão de prestadores hospitalares por operadora.
+      Fonte: bruto_ans.solicitacao_alteracao_rede_hospitalar (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, rede_prestadores]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null

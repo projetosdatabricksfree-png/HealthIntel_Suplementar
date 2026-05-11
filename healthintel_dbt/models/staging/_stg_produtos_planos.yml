@@ -1,0 +1,109 @@
+version: 2
+
+models:
+  - name: stg_produto_caracteristica
+    description: >
+      Características de produtos de saúde suplementar tipadas e deduplicadas.
+      Fonte: bruto_ans.produto_caracteristica (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        description: Registro ANS da operadora (6 dígitos, zero-padded).
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_cadop')
+              field: registro_ans
+              severity: warn
+      - name: codigo_produto
+        description: Código do produto na ANS.
+        tests:
+          - not_null
+      - name: nome_produto
+        description: Nome comercial do produto.
+      - name: segmentacao
+        description: Segmentação assistencial (MEDICO, ODONTOLOGICO, MEDICO-ODONTOLOGICO, HOSPITALAR).
+      - name: uf_comercializacao
+        description: UF de comercialização do produto.
+        tests:
+          - accepted_values:
+              values: [AC, AL, AM, AP, BA, CE, DF, ES, GO, MA, MG, MS, MT, PA, PB, PE, PI, PR, RJ, RN, RO, RR, RS, SC, SE, SP, TO, '']
+              severity: warn
+
+  - name: stg_historico_plano
+    description: >
+      Histórico de planos de saúde tipado e deduplicado por chave registro_ans + codigo_plano.
+      Fonte: bruto_ans.historico_plano (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        description: Registro ANS da operadora (6 dígitos).
+        tests:
+          - not_null
+      - name: codigo_plano
+        description: Código do plano na ANS.
+        tests:
+          - not_null
+      - name: situacao
+        description: Situação atual do plano (ATIVO, CANCELADO, SUSPENSO, etc.).
+      - name: competencia
+        description: Competência de referência no formato YYYYMM.
+
+  - name: stg_plano_servico_opcional
+    description: >
+      Serviços opcionais de planos de saúde por operadora, plano e código de serviço.
+      Fonte: bruto_ans.plano_servico_opcional (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: codigo_plano
+        tests:
+          - not_null
+      - name: codigo_servico
+        tests:
+          - not_null
+
+  - name: stg_produto_tabela_auxiliar
+    description: >
+      Tabelas auxiliares de corresponsabilidade por produto e operadora.
+      Fonte: bruto_ans.produto_tabela_auxiliar (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+
+models:
+  - name: api_produto_plano
+    description: >
+      Tabela API de produtos e planos de saúde suplementar.
+      Cruza características de produtos com histórico de planos por operadora.
+      Acesso restrito a api_ans — nunca expõe schemas bruto/stg.
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: codigo_produto
+        tests:
+          - not_null
+
+  - name: api_historico_plano
+    description: >
+      Tabela API do histórico de planos de saúde por operadora e competência.
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: codigo_plano
+        tests:
+          - not_null

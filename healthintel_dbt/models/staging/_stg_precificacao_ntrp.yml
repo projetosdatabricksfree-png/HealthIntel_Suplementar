@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: stg_painel_precificacao
+    description: >
+      Mensalidades médias, mínimas e máximas por plano, segmentação e faixa etária.
+      Fonte: bruto_ans.painel_precificacao (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_ntrp_area_comercializacao
+    description: >
+      Área de comercialização de produtos por município — NTRP.
+      Fonte: bruto_ans.ntrp_area_comercializacao (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+
+  - name: stg_percentual_reajuste_agrupamento
+    description: >
+      Percentuais de reajuste anuais por operadora, tipo de contratação e agrupamento.
+      Fonte: bruto_ans.percentual_reajuste_agrupamento (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+
+  - name: stg_ntrp_vcm_faixa_etaria
+    description: >
+      Valor Comercial Médio NTRP por plano e faixa etária.
+      Fonte: bruto_ans.ntrp_vcm_faixa_etaria (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+
+  - name: stg_valor_comercial_medio_municipio
+    description: >
+      VCM médio de planos por município, segmentação e faixa etária.
+      Fonte: bruto_ans.valor_comercial_medio_municipio (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: cd_municipio
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_faixa_preco
+    description: >
+      Faixas de preço mínimo e máximo por plano, faixa etária e UF.
+      Fonte: bruto_ans.faixa_preco (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, precificacao_ntrp]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null

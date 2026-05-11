@@ -1,0 +1,115 @@
+version: 2
+
+models:
+  - name: stg_penalidade_operadora
+    description: >
+      Penalidades administrativas aplicadas pela ANS a operadoras.
+      Fonte: bruto_ans.penalidade_operadora (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_monitoramento_garantia_atendimento
+    description: >
+      Indicadores de garantia de atendimento por operadora: ocorrências, resolvidas, pendentes.
+      Fonte: bruto_ans.monitoramento_garantia_atendimento (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_peona_sus
+    description: >
+      PEONA SUS — percentual de eventos obstétricos notificados e utilização do SUS.
+      Fonte: bruto_ans.peona_sus (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_promoprev
+    description: >
+      Programas de promoção à saúde e prevenção de doenças por operadora.
+      Fonte: bruto_ans.promoprev (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_rpc
+    description: >
+      Razão de reclamações procedentes — indicador regulatório com janela 24 meses na camada API.
+      Fonte: bruto_ans.rpc (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: stg_iap
+    description: >
+      Índice de Avaliação de Performance por dimensão e indicador por operadora.
+      Fonte: bruto_ans.iap (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+      - name: dimensao
+        description: Dimensão do IAP (ex. REGULATÓRIO, ECONÔMICO-FINANCEIRO).
+
+  - name: stg_pfa
+    description: >
+      Programa de Fiscalização Ampliada — indicadores, metas e status por operadora.
+      Fonte: bruto_ans.pfa (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+      - name: status_meta
+        description: Status de cumprimento da meta (ATINGIDA, NÃO ATINGIDA, etc.).
+
+  - name: stg_programa_qualificacao_institucional
+    description: >
+      Nível e pontuação de qualificação institucional de operadoras.
+      Fonte: bruto_ans.programa_qualificacao_institucional (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, regulatorios_complementares]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null

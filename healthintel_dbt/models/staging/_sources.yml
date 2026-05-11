@@ -118,3 +118,232 @@ sources:
       - name: ans_linha_generica
         description: Linhas tabulares ANS em Bronze generica JSONB para datasets sem parser dedicado.
         loaded_at_field: data_ingestao
+      # --- Sprint 41: Delta ANS 100% ---
+      - name: produto_caracteristica
+        description: Características de produtos de saúde suplementar por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: produto_tabela_auxiliar
+        description: Tabelas auxiliares de corresponsabilidade de produtos.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: historico_plano
+        description: Histórico de planos de saúde por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: plano_servico_opcional
+        description: Serviços opcionais disponíveis por plano de saúde.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: quadro_auxiliar_corresponsabilidade
+        description: Quadros auxiliares de corresponsabilidade por plano.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: tuss_terminologia_oficial
+        description: Terminologia TUSS oficial carregada a partir do TUSS.zip ANS.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 365, period: day}
+          error_after: {count: 730, period: day}
+      - name: tiss_ambulatorial
+        description: Dados TISS ambulatoriais oficiais por operadora e competência.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: tiss_hospitalar
+        description: Dados TISS hospitalares oficiais por operadora e competência.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: tiss_dados_plano
+        description: Dados TISS por plano, competência e operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: sip_mapa_assistencial
+        description: Mapa assistencial SIP por operadora, município e período.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: ressarcimento_beneficiario_abi
+        description: Beneficiários identificados SUS/ABI para ressarcimento.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ressarcimento_sus_operadora_plano
+        description: Dados de ressarcimento SUS por operadora e plano.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ressarcimento_hc
+        description: HC de ressarcimento SUS.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ressarcimento_cobranca_arrecadacao
+        description: Cobrança e arrecadação de ressarcimento ao SUS.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ressarcimento_indice_pagamento
+        description: Índice de efetivo pagamento do ressarcimento SUS.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ntrp_area_comercializacao
+        description: Área de comercialização de planos NTRP por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: painel_precificacao
+        description: Painel de precificação de planos por operadora e UF.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: percentual_reajuste_agrupamento
+        description: Percentuais de reajuste por agrupamento.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: ntrp_vcm_faixa_etaria
+        description: Valor comercial médio NTRP por faixa etária e UF.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: valor_comercial_medio_municipio
+        description: Valor comercial médio por município NTRP.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: faixa_preco
+        description: Faixas de preço de planos por operadora e UF.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: operadora_cancelada
+        description: Operadoras de planos de saúde canceladas.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: operadora_acreditada
+        description: Operadoras acreditadas por entidade certificadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: prestador_acreditado
+        description: Prestadores acreditados por entidade certificadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: produto_prestador_hospitalar
+        description: Produtos e prestadores hospitalares por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: operadora_prestador_nao_hospitalar
+        description: Operadoras e prestadores não hospitalares.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: solicitacao_alteracao_rede_hospitalar
+        description: Solicitações de alteração de rede hospitalar.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: penalidade_operadora
+        description: Penalidades aplicadas a operadoras pela ANS.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: monitoramento_garantia_atendimento
+        description: Monitoramento de garantia de atendimento por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 60, period: day}
+          error_after: {count: 120, period: day}
+      - name: peona_sus
+        description: PEONA SUS por operadora e período.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: promoprev
+        description: PROMOPREV — programas de promoção de saúde por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: rpc
+        description: Registro de planos comercializados por operadora e município.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: iap
+        description: Índice de avaliação de planos por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: pfa
+        description: Programa de fomento à adaptação — indicadores por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: programa_qualificacao_institucional
+        description: Nível de qualificação institucional por operadora.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 120, period: day}
+          error_after: {count: 240, period: day}
+      - name: beneficiario_regiao_geografica
+        description: Beneficiários por região geográfica e UF.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: beneficiario_informacao_consolidada
+        description: Informações consolidadas de beneficiários por município e segmentação.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}
+      - name: taxa_cobertura_plano
+        description: Taxa de cobertura de planos de saúde por município.
+        loaded_at_field: _carregado_em
+        freshness:
+          warn_after: {count: 45, period: day}
+          error_after: {count: 90, period: day}

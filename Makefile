@@ -6,7 +6,7 @@ DBT_BIN := ../.venv/bin/dbt
 SQLFLUFF_BIN := ../.venv/bin/sqlfluff
 RUFF_BIN ?= .venv/bin/ruff
 
-.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-debug dbt-parse dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-build-mart dbt-test-core dbt-seed audit-schema-export audit-schema-parity audit-schema-parity-strict demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts bootstrap-igr-layouts bootstrap-nip-layouts bootstrap-idss-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core smoke-layout-cadop consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco security-audit-local api-security-tests frontend-e2e
+.PHONY: up down logs ps compose-config compose-config-hml up-hml down-hml api-dev layout-dev dbt-deps dbt-debug dbt-parse dbt-compile dbt-build dbt-test dbt-build-premium dbt-test-premium dbt-build-core dbt-build-mart dbt-test-core dbt-seed audit-schema-export audit-schema-parity audit-schema-parity-strict demo-data demo-data-regulatorio demo-data-idss demo-data-rede demo-data-cnes demo-data-tiss demo-data-sib demo-data-cadop bootstrap-regulatorio-layouts bootstrap-rede-layouts bootstrap-cnes-layouts bootstrap-tiss-layouts bootstrap-sib-layouts bootstrap-cadop-layouts bootstrap-igr-layouts bootstrap-nip-layouts bootstrap-idss-layouts bootstrap-produtos-planos-layouts bootstrap-tuss-oficial-layouts bootstrap-tiss-subfamilias-layouts bootstrap-sip-delta-layouts bootstrap-ressarcimento-sus-layouts bootstrap-precificacao-ntrp-layouts bootstrap-rede-prestadores-layouts bootstrap-regulatorios-complementares-layouts bootstrap-beneficiarios-cobertura-layouts bootstrap-delta-ans-all-layouts billing-close lint sql-lint test ci-local smoke smoke-rede smoke-cnes smoke-tiss smoke-prata smoke-premium smoke-sib smoke-janela-carga-sib smoke-versao-vigente-tuss smoke-historico-sob-demanda smoke-cadop smoke-pgbackrest smoke-consumo smoke-core smoke-layout-cadop smoke-delta-ans-100 consumo-refresh elt-discover elt-extract elt-load elt-all elt-status elt-transform-all elt-validate-all load-test airflow-setup dag-test dag-test-all seed-dados-completos dbt-seed-ref hardgate-sem-ano-hardcoded-janelacarga capacidade-snapshot capacidade-monitor capacidade-relatorio carga-ans-padrao-vps carga-ans-padrao-vps-dry-run carga-ans-padrao-vps-incluir-pendentes monitor-disco security-audit-local api-security-tests frontend-e2e dbt-build-delta-ans dbt-test-delta-ans
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
@@ -145,6 +145,67 @@ bootstrap-nip-layouts:
 
 bootstrap-idss-layouts:
 	$(PYTHON) scripts/bootstrap_layout_registry_idss.py
+
+# Sprint 41: Delta ANS 100% — bootstrap layouts novos
+bootstrap-produtos-planos-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_produtos_planos.py
+
+bootstrap-tuss-oficial-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_tuss_oficial.py
+
+bootstrap-tiss-subfamilias-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_tiss_subfamilias.py
+
+bootstrap-sip-delta-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_sip_delta.py
+
+bootstrap-ressarcimento-sus-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_ressarcimento_sus.py
+
+bootstrap-precificacao-ntrp-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_precificacao_ntrp.py
+
+bootstrap-rede-prestadores-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_rede_prestadores.py
+
+bootstrap-regulatorios-complementares-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_regulatorios_complementares.py
+
+bootstrap-beneficiarios-cobertura-layouts:
+	$(PYTHON) scripts/bootstrap_layout_registry_beneficiarios_cobertura.py
+
+bootstrap-delta-ans-all-layouts: \
+	bootstrap-produtos-planos-layouts \
+	bootstrap-tuss-oficial-layouts \
+	bootstrap-tiss-subfamilias-layouts \
+	bootstrap-sip-delta-layouts \
+	bootstrap-ressarcimento-sus-layouts \
+	bootstrap-precificacao-ntrp-layouts \
+	bootstrap-rede-prestadores-layouts \
+	bootstrap-regulatorios-complementares-layouts \
+	bootstrap-beneficiarios-cobertura-layouts
+
+# Sprint 41: dbt builds/tests seletivos
+dbt-build-delta-ans:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:delta_ans_100
+
+dbt-test-delta-ans:
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) test --select tag:delta_ans_100
+
+# Sprint 41: smoke Delta ANS 100%
+smoke-delta-ans-100:
+	@echo "=== Smoke Delta ANS 100% ==="
+	docker compose -f infra/docker-compose.yml exec -T postgres \
+		psql -U healthintel -d healthintel -c "\
+		select 'api_produto_plano' as tabela, count(*) from api_ans.api_produto_plano union all \
+		select 'api_tuss_procedimento_vigente', count(*) from api_ans.api_tuss_procedimento_vigente union all \
+		select 'api_painel_precificacao', count(*) from api_ans.api_painel_precificacao union all \
+		select 'api_taxa_cobertura_plano', count(*) from api_ans.api_taxa_cobertura_plano union all \
+		select 'api_iap', count(*) from api_ans.api_iap union all \
+		select 'api_pfa', count(*) from api_ans.api_pfa union all \
+		select 'api_rpc_operadora_mes', count(*) from api_ans.api_rpc_operadora_mes union all \
+		select 'api_sip_assistencial_operadora', count(*) from api_ans.api_sip_assistencial_operadora \
+		order by 1;"
 
 billing-close:
 	$(PYTHON) scripts/fechar_ciclo_billing.py --referencia $(REF)
