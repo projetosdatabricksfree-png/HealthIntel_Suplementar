@@ -16,7 +16,9 @@ with DAG(
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
 import asyncio
 from ingestao.app.ingestao_delta_ans import {func}
-asyncio.run({func}())
+competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
+competencia = competencia_conf or '{{ ds_nodash[:6] }}'
+asyncio.run({func}(competencia))
 "
     """
 

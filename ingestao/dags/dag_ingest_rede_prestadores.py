@@ -21,30 +21,22 @@ competencia = competencia_conf or '{{ ds_nodash[:6] }}'
 asyncio.run({func}(competencia))
 "
     """
-    _BASE_NO_COMP = r"""
-        PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
-from ingestao.app.ingestao_delta_ans import {func}
-asyncio.run({func}())
-"
-    """
-
     ingerir_operadora_cancelada = BashOperator(
         task_id="ingerir_operadora_cancelada",
         cwd="/workspace",
-        bash_command=_BASE_NO_COMP.format(func="executar_ingestao_operadora_cancelada"),
+        bash_command=_BASE.format(func="executar_ingestao_operadora_cancelada"),
     )
 
     ingerir_operadora_acreditada = BashOperator(
         task_id="ingerir_operadora_acreditada",
         cwd="/workspace",
-        bash_command=_BASE_NO_COMP.format(func="executar_ingestao_operadora_acreditada"),
+        bash_command=_BASE.format(func="executar_ingestao_operadora_acreditada"),
     )
 
     ingerir_prestador_acreditado = BashOperator(
         task_id="ingerir_prestador_acreditado",
         cwd="/workspace",
-        bash_command=_BASE_NO_COMP.format(func="executar_ingestao_prestador_acreditado"),
+        bash_command=_BASE.format(func="executar_ingestao_prestador_acreditado"),
     )
 
     ingerir_produto_prestador_hosp = BashOperator(
