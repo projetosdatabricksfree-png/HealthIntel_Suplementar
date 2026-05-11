@@ -12,8 +12,8 @@
 
 with competencia_corte as (
     select (
-        extract(year from current_date)::int * 100 +
-        extract(month from current_date)::int
+        extract(year from current_date)::int * 100
+        + extract(month from current_date)::int
     ) - 24 as corte
 )
 
