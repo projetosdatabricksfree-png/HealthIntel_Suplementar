@@ -49,7 +49,7 @@ _DATASETS = [
         "descricao": "Indicadores de garantia de atendimento por operadora.",
         "tabela_raw_destino": "bruto_ans.monitoramento_garantia_atendimento",
         "ftp_path": "GARANTIA_ATENDIMENTO/",
-        "layout_id": "layout_garantia_atendimento_csv",
+        "layout_id": "layout_monitoramento_garantia_atendimento_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string", obrigatorio=True),
             ColunaLayout(nome_canonico="registro_ans", tipo="string", obrigatorio=True),

@@ -163,7 +163,7 @@ _DATASETS = [
         "descricao": "Solicitações de inclusão/exclusão de prestadores hospitalares por operadora.",
         "tabela_raw_destino": "bruto_ans.solicitacao_alteracao_rede_hospitalar",
         "ftp_path": "ALTERACAO_REDE/",
-        "layout_id": "layout_solicitacao_alteracao_rede_csv",
+        "layout_id": "layout_solicitacao_alteracao_rede_hospitalar_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string"),
             ColunaLayout(nome_canonico="registro_ans", tipo="string", obrigatorio=True),

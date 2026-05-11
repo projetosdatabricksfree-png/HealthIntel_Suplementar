@@ -20,7 +20,7 @@ _DATASETS = [
         "descricao": "Ressarcimento ao SUS: autorizações de internação por beneficiário.",
         "tabela_raw_destino": "bruto_ans.ressarcimento_beneficiario_abi",
         "ftp_path": "RESSARCIMENTO_AO_SUS/",
-        "layout_id": "layout_ressarcimento_abi_csv",
+        "layout_id": "layout_ressarcimento_beneficiario_abi_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string", obrigatorio=True),
             ColunaLayout(nome_canonico="registro_ans", tipo="string", obrigatorio=True),
@@ -105,7 +105,7 @@ _DATASETS = [
         "descricao": "Totais de cobrança e arrecadação do ressarcimento ao SUS por operadora.",
         "tabela_raw_destino": "bruto_ans.ressarcimento_cobranca_arrecadacao",
         "ftp_path": "RESSARCIMENTO_AO_SUS/cobranca/",
-        "layout_id": "layout_ressarcimento_cobranca_csv",
+        "layout_id": "layout_ressarcimento_cobranca_arrecadacao_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string", obrigatorio=True),
             ColunaLayout(nome_canonico="registro_ans", tipo="string", obrigatorio=True),
@@ -130,7 +130,7 @@ _DATASETS = [
         "descricao": "Índice de efetivo pagamento do ressarcimento ao SUS por operadora.",
         "tabela_raw_destino": "bruto_ans.ressarcimento_indice_pagamento",
         "ftp_path": "RESSARCIMENTO_AO_SUS/indice/",
-        "layout_id": "layout_ressarcimento_indice_csv",
+        "layout_id": "layout_ressarcimento_indice_pagamento_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string", obrigatorio=True),
             ColunaLayout(nome_canonico="registro_ans", tipo="string", obrigatorio=True),

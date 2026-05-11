@@ -136,7 +136,7 @@ _DATASETS = [
         "descricao": "VCM médio de planos por município, segmentação e faixa etária.",
         "tabela_raw_destino": "bruto_ans.valor_comercial_medio_municipio",
         "ftp_path": "VCM_MUNICIPIO/",
-        "layout_id": "layout_vcm_municipio_csv",
+        "layout_id": "layout_valor_comercial_medio_municipio_csv",
         "colunas": [
             ColunaLayout(nome_canonico="competencia", tipo="string"),
             ColunaLayout(nome_canonico="cd_municipio", tipo="string", obrigatorio=True),
