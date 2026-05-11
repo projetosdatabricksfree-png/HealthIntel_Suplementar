@@ -24,9 +24,14 @@ jobs:
             cd ${{ secrets.VPS_PROJECT_PATH }}
 
             echo ">>> pulling latest changes from main"
-            git pull origin main
+            git -c "url.https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/.insteadOf=https://github.com/" \
+                pull origin main
 
-            echo ">>> running make"
-            make
+            echo ">>> restarting services"
+            make up
+
+            echo ">>> checking health"
+            sleep 15
+            curl -sf http://localhost:8080/saude | grep '"status":"ok"'
 
             echo ">>> deploy ok"
