@@ -6,10 +6,11 @@ Data de fechamento: 2026-05-11
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| [dbt_build.md](dbt_build.md) | Output do `dbt build --select tag:delta_ans_100` |
-| [dbt_test.md](dbt_test.md) | Output do `dbt test --select tag:delta_ans_100` |
+| [dbt_build.md](dbt_build.md) | Output do `dbt build --select tag:delta_ans_100` (inclui tests — PASS=162) |
 | [smoke_sql.md](smoke_sql.md) | Resultado dos smokes SQL das 12 tabelas API |
 | [grants.md](grants.md) | Verificação de grants nas schemas |
+| [smoke_api.md](smoke_api.md) | Validação VPS pós-deploy: /saude, /prontidao, docker compose ps |
+| [tuss_oficial.md](tuss_oficial.md) | Evidência TUSS oficial vs crosswalk sintético |
 
 ## Resumo de fechamento
 
