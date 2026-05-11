@@ -9,7 +9,7 @@ with base as (
         lpad(trim(coalesce(registro_ans, '')), 6, '0')  as registro_ans,
         upper(trim(coalesce(nu_processo, '')))          as nu_processo,
         upper(trim(coalesce(tipo_penalidade, '')))      as tipo_penalidade,
-        upper(trim(coalesce(descricao_infração, '')))   as descricao_infracao,
+        upper(trim(coalesce(descricao_infracao, '')))   as descricao_infracao,
         cast(nullif(trim(cast(coalesce(vl_multa, '0') as text)), '') as numeric(18, 2))
                                                         as vl_multa,
         cast(nullif(trim(cast(data_penalidade as text)), '') as date)

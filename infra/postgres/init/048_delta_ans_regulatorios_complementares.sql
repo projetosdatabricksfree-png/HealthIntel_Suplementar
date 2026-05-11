@@ -8,7 +8,7 @@ create table if not exists bruto_ans.penalidade_operadora (
     registro_ans varchar(6),
     nu_processo varchar(30),
     tipo_penalidade text,
-    descricao_infração text,
+    descricao_infracao text,
     vl_multa numeric(18, 2),
     data_penalidade date,
     status_penalidade text,
