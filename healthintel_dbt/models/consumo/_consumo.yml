@@ -206,3 +206,39 @@ models:
         description: "Componente de rede do score."
       - name: componente_estrutural
         description: "Componente estrutural do score."
+
+  - name: consumo_historico_plano
+    description: "Histórico de planos de saúde por operadora. Fonte: api_historico_plano. Grão: registro_ans + codigo_plano + competencia."
+    config:
+      tags: [delta_ans_100, produto_plano, consumo]
+    columns:
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: codigo_plano
+        description: "Código do plano na ANS."
+        tests:
+          - not_null
+      - name: situacao
+        description: "Situação do plano (ATIVO, CANCELADO, etc.)."
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+
+  - name: consumo_plano_servico_opcional
+    description: "Serviços opcionais de planos por operadora e código de serviço. Fonte: api_plano_servico_opcional. Grão: registro_ans + codigo_plano + codigo_servico."
+    config:
+      tags: [delta_ans_100, produto_plano, consumo]
+    columns:
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: codigo_plano
+        description: "Código do plano na ANS."
+        tests:
+          - not_null
+      - name: codigo_servico
+        description: "Código do serviço opcional."
+        tests:
+          - not_null

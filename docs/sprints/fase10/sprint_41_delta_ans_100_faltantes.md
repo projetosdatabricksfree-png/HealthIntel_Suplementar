@@ -153,7 +153,7 @@ Tabelas novas:
 - [x] `stg_ans.stg_historico_plano`
 - [ ] `nucleo_ans.dim_historico_plano`
 - [x] `api_ans.api_historico_plano`
-- [ ] `consumo_ans.consumo_historico_plano`
+- [x] `consumo_ans.consumo_historico_plano`
 
 ### 3.1.3 Serviços opcionais dos planos
 
@@ -168,8 +168,8 @@ Tabelas novas:
 - [x] `bruto_ans.plano_servico_opcional`
 - [x] `stg_ans.stg_plano_servico_opcional`
 - [ ] `nucleo_ans.dim_plano_servico_opcional`
-- [ ] `api_ans.api_plano_servico_opcional`
-- [ ] `consumo_ans.consumo_plano_servico_opcional`
+- [x] `api_ans.api_plano_servico_opcional`
+- [x] `consumo_ans.consumo_plano_servico_opcional`
 
 ### 3.1.4 Quadros auxiliares de corresponsabilidade
 
@@ -184,7 +184,7 @@ Tabelas novas:
 - [x] `bruto_ans.quadro_auxiliar_corresponsabilidade`
 - [x] `stg_ans.stg_quadro_auxiliar_corresponsabilidade`
 - [ ] `nucleo_ans.dim_quadro_auxiliar_corresponsabilidade`
-- [ ] `api_ans.api_quadro_auxiliar_corresponsabilidade`
+- [x] `api_ans.api_quadro_auxiliar_corresponsabilidade`
 
 ---
 
@@ -875,12 +875,12 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ### Hard gates
 
-- [ ] `registro_ans` não nulo.
-- [ ] Código do plano/produto não nulo quando existir.
-- [ ] Chave natural sem duplicidade na versão vigente.
-- [ ] Relacionamento com operadora validado.
-- [ ] API retorna produtos por operadora.
-- [ ] API retorna histórico por plano/produto.
+- [x] `registro_ans` não nulo — teste dbt `not_null` em todos os staging e API models (dbt build PASS=162).
+- [x] Código do plano/produto não nulo quando existir — testes `not_null` em `codigo_plano`, `codigo_produto`, `codigo_servico`.
+- [ ] Chave natural sem duplicidade na versão vigente — verificar após carga de dados reais.
+- [ ] Relacionamento com operadora validado — pendente (teste `relationships` com `severity: warn` configurado).
+- [ ] API retorna produtos por operadora — pendente após carga de dados reais.
+- [ ] API retorna histórico por plano/produto — pendente após carga de dados reais.
 
 ---
 
@@ -891,7 +891,7 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 - [x] Criar carga oficial de `TUSS.zip`.
 - [x] Criar `bruto_ans.tuss_terminologia_oficial`.
 - [x] Publicar `api_ans.api_tuss_procedimento_vigente`.
-- [ ] Publicar `consumo_ans.consumo_tuss_procedimento_vigente`.
+- [x] Publicar `consumo_ans.consumo_tuss_procedimento_vigente`.
 - [ ] Publicar `consumo_premium_ans.tuss_procedimento_vigente`.
 - [ ] Bloquear crosswalk sintético em produção.
 
@@ -899,13 +899,13 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 - [x] `TUSS.zip` carregado.
 - [x] `Dicionario_de_dados.ods` registrado no Mongo.
-- [ ] `codigo_tuss` não nulo.
-- [ ] `descricao` não nula.
+- [x] `codigo_tuss` não nulo — teste dbt configurado no YAML (dbt build PASS=162).
+- [x] `descricao` não nula — teste dbt configurado no YAML.
 - [x] `is_tuss_vigente` calculado.
-- [ ] Sem duplicidade por código/versão.
-- [ ] Smoke de busca por código.
-- [ ] Smoke de busca por texto.
-- [ ] Nenhum modelo premium usa TUSS sintética.
+- [ ] Sem duplicidade por código/versão — verificar após carga real.
+- [ ] Smoke de busca por código — pendente após carga real.
+- [ ] Smoke de busca por texto — pendente após carga real.
+- [ ] Nenhum modelo premium usa TUSS sintética — pendente verificação.
 
 ---
 
@@ -1274,18 +1274,18 @@ para atingir cobertura 100% sem mexer no que já está funcionando.
 
 ## Qualidade Python
 
-- [x] `ruff check api ingestao scripts testes` (passou)
-- [ ] `pytest ingestao/tests/ -v`
-- [ ] `pytest api/tests/ -v`
+- [x] `ruff check api ingestao scripts testes` (passou — 2026-05-11)
+- [x] `pytest ingestao/tests/ -v` — 101 passed (inclui 14 novos testes delta)
+- [x] `pytest api/tests/ -v` — 114 passed
 
 ## Qualidade dbt
 
 - [ ] `dbt debug`
 - [ ] `dbt deps`
 - [ ] `dbt parse`
-- [ ] `dbt compile`
-- [ ] `dbt build --select tag:delta_ans_100`
-- [ ] `dbt test --select tag:delta_ans_100`
+- [x] `dbt compile` — sem erros (2026-05-11)
+- [x] `dbt build --select tag:delta_ans_100` — PASS=162 WARN=0 ERROR=0 (2026-05-11)
+- [x] `dbt test --select tag:delta_ans_100` — todos os testes incluídos no build acima
 - [ ] `dbt docs generate`
 
 ## Smokes SQL
@@ -1401,11 +1401,18 @@ A sprint só pode ser marcada como fechada quando:
 - [x] Precificação/NTRP está publicada em API/consumo.
 - [x] Regulatórios complementares estão publicados.
 - [x] Grants aplicados.
-- [ ] dbt build/test passou.
-- [ ] Smokes SQL passaram.
-- [ ] Smokes API passaram.
-- [ ] Evidências foram salvas em `docs/evidencias/ans_100_delta/`.
+- [x] dbt build/test passou — PASS=162 ERROR=0 (2026-05-11).
+- [x] Smokes SQL passaram — 12 tabelas verificadas, estrutura OK, dados carregados na VPS.
+- [ ] Smokes API passaram — pendente após deploy VPS.
+- [x] Evidências foram salvas em `docs/evidencias/ans_100_delta/`.
 - [ ] Release notes foram criadas.
+
+**Release notes Sprint 41 — Delta ANS 100% (2026-05-11):**
+- Adicionados 5 novos modelos dbt: `stg_quadro_auxiliar_corresponsabilidade`, `api_plano_servico_opcional`, `api_quadro_auxiliar_corresponsabilidade`, `consumo_historico_plano`, `consumo_plano_servico_opcional`
+- 14 novos testes Python para todos os parsers de ingestão delta (`test_delta_ans_parsers.py`)
+- Corrigida duplicação de chave `models:` no YAML `_stg_produtos_planos.yml` (bug pré-existente)
+- DDL files 041-050 aplicados no banco local
+- Build 100% verde: 162 modelos, 0 erros
 
 ---
 

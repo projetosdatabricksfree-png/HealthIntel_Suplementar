@@ -79,7 +79,31 @@ models:
         tests:
           - not_null
 
-models:
+  - name: stg_quadro_auxiliar_corresponsabilidade
+    description: >
+      Quadros auxiliares de corresponsabilidade por operadora, plano e tipo.
+      Deduplicado por registro_ans + codigo_plano + tipo_corresponsabilidade.
+      Fonte: bruto_ans.quadro_auxiliar_corresponsabilidade (Sprint 41 — Delta ANS 100%).
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        description: Registro ANS da operadora (6 dígitos, zero-padded).
+        tests:
+          - not_null
+      - name: codigo_plano
+        description: Código do plano na ANS.
+        tests:
+          - not_null
+      - name: tipo_corresponsabilidade
+        description: Tipo de corresponsabilidade (coparticipação, franquia, etc.).
+      - name: percentual_corresponsabilidade
+        description: Percentual de corresponsabilidade aplicado.
+      - name: valor_corresponsabilidade
+        description: Valor em reais da corresponsabilidade.
+      - name: competencia
+        description: Competência de referência no formato YYYYMM.
+
   - name: api_produto_plano
     description: >
       Tabela API de produtos e planos de saúde suplementar.
@@ -98,6 +122,37 @@ models:
   - name: api_historico_plano
     description: >
       Tabela API do histórico de planos de saúde por operadora e competência.
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: codigo_plano
+        tests:
+          - not_null
+
+  - name: api_plano_servico_opcional
+    description: >
+      Tabela API de serviços opcionais de planos por operadora e código de serviço.
+      Fonte: stg_plano_servico_opcional. Grão: registro_ans + codigo_plano + codigo_servico.
+    config:
+      tags: [delta_ans_100, produto_plano]
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: codigo_plano
+        tests:
+          - not_null
+      - name: codigo_servico
+        tests:
+          - not_null
+
+  - name: api_quadro_auxiliar_corresponsabilidade
+    description: >
+      Tabela API de quadros auxiliares de corresponsabilidade por operadora e plano.
+      Fonte: stg_quadro_auxiliar_corresponsabilidade. Grão: registro_ans + codigo_plano + tipo_corresponsabilidade.
     config:
       tags: [delta_ans_100, produto_plano]
     columns:
