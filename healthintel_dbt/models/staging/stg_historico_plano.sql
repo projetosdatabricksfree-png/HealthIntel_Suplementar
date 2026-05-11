@@ -11,8 +11,8 @@ with base as (
         upper(trim(coalesce(nome_plano, '')))           as nome_plano,
         upper(trim(coalesce(situacao, '')))             as situacao,
         case
-            when trim(coalesce(data_situacao, '')) = '' then null
-            else cast(data_situacao as date)
+            when trim(coalesce(cast(data_situacao as text), '')) = '' then null
+            else data_situacao
         end                                             as data_situacao,
         upper(trim(coalesce(segmentacao, '')))          as segmentacao,
         upper(trim(coalesce(tipo_contratacao, '')))     as tipo_contratacao,

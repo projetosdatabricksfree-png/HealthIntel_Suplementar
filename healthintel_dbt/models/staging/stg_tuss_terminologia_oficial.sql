@@ -10,12 +10,12 @@ with base as (
         upper(trim(descricao))                      as descricao,
         trim(coalesce(versao_tuss, ''))             as versao_tuss,
         case
-            when trim(coalesce(vigencia_inicio, '')) = '' then null
-            else cast(vigencia_inicio as date)
+            when trim(coalesce(cast(vigencia_inicio as text), '')) = '' then null
+            else vigencia_inicio
         end                                         as vigencia_inicio,
         case
-            when trim(coalesce(vigencia_fim, '')) = '' then null
-            else cast(vigencia_fim as date)
+            when trim(coalesce(cast(vigencia_fim as text), '')) = '' then null
+            else vigencia_fim
         end                                         as vigencia_fim,
         coalesce(cast(is_tuss_vigente as boolean), true) as is_tuss_vigente,
         upper(trim(coalesce(grupo, '')))            as grupo,
