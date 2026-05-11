@@ -14,23 +14,23 @@ with DAG(
 ) as dag:
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
+import asyncio, os
 from ingestao.app.ingestao_delta_ans import {func}
-competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
-competencia = competencia_conf or '{{ ds_nodash[:6] }}'
-asyncio.run({func}(competencia))
+asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
 "
     """
 
     ingerir_regiao_geografica = BashOperator(
         task_id="ingerir_beneficiario_regiao_geografica",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_beneficiario_regiao_geografica"),
     )
 
     ingerir_informacao_consolidada = BashOperator(
         task_id="ingerir_beneficiario_informacao_consolidada",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(
             func="executar_ingestao_beneficiario_informacao_consolidada"
         ),
@@ -39,6 +39,7 @@ asyncio.run({func}(competencia))
     ingerir_taxa_cobertura = BashOperator(
         task_id="ingerir_taxa_cobertura_plano",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_taxa_cobertura_plano"),
     )
 

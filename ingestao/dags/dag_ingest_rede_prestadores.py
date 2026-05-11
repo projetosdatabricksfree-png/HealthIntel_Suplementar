@@ -14,46 +14,51 @@ with DAG(
 ) as dag:
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
+import asyncio, os
 from ingestao.app.ingestao_delta_ans import {func}
-competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
-competencia = competencia_conf or '{{ ds_nodash[:6] }}'
-asyncio.run({func}(competencia))
+asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
 "
     """
+
     ingerir_operadora_cancelada = BashOperator(
         task_id="ingerir_operadora_cancelada",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_operadora_cancelada"),
     )
 
     ingerir_operadora_acreditada = BashOperator(
         task_id="ingerir_operadora_acreditada",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_operadora_acreditada"),
     )
 
     ingerir_prestador_acreditado = BashOperator(
         task_id="ingerir_prestador_acreditado",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_prestador_acreditado"),
     )
 
     ingerir_produto_prestador_hosp = BashOperator(
         task_id="ingerir_produto_prestador_hospitalar",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_produto_prestador_hospitalar"),
     )
 
     ingerir_operadora_prestador_nao_hosp = BashOperator(
         task_id="ingerir_operadora_prestador_nao_hospitalar",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_operadora_prestador_nao_hospitalar"),
     )
 
     ingerir_solicitacao_alteracao = BashOperator(
         task_id="ingerir_solicitacao_alteracao_rede_hospitalar",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(
             func="executar_ingestao_solicitacao_alteracao_rede_hospitalar"
         ),

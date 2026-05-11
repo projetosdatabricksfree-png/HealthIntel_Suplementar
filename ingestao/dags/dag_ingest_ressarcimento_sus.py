@@ -14,41 +14,44 @@ with DAG(
 ) as dag:
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
+import asyncio, os
 from ingestao.app.ingestao_delta_ans import {func}
-competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
-competencia = competencia_conf or '{{ ds_nodash[:6] }}'
-asyncio.run({func}(competencia))
+asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
 "
     """
 
     ingerir_ressarcimento_abi = BashOperator(
         task_id="ingerir_ressarcimento_beneficiario_abi",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_beneficiario_abi"),
     )
 
     ingerir_ressarcimento_operadora_plano = BashOperator(
         task_id="ingerir_ressarcimento_sus_operadora_plano",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_sus_operadora_plano"),
     )
 
     ingerir_ressarcimento_hc = BashOperator(
         task_id="ingerir_ressarcimento_hc",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_hc"),
     )
 
     ingerir_ressarcimento_cobranca = BashOperator(
         task_id="ingerir_ressarcimento_cobranca_arrecadacao",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_cobranca_arrecadacao"),
     )
 
     ingerir_ressarcimento_indice = BashOperator(
         task_id="ingerir_ressarcimento_indice_pagamento",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_indice_pagamento"),
     )
 

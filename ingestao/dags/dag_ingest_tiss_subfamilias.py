@@ -14,29 +14,30 @@ with DAG(
 ) as dag:
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
+import asyncio, os
 from ingestao.app.ingestao_delta_ans import {func}
-competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
-competencia = competencia_conf or '{{ ds_nodash[:6] }}'
-asyncio.run({func}(competencia))
+asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
 "
     """
 
     ingerir_tiss_ambulatorial = BashOperator(
         task_id="ingerir_tiss_ambulatorial",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_tiss_ambulatorial"),
     )
 
     ingerir_tiss_hospitalar = BashOperator(
         task_id="ingerir_tiss_hospitalar",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_tiss_hospitalar"),
     )
 
     ingerir_tiss_dados_plano = BashOperator(
         task_id="ingerir_tiss_dados_plano",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_tiss_dados_plano"),
     )
 

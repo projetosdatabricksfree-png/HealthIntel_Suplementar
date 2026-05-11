@@ -14,35 +14,37 @@ with DAG(
 ) as dag:
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
-import asyncio
+import asyncio, os
 from ingestao.app.ingestao_delta_ans import {func}
-competencia_conf = '{{ dag_run.conf.get(\"competencia\", \"\") }}'
-competencia = competencia_conf or '{{ ds_nodash[:6] }}'
-asyncio.run({func}(competencia))
+asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
 "
     """
 
     ingerir_produto_caracteristica = BashOperator(
         task_id="ingerir_produto_caracteristica",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_produto_caracteristica"),
     )
 
     ingerir_historico_plano = BashOperator(
         task_id="ingerir_historico_plano",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_historico_plano"),
     )
 
     ingerir_plano_servico_opcional = BashOperator(
         task_id="ingerir_plano_servico_opcional",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(func="executar_ingestao_plano_servico_opcional"),
     )
 
     ingerir_quadro_auxiliar = BashOperator(
         task_id="ingerir_quadro_auxiliar_corresponsabilidade",
         cwd="/workspace",
+        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
         bash_command=_BASE.format(
             func="executar_ingestao_quadro_auxiliar_corresponsabilidade"
         ),
