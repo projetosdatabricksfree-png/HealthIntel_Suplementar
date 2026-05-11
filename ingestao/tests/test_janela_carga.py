@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -22,34 +21,14 @@ from ingestao.app.janela_carga import (
     obter_janela,
     registrar_decisao,
 )
+from ingestao.tests._psql import aplicar_arquivo
 
 ROOT = Path(__file__).resolve().parents[2]
-COMPOSE = ["docker", "compose", "-f", "infra/docker-compose.yml"]
-PSQL = [
-    *COMPOSE,
-    "exec",
-    "-T",
-    "postgres",
-    "psql",
-    "-v",
-    "ON_ERROR_STOP=1",
-    "-U",
-    "healthintel",
-    "-d",
-    "healthintel",
-]
 
 
 @pytest.fixture(scope="module", autouse=True)
 def _aplicar_bootstrap_janela() -> None:
-    subprocess.run(
-        PSQL,
-        input=(ROOT / "infra/postgres/init/031_fase7_janela_carga.sql").read_text(),
-        text=True,
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-    )
+    aplicar_arquivo(ROOT / "infra/postgres/init/031_fase7_janela_carga.sql")
 
 
 @pytest.fixture(autouse=True)

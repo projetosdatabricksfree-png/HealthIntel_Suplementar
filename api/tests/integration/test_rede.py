@@ -1,3 +1,4 @@
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -7,13 +8,14 @@ client = TestClient(app)
 
 
 def test_endpoint_rede_operadora_retorna_payload(monkeypatch) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
-        if request is not None:
-            request.state.chave_api_id = "rede-test"
-            request.state.cliente_id = "cliente-test"
-            request.state.plano_id = "plano-test"
-            request.state.limite_rpm = 1000
-            request.state.endpoint_permitido = ["/v1"]
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "rede-test"
+        request.state.cliente_id = "cliente-test"
+        request.state.plano_id = "plano-test"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/v1"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.is_admin = False
         return "ok"
 
     async def fake_service(*args, **kwargs):
@@ -72,13 +74,14 @@ def test_endpoint_rede_operadora_retorna_payload(monkeypatch) -> None:
 
 
 def test_endpoint_rede_municipio_retorna_payload(monkeypatch) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
-        if request is not None:
-            request.state.chave_api_id = "rede-test"
-            request.state.cliente_id = "cliente-test"
-            request.state.plano_id = "plano-test"
-            request.state.limite_rpm = 1000
-            request.state.endpoint_permitido = ["/v1"]
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "rede-test"
+        request.state.cliente_id = "cliente-test"
+        request.state.plano_id = "plano-test"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/v1"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.is_admin = False
         return "ok"
 
     async def fake_service(*args, **kwargs):

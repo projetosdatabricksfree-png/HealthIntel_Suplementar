@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -11,7 +12,15 @@ client = TestClient(app)
 
 @patch("api.app.routers.admin_layout.listar_layouts", new_callable=AsyncMock)
 def test_admin_layout_lista_via_servico(mock_listar_layouts: AsyncMock) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "admin-teste"
+        request.state.cliente_id = "cliente-admin"
+        request.state.plano_id = "plano-admin"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/admin"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.plano_nome = "admin_interno"
+        request.state.is_admin = True
         return "ok"
 
     chamadas_rate_limit = 0

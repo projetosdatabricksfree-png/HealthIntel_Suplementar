@@ -1,3 +1,4 @@
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -6,13 +7,14 @@ from api.app.middleware.autenticacao import validar_api_key
 client = TestClient(app)
 
 
-def _fake_auth(request=None, x_api_key: str | None = None):
-    if request is not None:
-        request.state.chave_api_id = "fase2-test"
-        request.state.cliente_id = "cliente-test"
-        request.state.plano_id = "plano-test"
-        request.state.limite_rpm = 1000
-        request.state.endpoint_permitido = ["/v1"]
+async def _fake_auth(request: Request, x_api_key: str | None = None):
+    request.state.chave_api_id = "fase2-test"
+    request.state.cliente_id = "cliente-test"
+    request.state.plano_id = "plano-test"
+    request.state.limite_rpm = 1000
+    request.state.endpoint_permitido = ["/v1"]
+    request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+    request.state.is_admin = False
     return "ok"
 
 
@@ -67,13 +69,14 @@ def test_endpoints_fase2_mercado_vazio(monkeypatch) -> None:
 
 
 def test_endpoints_fase2_oportunidade_v2(monkeypatch) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
-        if request is not None:
-            request.state.chave_api_id = "fase2-test"
-            request.state.cliente_id = "cliente-test"
-            request.state.plano_id = "plano-test"
-            request.state.limite_rpm = 1000
-            request.state.endpoint_permitido = ["/v1"]
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "fase2-test"
+        request.state.cliente_id = "cliente-test"
+        request.state.plano_id = "plano-test"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/v1"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.is_admin = False
         return "ok"
 
     async def fake_service(*_args, **_kwargs):

@@ -1,3 +1,4 @@
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -6,7 +7,14 @@ from api.app.middleware.autenticacao import validar_api_key
 client = TestClient(app)
 
 
-async def _fake_auth(request=None, x_api_key: str | None = None):
+async def _fake_auth(request: Request, x_api_key: str | None = None):
+    request.state.chave_api_id = "teste"
+    request.state.cliente_id = "cliente-teste"
+    request.state.plano_id = "plano-teste"
+    request.state.limite_rpm = 1000
+    request.state.endpoint_permitido = ["/v1"]
+    request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+    request.state.is_admin = False
     return "ok"
 
 

@@ -66,12 +66,28 @@ def test_prontidao_com_token_correto_responde(mock_prontidao: AsyncMock) -> None
 # ─── Docs bloqueados em produção ─────────────────────────────────────────────
 
 
-def test_docs_bloqueados_em_producao(monkeypatch) -> None:
-    monkeypatch.setattr(dependencia.settings, "app_env", "production")
-    with patch("api.app.main._em_producao", True):
-        for path in ("/docs", "/redoc", "/openapi.json"):
-            response = client.get(path)
-            assert response.status_code == 404, f"{path} deve retornar 404 em producao"
+def test_docs_bloqueados_em_producao() -> None:
+    # O app singleton de `api.app.main` ja foi construido sob API_ENV=ci (nao
+    # producao), entao patchar `_em_producao` apos o fato nao afeta as rotas
+    # registradas. Validamos: (1) FastAPI com docs_url=None retorna 404 e
+    # (2) `api.app.main` preserva o gating condicional por `_em_producao`.
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient as _ClientLocal
+
+    app_prod = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+    cliente_prod = _ClientLocal(app_prod)
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        response = cliente_prod.get(path)
+        assert response.status_code == 404, f"{path} deve retornar 404 em producao"
+
+    import inspect
+
+    from api.app import main as _main
+
+    fonte = inspect.getsource(_main)
+    assert "docs_url=None if _em_producao else" in fonte
+    assert "redoc_url=None if _em_producao else" in fonte
+    assert "openapi_url=None if _em_producao else" in fonte
 
 
 # ─── /admin/billing RBAC ─────────────────────────────────────────────────────

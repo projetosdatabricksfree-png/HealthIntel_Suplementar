@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -9,10 +10,24 @@ from api.app.middleware.rate_limit import aplicar_rate_limit
 client = TestClient(app)
 
 
+def _fake_auth_admin():
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "admin-teste"
+        request.state.cliente_id = "cliente-admin"
+        request.state.plano_id = "plano-admin"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/admin"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.plano_nome = "admin_interno"
+        request.state.is_admin = True
+        return "ok"
+
+    return fake_auth
+
+
 @patch("api.app.routers.admin_billing.listar_resumo_faturamento", new_callable=AsyncMock)
 def test_admin_billing_resumo_via_servico(mock_resumo: AsyncMock) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
-        return "ok"
+    fake_auth = _fake_auth_admin()
 
     chamadas_rate_limit = 0
 
@@ -48,8 +63,7 @@ def test_admin_billing_resumo_via_servico(mock_resumo: AsyncMock) -> None:
 
 @patch("api.app.routers.admin_billing.fechar_ciclo_faturamento", new_callable=AsyncMock)
 def test_admin_billing_fechar_ciclo_via_servico(mock_fechar: AsyncMock) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
-        return "ok"
+    fake_auth = _fake_auth_admin()
 
     chamadas_rate_limit = 0
 

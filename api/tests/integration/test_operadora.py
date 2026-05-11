@@ -1,3 +1,4 @@
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from api.app.main import app
@@ -12,7 +13,14 @@ def test_operadoras_exige_api_key() -> None:
 
 
 def test_operadoras_retorna_payload_com_override(monkeypatch) -> None:
-    async def fake_auth(request=None, x_api_key: str | None = None):
+    async def fake_auth(request: Request, x_api_key: str | None = None):
+        request.state.chave_api_id = "teste"
+        request.state.cliente_id = "cliente-teste"
+        request.state.plano_id = "plano-teste"
+        request.state.limite_rpm = 1000
+        request.state.endpoint_permitido = ["/v1"]
+        request.state.camadas_permitidas = ["bronze", "prata", "ouro"]
+        request.state.is_admin = False
         return "ok"
 
     async def fake_listar_operadoras(**kwargs):

@@ -10,24 +10,9 @@ from sqlalchemy import text
 
 from ingestao.app.carregar_postgres import SessionLocal
 from ingestao.app.historico_sob_demanda import processar_proxima_solicitacao_historico
+from ingestao.tests._psql import aplicar_arquivo
 
 ROOT = Path(__file__).resolve().parents[2]
-PSQL = (
-    "docker",
-    "compose",
-    "-f",
-    "infra/docker-compose.yml",
-    "exec",
-    "-T",
-    "postgres",
-    "psql",
-    "-v",
-    "ON_ERROR_STOP=1",
-    "-U",
-    "healthintel",
-    "-d",
-    "healthintel",
-)
 
 CLIENTE_HISTORICO = "90000000-0000-0000-0000-000000000038"
 
@@ -39,14 +24,7 @@ def _aplicar_bootstraps_historico() -> None:
         "031_fase7_janela_carga.sql",
         "033_fase7_historico_sob_demanda.sql",
     ):
-        subprocess.run(
-            PSQL,
-            input=(ROOT / f"infra/postgres/init/{arquivo}").read_text(),
-            text=True,
-            cwd=ROOT,
-            check=True,
-            capture_output=True,
-        )
+        aplicar_arquivo(ROOT / f"infra/postgres/init/{arquivo}")
 
 
 @pytest.fixture(autouse=True)

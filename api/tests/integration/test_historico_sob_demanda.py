@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -17,24 +16,9 @@ from api.app.services.historico_sob_demanda import (
     validar_acesso_competencia,
     validar_paginacao_historica,
 )
+from api.tests._psql import aplicar_arquivo
 
 ROOT = Path(__file__).resolve().parents[3]
-PSQL = (
-    "docker",
-    "compose",
-    "-f",
-    "infra/docker-compose.yml",
-    "exec",
-    "-T",
-    "postgres",
-    "psql",
-    "-v",
-    "ON_ERROR_STOP=1",
-    "-U",
-    "healthintel",
-    "-d",
-    "healthintel",
-)
 
 CLIENTE_PADRAO = "90000000-0000-0000-0000-000000000001"
 CLIENTE_PREMIUM = "90000000-0000-0000-0000-000000000002"
@@ -42,14 +26,7 @@ CLIENTE_PREMIUM = "90000000-0000-0000-0000-000000000002"
 
 @pytest.fixture(scope="module", autouse=True)
 def _aplicar_bootstrap_historico() -> None:
-    subprocess.run(
-        PSQL,
-        input=(ROOT / "infra/postgres/init/033_fase7_historico_sob_demanda.sql").read_text(),
-        text=True,
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-    )
+    aplicar_arquivo(ROOT / "infra/postgres/init/033_fase7_historico_sob_demanda.sql")
 
 
 async def _preparar_cliente(session, cliente_id: str, email: str) -> None:

@@ -4,43 +4,18 @@ from pathlib import Path
 
 import pytest
 
+from ingestao.tests._psql import aplicar_arquivo, executar_comando
+
 ROOT = Path(__file__).resolve().parents[2]
-COMPOSE = ("docker", "compose", "-f", "infra/docker-compose.yml")
-PSQL = (
-    *COMPOSE,
-    "exec",
-    "-T",
-    "postgres",
-    "psql",
-    "-v",
-    "ON_ERROR_STOP=1",
-    "-U",
-    "healthintel",
-    "-d",
-    "healthintel",
-)
 
 
 def _psql(sql: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        (*PSQL, "-X", "-q", "-t", "-A", "-c", sql),
-        cwd=ROOT,
-        check=check,
-        text=True,
-        capture_output=True,
-    )
+    return executar_comando(sql, "-X", "-q", "-t", "-A", check=check)
 
 
 @pytest.fixture(scope="module", autouse=True)
 def aplicar_bootstrap_particionamento() -> None:
-    subprocess.run(
-        PSQL,
-        cwd=ROOT,
-        check=True,
-        text=True,
-        input=(ROOT / "infra/postgres/init/030_fase7_particionamento_anual.sql").read_text(),
-        capture_output=True,
-    )
+    aplicar_arquivo(ROOT / "infra/postgres/init/030_fase7_particionamento_anual.sql")
 
 
 @pytest.fixture()
