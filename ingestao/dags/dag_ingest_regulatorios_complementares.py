@@ -23,7 +23,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_penalidade = BashOperator(
         task_id="ingerir_penalidade_operadora",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_penalidade_operadora"),
     )
@@ -31,7 +35,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_garantia = BashOperator(
         task_id="ingerir_monitoramento_garantia_atendimento",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(
             func="executar_ingestao_monitoramento_garantia_atendimento"
@@ -41,7 +49,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_peona = BashOperator(
         task_id="ingerir_peona_sus",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_peona_sus"),
     )
@@ -49,7 +61,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_promoprev = BashOperator(
         task_id="ingerir_promoprev",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_promoprev"),
     )
@@ -57,7 +73,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_rpc = BashOperator(
         task_id="ingerir_rpc",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_rpc"),
     )
@@ -65,7 +85,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_iap = BashOperator(
         task_id="ingerir_iap",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_iap"),
     )
@@ -73,7 +97,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_pfa = BashOperator(
         task_id="ingerir_pfa",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_pfa"),
     )
@@ -81,7 +109,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_programa_qualificacao = BashOperator(
         task_id="ingerir_programa_qualificacao_institucional",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(
             func="executar_ingestao_programa_qualificacao_institucional"

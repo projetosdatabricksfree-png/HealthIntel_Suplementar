@@ -23,7 +23,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_tiss_ambulatorial = BashOperator(
         task_id="ingerir_tiss_ambulatorial",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_tiss_ambulatorial"),
     )
@@ -31,7 +35,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_tiss_hospitalar = BashOperator(
         task_id="ingerir_tiss_hospitalar",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_tiss_hospitalar"),
     )
@@ -39,7 +47,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_tiss_dados_plano = BashOperator(
         task_id="ingerir_tiss_dados_plano",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_tiss_dados_plano"),
     )

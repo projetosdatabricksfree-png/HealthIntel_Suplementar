@@ -23,7 +23,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_regiao_geografica = BashOperator(
         task_id="ingerir_beneficiario_regiao_geografica",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_beneficiario_regiao_geografica"),
     )
@@ -31,7 +35,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_informacao_consolidada = BashOperator(
         task_id="ingerir_beneficiario_informacao_consolidada",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(
             func="executar_ingestao_beneficiario_informacao_consolidada"
@@ -41,7 +49,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_taxa_cobertura = BashOperator(
         task_id="ingerir_taxa_cobertura_plano",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_taxa_cobertura_plano"),
     )

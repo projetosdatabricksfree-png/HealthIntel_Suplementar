@@ -23,7 +23,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_ressarcimento_abi = BashOperator(
         task_id="ingerir_ressarcimento_beneficiario_abi",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_beneficiario_abi"),
     )
@@ -31,7 +35,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_ressarcimento_operadora_plano = BashOperator(
         task_id="ingerir_ressarcimento_sus_operadora_plano",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_sus_operadora_plano"),
     )
@@ -39,7 +47,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_ressarcimento_hc = BashOperator(
         task_id="ingerir_ressarcimento_hc",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_hc"),
     )
@@ -47,7 +59,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_ressarcimento_cobranca = BashOperator(
         task_id="ingerir_ressarcimento_cobranca_arrecadacao",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_cobranca_arrecadacao"),
     )
@@ -55,7 +71,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_ressarcimento_indice = BashOperator(
         task_id="ingerir_ressarcimento_indice_pagamento",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_ressarcimento_indice_pagamento"),
     )

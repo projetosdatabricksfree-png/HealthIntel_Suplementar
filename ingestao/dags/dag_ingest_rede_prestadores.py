@@ -23,7 +23,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_operadora_cancelada = BashOperator(
         task_id="ingerir_operadora_cancelada",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_operadora_cancelada"),
     )
@@ -31,7 +35,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_operadora_acreditada = BashOperator(
         task_id="ingerir_operadora_acreditada",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_operadora_acreditada"),
     )
@@ -39,7 +47,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_prestador_acreditado = BashOperator(
         task_id="ingerir_prestador_acreditado",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_prestador_acreditado"),
     )
@@ -47,7 +59,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_produto_prestador_hosp = BashOperator(
         task_id="ingerir_produto_prestador_hospitalar",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_produto_prestador_hospitalar"),
     )
@@ -55,7 +71,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_operadora_prestador_nao_hosp = BashOperator(
         task_id="ingerir_operadora_prestador_nao_hospitalar",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_operadora_prestador_nao_hospitalar"),
     )
@@ -63,7 +83,11 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_solicitacao_alteracao = BashOperator(
         task_id="ingerir_solicitacao_alteracao_rede_hospitalar",
         cwd="/workspace",
-        env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        env={
+            "HEALTHINTEL_COMPETENCIA": (
+                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+            ),
+        },
         append_env=True,
         bash_command=_BASE.format(
             func="executar_ingestao_solicitacao_alteracao_rede_hospitalar"
