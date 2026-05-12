@@ -24,6 +24,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         task_id="ingerir_produto_caracteristica",
         cwd="/workspace",
         env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_produto_caracteristica"),
     )
 
@@ -31,6 +32,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         task_id="ingerir_historico_plano",
         cwd="/workspace",
         env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_historico_plano"),
     )
 
@@ -38,6 +40,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         task_id="ingerir_plano_servico_opcional",
         cwd="/workspace",
         env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_plano_servico_opcional"),
     )
 
@@ -45,6 +48,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         task_id="ingerir_quadro_auxiliar_corresponsabilidade",
         cwd="/workspace",
         env={"HEALTHINTEL_COMPETENCIA": "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"},
+        append_env=True,
         bash_command=_BASE.format(
             func="executar_ingestao_quadro_auxiliar_corresponsabilidade"
         ),
