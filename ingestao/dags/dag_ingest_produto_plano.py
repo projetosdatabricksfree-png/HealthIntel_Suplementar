@@ -73,7 +73,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         task_id="dbt_transform_produto_plano",
         cwd="/workspace/healthintel_dbt",
         bash_command=(
-            "dbt build --select tag:delta_ans_100,config.materialized:table "
+            "dbt build --select "
             "+stg_produto_caracteristica +stg_produto_tabela_auxiliar "
             "+stg_historico_plano +stg_plano_servico_opcional "
             "+stg_quadro_auxiliar_corresponsabilidade "
