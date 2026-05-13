@@ -1,0 +1,145 @@
+schema,tabela,n_live_tup,row_count_real,tamanho_bytes,dominio,prioridade,camada,fonte_esperada,dag_responsavel,dbt_model,status_inicio
+api_ans,api_alteracao_rede_hospitalar,0,0,32768,rede,P1,api,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+api_ans,api_beneficiario_informacao_consolidada,0,0,32768,beneficiario,P1,api,SIB beneficiários,dag_ingest_sib,stg_sib_*,ZERADA
+api_ans,api_beneficiario_regiao_geografica,0,0,24576,beneficiario,P1,api,SIB beneficiários,dag_ingest_sib,stg_sib_*,ZERADA
+api_ans,api_cnes_municipio,0,0,40960,cnes,P1,api,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+api_ans,api_cnes_rede_gap,0,0,32768,cnes,P1,api,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+api_ans,api_faixa_preco,0,0,24576,ntrp,P1,api,faixa preço,dag_ingest_precificacao_ntrp,stg_faixa_preco_*,ZERADA
+api_ans,api_financeiro_operadora_mensal,0,0,24576,financeiro,P1,api,DIOPS + FIP,dag_ingest_diops/fip,stg_financeiro_*,ZERADA
+api_ans,api_garantia_atendimento,0,0,24576,regulatorio,P2,api,garantia atendimento ANS,dag?,stg_garantia_*,ZERADA
+api_ans,api_historico_plano,163567,163567,21594112,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_iap,0,0,24576,regulatorio,P2,api,IAP ANS,dag?,stg_iap_*,ZERADA
+api_ans,api_market_share_mensal,59197,59197,15769600,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_ntrp_area_comercializacao,0,0,24576,ntrp,P1,api,NTRP ANS,dag_ingest_precificacao_ntrp,stg_ntrp_*,ZERADA
+api_ans,api_ntrp_vcm_faixa_etaria,0,0,24576,ntrp,P1,api,NTRP ANS,dag_ingest_precificacao_ntrp,stg_ntrp_*,ZERADA
+api_ans,api_operadora,1107,1107,335872,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_operadora_acreditada,0,0,16384,rede,P2,api,rede acreditada,varias,fat_acreditacao_*,ZERADA
+api_ans,api_operadora_cancelada,0,0,24576,cadop,P2,api,CADOP histórico,dag_ingest_cadop,stg_cadop_*,ZERADA
+api_ans,api_operadora_prestador_nao_hospitalar,0,0,32768,outros,P3,api,fonte_desconhecida,n/a,n/a,ZERADA
+api_ans,api_oportunidade_municipio_mensal,646,646,188416,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_oportunidade_v2_municipio_mensal,646,646,270336,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_painel_precificacao,0,0,32768,ntrp,P1,api,painel precificação,dag_ingest_precificacao_ntrp,stg_painel_*,ZERADA
+api_ans,api_penalidade_operadora,0,0,24576,outros,P3,api,fonte_desconhecida,n/a,n/a,ZERADA
+api_ans,api_peona_sus,0,0,24576,regulatorio,P2,api,PEONA SUS,dag?,stg_peona_*,ZERADA
+api_ans,api_pfa,0,0,24576,regulatorio,P2,api,PFA,dag?,stg_pfa_*,ZERADA
+api_ans,api_plano_servico_opcional,0,0,24576,produto,P2,api,plano serviço opcional,dag?,stg_pso_*,ZERADA
+api_ans,api_portabilidade_operadora_mensal,0,0,24576,portabilidade,P1,api,portabilidade ANS,dag_ingest_portabilidade,stg_portabilidade_*,ZERADA
+api_ans,api_prata_cadop,1107,1107,319488,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_prata_cnes_municipio,0,0,32768,cnes,P1,api,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+api_ans,api_prata_cnes_rede_gap,0,0,32768,cnes,P1,api,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+api_ans,api_prata_diops,0,0,24576,financeiro,P1,api,DIOPS ANS,dag_ingest_diops,stg_diops_*,ZERADA
+api_ans,api_prata_financeiro_periodo,0,0,8192,financeiro,P1,api,DIOPS + FIP,dag_ingest_diops/fip,stg_financeiro_*,ZERADA
+api_ans,api_prata_fip,0,0,24576,financeiro,P1,api,FIP ANS,dag_ingest_fip,stg_fip_*,ZERADA
+api_ans,api_prata_glosa,0,0,32768,glosa,P1,api,glosa ANS,dag_ingest_glosa,stg_glosa_*,ZERADA
+api_ans,api_prata_idss,0,0,24576,regulatorio,P1,api,IDSS ANS anual,dag_anual_idss,stg_idss_*,ZERADA
+api_ans,api_prata_igr,0,0,24576,outros,P3,api,fonte_desconhecida,n/a,n/a,ZERADA
+api_ans,api_prata_municipio_metrica,59197,59197,7905280,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_prata_nip,0,0,24576,regulatorio,P1,api,NIP ANS,dag_ingest_nip,stg_nip_*,ZERADA
+api_ans,api_prata_operadora_enriquecida,757,757,139264,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_prata_rede_assistencial,0,0,32768,rede,P1,api,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+api_ans,api_prata_sib_municipio,59892,59892,8781824,beneficiario,P1,api,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+api_ans,api_prata_sib_operadora,803,803,196608,beneficiario,P1,api,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+api_ans,api_prata_tiss_procedimento,0,0,40960,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_prata_vda,0,0,24576,vda,P1,api,VDA ANS,dag_ingest_vda,stg_vda_*,ZERADA
+api_ans,api_premium_cnes_estabelecimento_validado,0,0,40960,cnes,P1,api,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+api_ans,api_premium_contrato_validado,0,0,8192,premium,P2,api,validações premium,dbt+seed,api_premium_*,ZERADA
+api_ans,api_premium_mdm_operadora,1107,1107,303104,premium,P2,api,validações premium,dbt+seed,api_premium_*,POPULADA
+api_ans,api_premium_mdm_prestador,0,0,8192,premium,P2,api,validações premium,dbt+seed,api_premium_*,ZERADA
+api_ans,api_premium_operadora_360_validado,757,757,344064,premium,P2,api,validações premium,dbt+seed,api_premium_*,POPULADA
+api_ans,api_premium_quality_dataset,2,2,49152,premium,P2,api,validações premium,dbt+seed,api_premium_*,POPULADA
+api_ans,api_premium_subfatura_validada,0,0,8192,premium,P2,api,validações premium,dbt+seed,api_premium_*,ZERADA
+api_ans,api_premium_tiss_procedimento_tuss_validado,0,0,32768,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_premium_tuss_procedimento,3500,3500,712704,premium,P2,api,validações premium,dbt+seed,api_premium_*,POPULADA
+api_ans,api_prestador_acreditado,0,0,32768,rede,P2,api,rede acreditada,varias,fat_acreditacao_*,ZERADA
+api_ans,api_produto_plano,163661,163661,46850048,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_produto_prestador_hospitalar,0,0,32768,rede,P2,api,produto-prestador hospitalar,dag?,stg_produto_prestador_*,ZERADA
+api_ans,api_programa_qualificacao_institucional,0,0,24576,regulatorio,P2,api,PQI ANS,dag?,stg_pqi_*,ZERADA
+api_ans,api_promoprev,0,0,24576,regulatorio,P2,api,PROMOPREV,dag?,stg_promoprev_*,ZERADA
+api_ans,api_quadro_auxiliar_corresponsabilidade,1032,1032,327680,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_ranking_composto_mensal,757,757,368640,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_ranking_crescimento,757,757,139264,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_ranking_oportunidade,646,646,139264,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_ranking_score,757,757,139264,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_reajuste_agrupamento,0,0,24576,ntrp,P1,api,reajuste agrupamento,dag_ingest_precificacao_ntrp,stg_reajuste_*,ZERADA
+api_ans,api_rede_assistencial,0,0,32768,rede,P1,api,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+api_ans,api_regime_especial_operadora,0,0,24576,regulatorio,P2,api,regime especial ANS,dag_ingest_regime_especial,stg_regime_*,ZERADA
+api_ans,api_regulatorio_operadora_trimestral,0,0,24576,regulatorio,P1,api,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+api_ans,api_ressarcimento_beneficiario_abi,0,0,32768,ressarcimento,P1,api,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+api_ans,api_ressarcimento_cobranca_arrecadacao,0,0,24576,ressarcimento,P1,api,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+api_ans,api_ressarcimento_hc,0,0,24576,ressarcimento,P1,api,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+api_ans,api_ressarcimento_indice_pagamento,0,0,24576,ressarcimento,P1,api,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+api_ans,api_ressarcimento_sus_operadora_plano,0,0,24576,ressarcimento,P1,api,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+api_ans,api_rn623_lista_trimestral,0,0,24576,regulatorio,P1,api,RN623 ANS trimestral,dag_ingest_rn623,stg_rn623_*,ZERADA
+api_ans,api_rpc_operadora_mes,0,0,32768,regulatorio,P1,api,RPC ANS,dag_ingest_rpc?,stg_rpc_*,ZERADA
+api_ans,api_score_operadora_mensal,757,757,270336,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_score_regulatorio_operadora_mensal,0,0,32768,regulatorio,P1,api,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+api_ans,api_score_v2_operadora_mensal,757,757,655360,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_score_v3_operadora_mensal,757,757,368640,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_sinistralidade_procedimento,0,0,24576,outros,P3,api,fonte_desconhecida,n/a,n/a,ZERADA
+api_ans,api_sip_assistencial_operadora,0,0,32768,sip,P0,api,fonte ANS SIP delta,dag_ingest_sip_delta,stg_sip_*,ZERADA
+api_ans,api_taxa_cobertura_plano,0,0,32768,beneficiario,P1,api,SIB cobertura,dag_ingest_beneficiarios_cobertura,stg_cobertura_*,ZERADA
+api_ans,api_tiss_ambulatorial_operadora_mes,0,0,32768,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_tiss_hospitalar_operadora_mes,0,0,32768,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_tiss_operadora_trimestral,0,0,32768,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_tiss_plano_mes,0,0,32768,tiss,P0,api,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+api_ans,api_tuss_procedimento_vigente,64654,64654,14106624,outros,P3,api,fonte_desconhecida,n/a,n/a,POPULADA
+api_ans,api_valor_comercial_medio_municipio,0,0,32768,ntrp,P2,api,valor comercial médio município,dbt,fat_vcm_*,ZERADA
+api_ans,api_vazio_assistencial,0,0,32768,rede,P2,api,vazio assistencial,dag?,stg_vazio_*,ZERADA
+consumo_ans,consumo_beneficiarios_cobertura_municipio,0,0,8192,beneficiario,P1,consumo,SIB beneficiários,dag_ingest_sib,stg_sib_*,ZERADA
+consumo_ans,consumo_beneficiarios_municipio_mes,646,646,139264,beneficiario,P1,consumo,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+consumo_ans,consumo_beneficiarios_operadora_mes,757,757,139264,beneficiario,P1,consumo,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+consumo_ans,consumo_financeiro_operadora_trimestre,0,0,8192,financeiro,P1,consumo,DIOPS + FIP,dag_ingest_diops/fip,stg_financeiro_*,ZERADA
+consumo_ans,consumo_historico_plano,163567,163567,14721024,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+consumo_ans,consumo_operadora_360,757,757,270336,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+consumo_ans,consumo_oportunidade_municipio,646,646,73728,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+consumo_ans,consumo_plano_servico_opcional,0,0,8192,produto,P2,consumo,plano serviço opcional,dag?,stg_pso_*,ZERADA
+consumo_ans,consumo_precificacao_plano,0,0,8192,ntrp,P1,consumo,precificação plano,dag_ingest_precificacao_ntrp,consumo_precificacao_*,ZERADA
+consumo_ans,consumo_produto_plano,163661,163661,34652160,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+consumo_ans,consumo_rede_acreditacao,0,0,8192,rede,P1,consumo,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+consumo_ans,consumo_rede_assistencial_municipio,0,0,8192,rede,P1,consumo,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+consumo_ans,consumo_regulatorio_complementar_operadora,0,0,8192,regulatorio,P1,consumo,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+consumo_ans,consumo_regulatorio_operadora_trimestre,0,0,8192,regulatorio,P1,consumo,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+consumo_ans,consumo_ressarcimento_sus_operadora,0,0,8192,ressarcimento,P1,consumo,ressarcimento SUS,dag_ingest_ressarcimento_sus,stg_ressarcimento_*,ZERADA
+consumo_ans,consumo_score_operadora_mes,757,757,139264,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+consumo_ans,consumo_sip_assistencial_operadora,0,0,8192,sip,P0,consumo,fonte ANS SIP delta,dag_ingest_sip_delta,stg_sip_*,ZERADA
+consumo_ans,consumo_tiss_utilizacao_operadora_mes,0,0,8192,tiss,P0,consumo,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+consumo_ans,consumo_tuss_procedimento_vigente,64654,64654,10526720,outros,P3,consumo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_competencia,1,1,16384,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_localidade,646,646,73728,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_modalidade,8,8,16384,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_operadora_atual,1107,1107,229376,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_segmentacao,4,4,16384,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_tipo_contratacao,0,0,8192,produto,P2,nucleo,dim tipo contratação,dbt seed,dim_tipo_*,ZERADA
+nucleo_ans,dim_tuss_procedimento,3500,3500,573440,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,dim_tuss_terminologia,3500,3500,450560,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_beneficiario_localidade,59197,59197,7905280,beneficiario,P1,nucleo,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+nucleo_ans,fat_beneficiario_operadora,757,757,188416,beneficiario,P1,nucleo,SIB beneficiários,dag_ingest_sib,stg_sib_*,POPULADA
+nucleo_ans,fat_cnes_estabelecimento_municipio,0,0,8192,cnes,P1,nucleo,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+nucleo_ans,fat_cnes_rede_gap_municipio,0,0,8192,cnes,P1,nucleo,fonte CNES DataSUS,dag_ingest_cnes,stg_cnes_*,ZERADA
+nucleo_ans,fat_cobertura_rede_municipio,0,0,8192,rede,P1,nucleo,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+nucleo_ans,fat_densidade_rede_operadora,0,0,8192,rede,P1,nucleo,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+nucleo_ans,fat_financeiro_operadora_trimestral,0,0,8192,financeiro,P1,nucleo,DIOPS + FIP,dag_ingest_diops/fip,stg_financeiro_*,ZERADA
+nucleo_ans,fat_glosa_operadora_mensal,0,0,8192,glosa,P1,nucleo,glosa ANS,dag_ingest_glosa,stg_glosa_*,ZERADA
+nucleo_ans,fat_idss_operadora,0,0,8192,regulatorio,P1,nucleo,IDSS ANS anual,dag_anual_idss,stg_idss_*,ZERADA
+nucleo_ans,fat_market_share_mensal,59197,59197,15245312,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_monitoramento_regulatorio_trimestral,0,0,8192,regulatorio,P1,nucleo,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+nucleo_ans,fat_oportunidade_municipio_mensal,646,646,139264,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_oportunidade_v2_municipio_mensal,646,646,335872,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_ranking_composto_mensal,757,757,270336,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_reclamacao_operadora,0,0,8192,regulatorio,P1,nucleo,reclamação ANS,dag_ingest_nip?,fat_reclamacao_*,ZERADA
+nucleo_ans,fat_regime_especial_historico,0,0,8192,regulatorio,P2,nucleo,regime especial ANS,dag_ingest_regime_especial,stg_regime_*,ZERADA
+nucleo_ans,fat_score_operadora_mensal,757,757,114688,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_score_regulatorio_operadora_mensal,0,0,8192,regulatorio,P1,nucleo,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+nucleo_ans,fat_score_v2_operadora_mensal,757,757,270336,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_score_v3_operadora_mensal,757,757,270336,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,fat_sinistralidade_procedimento,0,0,8192,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,ZERADA
+nucleo_ans,fat_tiss_procedimento_operadora,0,0,8192,tiss,P0,nucleo,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+nucleo_ans,fat_vazio_assistencial_municipio,0,0,8192,rede,P2,nucleo,vazio assistencial,dag?,stg_vazio_*,ZERADA
+nucleo_ans,fat_vda_operadora_mensal,0,0,8192,vda,P1,nucleo,VDA ANS,dag_ingest_vda,stg_vda_*,ZERADA
+nucleo_ans,mart_mercado_municipio,646,646,139264,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,mart_operadora_360,757,757,270336,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,mart_rede_assistencial,0,0,8192,rede,P1,nucleo,fonte ANS rede assistencial,dag_ingest_rede_assistencial,stg_rede_*,ZERADA
+nucleo_ans,mart_regulatorio_operadora,0,0,8192,regulatorio,P1,nucleo,agregado regulatório,varias,stg_regulatorio_*,ZERADA
+nucleo_ans,mart_score_operadora,757,757,139264,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA
+nucleo_ans,mart_tiss_procedimento,0,0,8192,tiss,P0,nucleo,fonte ANS TISS subfamílias,dag_ingest_tiss,stg/api/consumo_tiss_*,ZERADA
+nucleo_ans,snap_operadora,1107,1107,335872,outros,P3,nucleo,fonte_desconhecida,n/a,n/a,POPULADA

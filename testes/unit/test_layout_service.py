@@ -4,6 +4,7 @@ from mongo_layout_service.app.schemas.layout import (
     ColunaLayout,
     LayoutAliasCreate,
     LayoutCreate,
+    LayoutRascunhoRequest,
     LayoutVersaoCreate,
     StatusLayoutUpdateRequest,
     ValidacaoArquivoRequest,
@@ -202,3 +203,53 @@ async def test_valida_arquivo_incompativel_sem_coluna_obrigatoria() -> None:
     )
     assert resultado["compativel"] is False
     assert any("Colunas obrigatorias ausentes" in motivo for motivo in resultado["motivos"])
+
+
+async def test_criar_rascunho_layout_cria_layout_e_versao_quando_dataset_novo() -> None:
+    repository = FakeRepository()
+    service = LayoutService(repository)
+    resultado = await service.criar_rascunho_layout(
+        "dataset_inexistente",
+        LayoutRascunhoRequest(
+            colunas=["COL_A", "COL_B", "COL_C"],
+            nome_arquivo="arquivo_x.csv",
+            arquivo_hash="abc123",
+            motivo="auto-detector",
+        ),
+    )
+    assert resultado["status"] == "rascunho"
+    assert resultado["reaproveitado"] is False
+    assert resultado["layout_id"] is not None
+    assert resultado["layout_versao_id"] is not None
+    layout = repository.layouts[resultado["layout_id"]]
+    assert layout["dataset_codigo"] == "dataset_inexistente"
+
+
+async def test_criar_rascunho_layout_e_idempotente_por_assinatura() -> None:
+    repository = FakeRepository()
+    service = LayoutService(repository)
+    primeiro = await service.criar_rascunho_layout(
+        "dataset_x",
+        LayoutRascunhoRequest(colunas=["A", "B"], nome_arquivo="x.csv"),
+    )
+    segundo = await service.criar_rascunho_layout(
+        "dataset_x",
+        LayoutRascunhoRequest(colunas=["a", "b"], nome_arquivo="y.csv"),
+    )
+    assert primeiro["assinatura_colunas"] == segundo["assinatura_colunas"]
+    assert primeiro["layout_versao_id"] == segundo["layout_versao_id"]
+    assert segundo["reaproveitado"] is True
+
+
+async def test_criar_rascunho_layout_reutiliza_layout_existente() -> None:
+    service, layout_id = await _montar_service()
+    resultado = await service.criar_rascunho_layout(
+        "cadop",
+        LayoutRascunhoRequest(
+            colunas=["NOVA_COL1", "NOVA_COL2"],
+            nome_arquivo="cadop_nova_versao.csv",
+        ),
+    )
+    assert resultado["layout_id"] == layout_id
+    assert resultado["status"] == "rascunho"
+    assert resultado["reaproveitado"] is False

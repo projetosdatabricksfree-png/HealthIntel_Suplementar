@@ -9,6 +9,7 @@ from mongo_layout_service.app.repositories.layout_repository import LayoutReposi
 from mongo_layout_service.app.schemas.layout import (
     LayoutAliasCreate,
     LayoutCreate,
+    LayoutRascunhoRequest,
     LayoutVersaoCreate,
     ReprocessamentoRequest,
     StatusLayoutUpdateRequest,
@@ -136,3 +137,22 @@ async def post_validar_arquivo(
     service: LayoutServiceDep,
 ) -> dict:
     return await service.validar_arquivo(payload)
+
+
+@router.post("/{dataset_codigo}/rascunho")
+async def post_layout_rascunho(
+    dataset_codigo: str,
+    payload: LayoutRascunhoRequest,
+    service: LayoutServiceDep,
+) -> dict:
+    """Sprint 43 — auto-detector: cria layout/versão em rascunho a partir de
+    colunas detectadas pelo `ingestao.app.layout_autodetect`.
+    Idempotente por assinatura: se a assinatura já existir como versão do
+    layout do dataset, retorna a existente com `reaproveitado=True`."""
+    try:
+        return await service.criar_rascunho_layout(dataset_codigo, payload)
+    except LayoutRegistryError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"codigo_erro": exc.code, "mensagem": exc.message},
+        ) from exc

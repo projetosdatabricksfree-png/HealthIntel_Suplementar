@@ -185,6 +185,30 @@ bootstrap-delta-ans-all-layouts: \
 	bootstrap-regulatorios-complementares-layouts \
 	bootstrap-beneficiarios-cobertura-layouts
 
+# Sprint 43: wrapper que reaplica todos os bootstraps de layout existentes,
+# garantindo que MongoDB tenha layouts cadastrados/atualizados para os 11+
+# domínios alvo da Sprint 43. Idempotente — os scripts usam upsert.
+bootstrap-layouts-sprint43: \
+	bootstrap-cadop-layouts \
+	bootstrap-cnes-layouts \
+	bootstrap-sib-layouts \
+	bootstrap-tiss-layouts \
+	bootstrap-tiss-subfamilias-layouts \
+	bootstrap-sip-delta-layouts \
+	bootstrap-rede-layouts \
+	bootstrap-rede-prestadores-layouts \
+	bootstrap-regulatorio-layouts \
+	bootstrap-regulatorios-complementares-layouts \
+	bootstrap-nip-layouts \
+	bootstrap-idss-layouts \
+	bootstrap-igr-layouts \
+	bootstrap-precificacao-ntrp-layouts \
+	bootstrap-ressarcimento-sus-layouts \
+	bootstrap-produtos-planos-layouts \
+	bootstrap-tuss-oficial-layouts \
+	bootstrap-beneficiarios-cobertura-layouts
+	@echo "[sprint43] todos os bootstraps de layout aplicados (idempotente)"
+
 # Sprint 41: dbt builds/tests seletivos
 dbt-build-delta-ans:
 	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) build --select tag:delta_ans_100

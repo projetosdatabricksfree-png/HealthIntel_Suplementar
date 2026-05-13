@@ -4,9 +4,11 @@ from hashlib import sha256
 from mongo_layout_service.app.core.exceptions import LayoutRegistryError
 from mongo_layout_service.app.repositories.layout_repository import LayoutRepository
 from mongo_layout_service.app.schemas.layout import (
+    ColunaLayout,
     FonteDatasetCreate,
     LayoutAliasCreate,
     LayoutCreate,
+    LayoutRascunhoRequest,
     LayoutVersaoCreate,
     ReprocessamentoRequest,
     StatusLayoutUpdateRequest,
@@ -143,6 +145,98 @@ class LayoutService:
             }
         )
         return atualizado
+
+    async def criar_rascunho_layout(
+        self, dataset_codigo: str, payload: LayoutRascunhoRequest
+    ) -> dict:
+        """Sprint 43 — cria layout+versão em estado `rascunho` a partir de
+        colunas físicas detectadas. Idempotente por assinatura: se já existir
+        uma versão rascunho com a mesma assinatura, retorna a existente.
+
+        Procura primeiro um Layout ativo do dataset; se não houver, cria.
+        """
+        assinatura = self._assinar_colunas_fisicas(payload.colunas)
+        layouts_existentes = await self.repository.listar_layouts(
+            dataset_codigo=dataset_codigo
+        )
+
+        layout = None
+        if layouts_existentes:
+            layout = layouts_existentes[0]
+        else:
+            tabela_raw = (
+                payload.tabela_raw_destino or f"bruto_ans.{dataset_codigo}"
+            )
+            nome = payload.nome_layout or f"rascunho-{dataset_codigo}"
+            layout = await self.repository.criar_layout(
+                LayoutCreate(
+                    dataset_codigo=dataset_codigo,
+                    nome=nome,
+                    descricao=(
+                        f"Rascunho criado por auto-detector (Sprint 43): "
+                        f"{payload.motivo or 'assinatura desconhecida'}"
+                    ),
+                    tabela_raw_destino=tabela_raw,
+                    formato_esperado=payload.formato_esperado,
+                    delimitador=payload.delimitador,
+                )
+            )
+            await self.repository.registrar_evento(
+                {
+                    "evento_id": self.repository.novo_evento_id("layout"),
+                    "layout_id": layout["layout_id"],
+                    "tipo_evento": "layout_criado",
+                    "origem": "auto_detector_sprint43",
+                    "criado_em": self._agora(),
+                }
+            )
+
+        for versao_existente in await self.repository.listar_versoes(layout["layout_id"]):
+            if versao_existente.get("assinatura_colunas") == assinatura:
+                return {
+                    "layout_id": layout["layout_id"],
+                    "layout_versao_id": versao_existente["layout_versao_id"],
+                    "status": versao_existente.get("status"),
+                    "assinatura_colunas": assinatura,
+                    "reaproveitado": True,
+                }
+
+        colunas_layout = [
+            ColunaLayout(nome_canonico=self._normalizar_coluna(c), tipo="string")
+            for c in payload.colunas
+        ]
+        timestamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+        versao = await self.repository.criar_versao(
+            layout["layout_id"],
+            LayoutVersaoCreate(
+                versao=f"rascunho-{timestamp}",
+                colunas=colunas_layout,
+                assinatura_colunas=assinatura,
+            ),
+            assinatura,
+        )
+        # Marca versão como rascunho (default é em_validacao)
+        await self.repository.atualizar_status_versao(versao["layout_versao_id"], "rascunho")
+        await self.repository.registrar_evento(
+            {
+                "evento_id": self.repository.novo_evento_id("versao"),
+                "layout_id": layout["layout_id"],
+                "layout_versao_id": versao["layout_versao_id"],
+                "tipo_evento": "rascunho_criado",
+                "origem": "auto_detector_sprint43",
+                "nome_arquivo": payload.nome_arquivo,
+                "arquivo_hash": payload.arquivo_hash,
+                "assinatura_colunas": assinatura,
+                "criado_em": self._agora(),
+            }
+        )
+        return {
+            "layout_id": layout["layout_id"],
+            "layout_versao_id": versao["layout_versao_id"],
+            "status": "rascunho",
+            "assinatura_colunas": assinatura,
+            "reaproveitado": False,
+        }
 
     async def listar_incompativeis(self) -> list[dict]:
         return await self.repository.listar_incompativeis()

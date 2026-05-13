@@ -108,3 +108,31 @@ class ReprocessamentoRequest(BaseModel):
     motivo: str
     arquivo_origem: str | None = None
     lote_ids: list[str] = Field(default_factory=list)
+
+
+class LayoutRascunhoRequest(BaseModel):
+    """Sprint 43 — auto-detector: cria layout/versão em estado `rascunho`.
+
+    Usado pelo `ingestao/app/layout_autodetect.py` quando a assinatura de
+    colunas detectada em um arquivo ANS não bate com nenhum layout ativo do
+    dataset. Cria automaticamente um rascunho aguardando revisão humana,
+    sem bloquear a ingestão.
+    """
+
+    colunas: list[str] = Field(..., description="Colunas físicas detectadas no arquivo.")
+    nome_arquivo: str | None = None
+    arquivo_hash: str | None = None
+    nome_layout: str | None = Field(
+        default=None,
+        description="Nome amigável (opcional). Default: f'rascunho-{dataset}-{ts}'.",
+    )
+    tabela_raw_destino: str | None = Field(
+        default=None,
+        description="Tabela bruto destino (opcional). Default: f'bruto_ans.{dataset}'.",
+    )
+    formato_esperado: str = "csv"
+    delimitador: str = ";"
+    motivo: str | None = Field(
+        default=None,
+        description="Motivo do rascunho (ex: 'assinatura desconhecida via auto-detector').",
+    )
