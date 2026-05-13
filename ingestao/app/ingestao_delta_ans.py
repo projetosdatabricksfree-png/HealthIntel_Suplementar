@@ -419,8 +419,24 @@ async def _registrar_arquivo_fonte(
                     erro_mensagem = :erro_mensagem,
                     caminho_landing = coalesce(:caminho_landing, caminho_landing),
                     updated_at = now()
-                where hash_arquivo = :hash_arquivo
-                   or (dataset_codigo = :dataset_codigo and url = :url)
+                where id = (
+                    select id
+                    from plataforma.arquivo_fonte_ans
+                    where dataset_codigo = :dataset_codigo
+                      and url = :url
+                      and (
+                        hash_arquivo is not distinct from :hash_arquivo
+                        or :hash_arquivo is null
+                      )
+                    order by
+                      case
+                        when status in ('baixado', 'carregado', 'baixado_sem_parser')
+                        then 0
+                        else 1
+                      end,
+                      created_at desc
+                    limit 1
+                )
                 """
             ),
             {
