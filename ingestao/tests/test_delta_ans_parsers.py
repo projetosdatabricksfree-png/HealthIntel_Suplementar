@@ -42,6 +42,24 @@ def test_normalizar_produto_caracteristica_para_raw_delta() -> None:
     assert registros[0]["competencia"] == 202503
 
 
+def test_normalizar_produto_tabela_auxiliar_trunca_id_geografico() -> None:
+    registros = delta._normalizar_registros(
+        "produto_tabela_auxiliar",
+        [
+            {
+                "ID_DETALHE_AREA_GEOGRAFICA": "0014BE8D8B650EC57CB737009B44D72F1A4CD69C",
+                "CD_MUNICIPIO": "351830",
+                "NM_MUNICIPIO": "Guararema",
+            }
+        ],
+        "202505",
+        "pda-008-tabela_auxiliar_de_detalhamento_de_municipios.csv",
+    )
+
+    assert registros[0]["codigo_produto"] == "0014BE8D8B650EC57CB7"
+    assert registros[0]["codigo_item"] == "351830"
+
+
 def test_normalizar_quadro_auxiliar_com_valor_decimal() -> None:
     registros = delta._normalizar_registros(
         "quadro_auxiliar_corresponsabilidade",

@@ -505,10 +505,11 @@ def _produto_caracteristica(row: dict[str, str], competencia: str, _: str) -> di
 def _produto_tabela_auxiliar(
     row: dict[str, str], competencia: str, arquivo_origem: str
 ) -> dict[str, str | int | None]:
+    id_area_geografica = row.get("ID_DETALHE_AREA_GEOGRAFICA") or row.get("ID_PLANO") or ""
     return {
         "competencia": _inteiro(_competencia_iso(competencia)),
         "registro_ans": row.get("REGISTRO_OPERADORA") or row.get("CD_OPERADORA"),
-        "codigo_produto": row.get("ID_DETALHE_AREA_GEOGRAFICA") or row.get("ID_PLANO"),
+        "codigo_produto": id_area_geografica[:20],
         "tipo_tabela": "DETALHAMENTO_MUNICIPIOS",
         "descricao_tabela": Path(arquivo_origem).stem,
         "codigo_item": row.get("CD_MUNICIPIO") or row.get("SG_UF"),
