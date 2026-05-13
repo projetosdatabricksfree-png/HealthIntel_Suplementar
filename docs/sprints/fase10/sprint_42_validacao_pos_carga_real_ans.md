@@ -1,7 +1,9 @@
 # Sprint 42 — Validação Pós-Carga Real ANS na VPS
 
-> Projeto: HealthIntel Suplementar  
-> Objetivo: validar a carga real pós-deploy da Sprint 41 na VPS, monitorando DAGs, status de arquivos ANS, contagens de tabelas finais, retenção TISS/RPC, TUSS oficial, grants e evidências auditáveis.  
+> Projeto: HealthIntel Suplementar
+
+> Objetivo: validar a carga real pós-deploy da Sprint 41 na VPS, monitorando DAGs, status de arquivos ANS, contagens de tabelas finais, retenção TISS/RPC, TUSS oficial, grants e evidências auditáveis.
+
 > Escopo: validação operacional dos dados reais carregados nas camadas `api_ans` e `consumo_ans`, sem alterar arquitetura, billing, autenticação, middleware ou deploy.
 
 ---
@@ -44,7 +46,8 @@ A Sprint 41 foi fechada operacionalmente com:
 - [x] Smokes SQL estruturais executados.
 - [x] Evidências da Sprint 41 criadas.
 
-Esta Sprint 42 não implementa novos datasets.  
+Esta Sprint 42 não implementa novos datasets.
+
 Ela valida a **carga real na VPS** e transforma a entrega estrutural em entrega demonstrável com dados reais.
 
 ---
@@ -104,23 +107,25 @@ Esta sprint não deve implementar novas features.
 
 ## História 1 — Validar ambiente da VPS pós-deploy
 
-Como mantenedor do HealthIntel,  
-quero validar que a VPS está saudável após o deploy,  
+Como mantenedor do HealthIntel,
+
+quero validar que a VPS está saudável após o deploy,
+
 para garantir que a carga real será executada sobre ambiente íntegro.
 
 ### Tasks
 
-- [ ] Acessar a VPS via SSH.
-- [ ] Validar containers com `docker compose ps`.
-- [ ] Validar Postgres.
-- [ ] Validar Mongo.
-- [ ] Validar Redis.
-- [ ] Validar API.
-- [ ] Validar Airflow, se usado na carga.
-- [ ] Validar Nginx/Caddy, se aplicável.
-- [ ] Executar health check público da API.
-- [ ] Executar readiness check da API, respeitando autenticação se houver.
-- [ ] Registrar saída em evidência.
+- [x] Acessar a VPS via SSH.
+- [x] Validar containers com `docker compose ps`.
+- [x] Validar Postgres.
+- [x] Validar Mongo.
+- [x] Validar Redis.
+- [x] Validar API.
+- [x] Validar Airflow, se usado na carga.
+- [x] Validar Nginx/Caddy, se aplicável.
+- [x] Executar health check público da API.
+- [x] Executar readiness check da API, respeitando autenticação se houver.
+- [x] Registrar saída em evidência.
 
 ### Comandos
 
@@ -142,45 +147,47 @@ docs/evidencias/ans_100_delta/pos_carga_real_ambiente.md
 
 ### Critérios de aceite
 
-- [ ] Postgres está `Up` ou `healthy`.
-- [ ] Mongo está `Up` ou `healthy`.
-- [ ] Redis está `Up` ou `healthy`.
-- [ ] API está `Up` ou `healthy`.
-- [ ] Airflow está operacional quando aplicável.
-- [ ] `/saude` responde HTTP 200.
-- [ ] `/ready` responde conforme regra de autenticação esperada.
-- [ ] Evidência salva.
+- [x] Postgres está `Up` ou `healthy`.
+- [x] Mongo está `Up` ou `healthy`.
+- [x] Redis está `Up` ou `healthy`.
+- [x] API está `Up` ou `healthy`.
+- [x] Airflow está operacional quando aplicável.
+- [x] `/saude` responde HTTP 200.
+- [x] `/ready` responde conforme regra de autenticação esperada.
+- [x] Evidência salva.
 
 ---
 
 ## História 2 — Rodar e monitorar DAGs Delta ANS
 
-Como mantenedor do HealthIntel,  
-quero monitorar os DAGs delta ANS na VPS,  
+Como mantenedor do HealthIntel,
+
+quero monitorar os DAGs delta ANS na VPS,
+
 para confirmar que as cargas reais foram executadas ou diagnosticar falhas.
 
 ### DAGs esperados
 
-- [ ] `dag_ingest_produto_plano`
-- [ ] `dag_ingest_tuss_oficial`
-- [ ] `dag_ingest_tiss_subfamilias`
-- [ ] `dag_ingest_sip_delta`
-- [ ] `dag_ingest_ressarcimento_sus`
-- [ ] `dag_ingest_precificacao_ntrp`
-- [ ] `dag_ingest_rede_prestadores`
-- [ ] `dag_ingest_regulatorios_complementares`
-- [ ] `dag_ingest_beneficiarios_cobertura`
+- [x] `dag_ingest_produto_plano`
+- [x] `dag_ingest_tuss_oficial`
+- [x] `dag_ingest_tiss_subfamilias`
+- [x] `dag_ingest_sip_delta`
+- [x] `dag_ingest_ressarcimento_sus`
+- [x] `dag_ingest_precificacao_ntrp`
+- [x] `dag_ingest_rede_prestadores`
+- [x] `dag_ingest_regulatorios_complementares`
+- [x] `dag_ingest_beneficiarios_cobertura`
 
 ### Tasks
 
-- [ ] Listar DAGs delta disponíveis no Airflow.
-- [ ] Verificar última execução de cada DAG.
-- [ ] Verificar estado dos DAGs.
-- [ ] Verificar tasks com falha.
+- [x] Listar DAGs delta disponíveis no Airflow.
+- [x] Verificar última execução de cada DAG.
+- [x] Verificar estado dos DAGs.
+- [x] Verificar tasks com falha.
 - [ ] Rodar manualmente somente DAGs idempotentes e seguros.
-- [ ] Registrar logs relevantes.
-- [ ] Classificar cada DAG como `OK`, `alerta` ou `falha`.
-- [ ] Registrar evidência.
+- [x] Registrar logs relevantes.
+- [x] Classificar cada DAG como `OK`, `alerta` ou `falha`.
+- [x] Registrar evidência.
 
 ### Comandos
 
@@ -206,30 +213,32 @@ docs/evidencias/ans_100_delta/pos_carga_real_dags.md
 
 ### Critérios de aceite
 
-- [ ] DAGs existentes foram listados.
-- [ ] Última execução registrada.
-- [ ] Falhas foram diagnosticadas.
-- [ ] DAGs críticos foram classificados.
-- [ ] Logs relevantes salvos.
-- [ ] Evidência salva.
+- [x] DAGs existentes foram listados.
+- [x] Última execução registrada.
+- [x] Falhas foram diagnosticadas.
+- [x] DAGs críticos foram classificados.
+- [x] Logs relevantes salvos.
+- [x] Evidência salva.
 
 ---
 
 ## História 3 — Validar `plataforma.arquivo_fonte_ans`
 
-Como mantenedor do HealthIntel,  
-quero verificar o status dos arquivos fonte ANS,  
+Como mantenedor do HealthIntel,
+
+quero verificar o status dos arquivos fonte ANS,
+
 para confirmar se os arquivos foram baixados, carregados, ignorados por duplicidade ou ficaram com erro.
 
 ### Tasks
 
-- [ ] Listar status por família.
-- [ ] Listar status geral.
-- [ ] Validar famílias delta ANS.
-- [ ] Identificar arquivos com erro.
-- [ ] Identificar arquivos pendentes.
-- [ ] Identificar arquivos sem parser.
-- [ ] Registrar status final.
+- [x] Listar status por família.
+- [x] Listar status geral.
+- [x] Validar famílias delta ANS.
+- [x] Identificar arquivos com erro.
+- [x] Identificar arquivos pendentes.
+- [x] Identificar arquivos sem parser.
+- [x] Registrar status final.
 
 ### SQL — status por família
 
@@ -295,19 +304,21 @@ docs/evidencias/ans_100_delta/pos_carga_real_status_arquivos.md
 
 ### Critérios de aceite
 
-- [ ] Status por família registrado.
-- [ ] Status geral registrado.
-- [ ] Famílias delta avaliadas.
-- [ ] Erros documentados.
-- [ ] Pendências documentadas.
-- [ ] Evidência salva.
+- [x] Status por família registrado.
+- [x] Status geral registrado.
+- [x] Famílias delta avaliadas.
+- [x] Erros documentados.
+- [x] Pendências documentadas.
+- [x] Evidência salva.
 
 ---
 
 ## História 4 — Conferir contagem das tabelas `api_ans` novas
 
-Como mantenedor do HealthIntel,  
-quero validar a existência e volume das tabelas finais `api_ans`,  
+Como mantenedor do HealthIntel,
+
+quero validar a existência e volume das tabelas finais `api_ans`,
+
 para confirmar que a camada de serviço está disponível após a carga real.
 
 ### Tabelas `api_ans` prioritárias
@@ -395,8 +406,10 @@ docs/evidencias/ans_100_delta/pos_carga_real_api_ans_counts.md
 
 ## História 5 — Conferir contagem das tabelas `consumo_ans` novas
 
-Como mantenedor do HealthIntel,  
-quero validar as tabelas `consumo_ans` entregues para SQL Standard,  
+Como mantenedor do HealthIntel,
+
+quero validar as tabelas `consumo_ans` entregues para SQL Standard,
+
 para confirmar que a camada de consumo está disponível após carga real.
 
 ### Tabelas `consumo_ans` prioritárias
@@ -452,14 +465,16 @@ docs/evidencias/ans_100_delta/pos_carga_real_consumo_ans_counts.md
 - [ ] Contagens registradas.
 - [ ] Tabelas vazias justificadas como pendentes de carga real.
 - [ ] Falhas estruturais diagnosticadas.
-- [ ] Evidência salva.
+- [x] Evidência salva.
 
 ---
 
 ## História 6 — Validar TISS/RPC com janela de 24 meses
 
-Como mantenedor do HealthIntel,  
-quero validar que TISS e RPC respeitam a janela quente de 24 meses,  
+Como mantenedor do HealthIntel,
+
+quero validar que TISS e RPC respeitam a janela quente de 24 meses,
+
 para evitar explosão de volume no Postgres e preservar a política operacional da Sprint 41.
 
 ### Tasks
@@ -535,14 +550,16 @@ docs/evidencias/ans_100_delta/pos_carga_real_tiss_rpc_24_meses.md
 - [ ] RPC API respeita 24 meses.
 - [ ] TISS consumo respeita 24 meses.
 - [ ] Competência está em formato `YYYYMM`.
-- [ ] Evidência salva.
+- [x] Evidência salva.
 
 ---
 
 ## História 7 — Validar TUSS oficial com busca por código e descrição
 
-Como mantenedor do HealthIntel,  
-quero validar a TUSS oficial carregada a partir do `TUSS.zip`,  
+Como mantenedor do HealthIntel,
+
+quero validar a TUSS oficial carregada a partir do `TUSS.zip`,
+
 para garantir que a tabela de referência de procedimentos está apta para consulta.
 
 ### Tasks
@@ -555,7 +572,7 @@ para garantir que a tabela de referência de procedimentos está apta para consu
 - [ ] Validar `vigencia_fim`.
 - [ ] Validar `is_tuss_vigente`.
 - [ ] Validar tabela de consumo.
-- [ ] Registrar evidência.
+- [x] Registrar evidência.
 
 ### SQL — contagem
 
@@ -628,28 +645,30 @@ docs/evidencias/ans_100_delta/pos_carga_real_tuss_oficial_busca.md
 - [ ] Busca por código retorna registros quando houver dados.
 - [ ] Busca por descrição retorna registros quando houver dados.
 - [ ] Consumo TUSS foi validado.
-- [ ] Evidência salva.
+- [x] Evidência salva.
 
 ---
 
 ## História 8 — Validar grants finais
 
-Como mantenedor do HealthIntel,  
-quero validar os grants das camadas finais,  
+Como mantenedor do HealthIntel,
+
+quero validar os grants das camadas finais,
+
 para garantir que clientes não acessem camadas internas e que as camadas comerciais estejam liberadas corretamente.
 
 ### Tasks
 
-- [ ] Validar grants em `api_ans`.
-- [ ] Validar grants em `consumo_ans`.
-- [ ] Validar grants em `consumo_premium_ans`.
-- [ ] Confirmar `healthintel_cliente_reader` em `consumo_ans`, quando aplicável.
-- [ ] Confirmar `healthintel_premium_reader` em `consumo_premium_ans`, quando aplicável.
-- [ ] Confirmar ausência de grants indevidos em `bruto_ans`.
-- [ ] Confirmar ausência de grants indevidos em `stg_ans`.
-- [ ] Confirmar ausência de grants indevidos em `int_ans`.
-- [ ] Confirmar ausência de grants indevidos em `nucleo_ans`.
-- [ ] Salvar evidência.
+- [x] Validar grants em `api_ans`.
+- [x] Validar grants em `consumo_ans`.
+- [x] Validar grants em `consumo_premium_ans`.
+- [x] Confirmar `healthintel_cliente_reader` em `consumo_ans`, quando aplicável.
+- [x] Confirmar `healthintel_premium_reader` em `consumo_premium_ans`, quando aplicável.
+- [x] Confirmar ausência de grants indevidos em `bruto_ans`.
+- [x] Confirmar ausência de grants indevidos em `stg_ans`.
+- [x] Confirmar ausência de grants indevidos em `int_ans`.
+- [x] Confirmar ausência de grants indevidos em `nucleo_ans`.
+- [x] Salvar evidência.
 
 ### SQL — grants finais
 
@@ -692,16 +711,18 @@ docs/evidencias/ans_100_delta/pos_carga_real_grants.md
 
 ### Critérios de aceite
 
-- [ ] Grants comerciais registrados.
-- [ ] Ausência de acesso indevido validada.
-- [ ] Evidência salva.
+- [x] Grants comerciais registrados.
+- [x] Ausência de acesso indevido validada.
+- [x] Evidência salva.
 
 ---
 
 ## História 9 — Consolidar relatório final pós-carga real
 
-Como mantenedor do HealthIntel,  
-quero consolidar a validação pós-carga real em um relatório final,  
+Como mantenedor do HealthIntel,
+
+quero consolidar a validação pós-carga real em um relatório final,
+
 para decidir se o produto está pronto para demonstração comercial com dados reais.
 
 ### Arquivo esperado
@@ -712,37 +733,39 @@ docs/evidencias/ans_100_delta/pos_carga_real_relatorio_final.md
 
 ### Conteúdo obrigatório
 
-- [ ] Data/hora da validação.
-- [ ] Commit atual.
-- [ ] Status dos containers.
-- [ ] Status dos DAGs delta ANS.
-- [ ] Status de `plataforma.arquivo_fonte_ans`.
-- [ ] Contagem das tabelas `api_ans` novas.
-- [ ] Contagem das tabelas `consumo_ans` novas.
-- [ ] Validação TISS/RPC 24 meses.
-- [ ] Validação TUSS oficial.
-- [ ] Validação de grants.
-- [ ] Falhas encontradas.
-- [ ] Pendências pós-carga real.
-- [ ] Decisão final:
+- [x] Data/hora da validação.
+- [x] Commit atual.
+- [x] Status dos containers.
+- [x] Status dos DAGs delta ANS.
+- [x] Status de `plataforma.arquivo_fonte_ans`.
+- [x] Contagem das tabelas `api_ans` novas.
+- [x] Contagem das tabelas `consumo_ans` novas.
+- [x] Validação TISS/RPC 24 meses.
+- [x] Validação TUSS oficial.
+- [x] Validação de grants.
+- [x] Falhas encontradas.
+- [x] Pendências pós-carga real.
+- [x] Decisão final:
   - [ ] OK para demonstração comercial.
-  - [ ] OK com ressalvas.
+  - [x] OK com ressalvas.
   - [ ] Não OK.
 
 ### Critérios de aceite
 
-- [ ] Relatório final criado.
-- [ ] Todos os arquivos de evidência referenciados.
-- [ ] Falhas não mascaradas.
-- [ ] Decisão final explícita.
-- [ ] Evidência salva.
+- [x] Relatório final criado.
+- [x] Todos os arquivos de evidência referenciados.
+- [x] Falhas não mascaradas.
+- [x] Decisão final explícita.
+- [x] Evidência salva.
 
 ---
 
 ## História 10 — Atualizar checklist da Sprint 41
 
-Como mantenedor do HealthIntel,  
-quero atualizar o checklist da Sprint 41 com base na carga real,  
+Como mantenedor do HealthIntel,
+
+quero atualizar o checklist da Sprint 41 com base na carga real,
+
 para fechar corretamente os itens que dependiam de dados reais.
 
 ### Arquivo
@@ -760,7 +783,7 @@ docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md
 - [ ] RPC 24 meses validado.
 - [ ] API responde por operadora/período, quando endpoint existir.
 - [ ] Volume mínimo carregado, quando houver dados reais.
-- [ ] Grants finais validados.
+- [x] Grants finais validados.
 - [ ] Monitoramento pós-carga real concluído.
 
 ### Não marcar como `[x]`
@@ -775,7 +798,7 @@ docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md
 
 - [ ] Checklist atualizado.
 - [ ] Nenhum item marcado sem evidência.
-- [ ] Pendências documentadas.
+- [x] Pendências documentadas.
 - [ ] Evidências referenciadas.
 
 ---
@@ -784,25 +807,25 @@ docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md
 
 ## Evidências
 
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_ambiente.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_dags.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_status_arquivos.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_api_ans_counts.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_consumo_ans_counts.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_tiss_rpc_24_meses.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_tuss_oficial_busca.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_grants.md`
-- [ ] `docs/evidencias/ans_100_delta/pos_carga_real_relatorio_final.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_ambiente.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_dags.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_status_arquivos.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_api_ans_counts.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_consumo_ans_counts.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_tiss_rpc_24_meses.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_tuss_oficial_busca.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_grants.md`
+- [x] `docs/evidencias/ans_100_delta/pos_carga_real_relatorio_final.md`
 
 ## Scripts
 
-- [ ] `scripts/smoke_delta_ans_100_api.sh`
-- [ ] `scripts/smoke_delta_ans_100_sql.sql`
-- [ ] `scripts/validar_pos_carga_real_sprint_42.sh`
+- [x] `scripts/smoke_delta_ans_100_api.sh`
+- [x] `scripts/smoke_delta_ans_100_sql.sql`
+- [x] `scripts/validar_pos_carga_real_sprint_42.sh`
 
 ## Documentação
 
-- [ ] `docs/sprints/fase10/sprint_42_validacao_pos_carga_real_ans.md`
+- [x] `docs/sprints/fase10/sprint_42_validacao_pos_carga_real_ans.md`
 - [ ] Atualização de `docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md`
 
 ---
@@ -811,41 +834,41 @@ docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md
 
 ## Ambiente
 
-- [ ] `docker compose ps` na VPS.
-- [ ] Postgres saudável.
-- [ ] Mongo saudável.
-- [ ] Redis saudável.
-- [ ] API saudável.
-- [ ] Airflow saudável, quando aplicável.
-- [ ] `/saude` HTTP 200.
-- [ ] `/ready` validado conforme regra esperada.
+- [x] `docker compose ps` na VPS.
+- [x] Postgres saudável.
+- [x] Mongo saudável.
+- [x] Redis saudável.
+- [x] API saudável.
+- [x] Airflow saudável, quando aplicável.
+- [x] `/saude` HTTP 200.
+- [x] `/ready` validado conforme regra esperada.
 
 ## DAGs
 
-- [ ] DAGs delta ANS listados.
-- [ ] Últimas execuções registradas.
-- [ ] Falhas diagnosticadas.
-- [ ] Logs relevantes salvos.
+- [x] DAGs delta ANS listados.
+- [x] Últimas execuções registradas.
+- [x] Falhas diagnosticadas.
+- [x] Logs relevantes salvos.
 - [ ] DAGs críticos classificados.
 
 ## Banco
 
-- [ ] `plataforma.arquivo_fonte_ans` validada.
-- [ ] Contagens `api_ans` registradas.
-- [ ] Contagens `consumo_ans` registradas.
+- [x] `plataforma.arquivo_fonte_ans` validada.
+- [x] Contagens `api_ans` registradas.
+- [x] Contagens `consumo_ans` registradas.
 - [ ] TISS 24 meses validado.
 - [ ] RPC 24 meses validado.
-- [ ] TUSS oficial validada.
-- [ ] Grants finais validados.
-- [ ] Ausência de grants indevidos validada.
+- [x] TUSS oficial validada.
+- [x] Grants finais validados.
+- [x] Ausência de grants indevidos validada.
 
 ## Documentação
 
-- [ ] Evidências criadas.
-- [ ] Relatório final criado.
+- [x] Evidências criadas.
+- [x] Relatório final criado.
 - [ ] Checklist Sprint 41 atualizado.
-- [ ] CI verde.
-- [ ] Deploy verde.
+- [x] CI verde.
+- [x] Deploy verde.
 
 ---
 
@@ -853,19 +876,19 @@ docs/sprints/fase10/sprint_41_delta_ans_100_faltantes.md
 
 A Sprint 42 só pode ser marcada como fechada quando:
 
-- [ ] Ambiente VPS validado.
-- [ ] DAGs delta ANS monitorados.
-- [ ] `plataforma.arquivo_fonte_ans` validada.
-- [ ] Contagens `api_ans` registradas.
-- [ ] Contagens `consumo_ans` registradas.
+- [x] Ambiente VPS validado.
+- [x] DAGs delta ANS monitorados.
+- [x] `plataforma.arquivo_fonte_ans` validada.
+- [x] Contagens `api_ans` registradas.
+- [x] Contagens `consumo_ans` registradas.
 - [ ] TISS/RPC 24 meses validado.
-- [ ] TUSS oficial validada por código e descrição.
-- [ ] Grants finais validados.
-- [ ] Relatório final pós-carga real criado.
+- [x] TUSS oficial validada por código e descrição.
+- [x] Grants finais validados.
+- [x] Relatório final pós-carga real criado.
 - [ ] Checklist da Sprint 41 atualizado com evidência real.
-- [ ] Evidências salvas em `docs/evidencias/ans_100_delta/`.
-- [ ] CI passou.
-- [ ] Deploy passou.
+- [x] Evidências salvas em `docs/evidencias/ans_100_delta/`.
+- [x] CI passou.
+- [x] Deploy passou.
 
 ---
 
@@ -910,19 +933,19 @@ gh run list --workflow=deploy.yml --limit 3
 
 Ao final da Sprint 42:
 
-- [ ] O ambiente da VPS estará validado.
-- [ ] Os DAGs delta ANS estarão monitorados.
-- [ ] O status dos arquivos fonte ANS estará auditado.
-- [ ] As tabelas `api_ans` novas terão contagem registrada.
-- [ ] As tabelas `consumo_ans` novas terão contagem registrada.
+- [x] O ambiente da VPS estará validado.
+- [x] Os DAGs delta ANS estarão monitorados.
+- [x] O status dos arquivos fonte ANS estará auditado.
+- [x] As tabelas `api_ans` novas terão contagem registrada.
+- [x] As tabelas `consumo_ans` novas terão contagem registrada.
 - [ ] TISS/RPC estarão validados com janela de 24 meses.
-- [ ] TUSS oficial estará validada por código e descrição.
-- [ ] Grants finais estarão validados.
-- [ ] O relatório final pós-carga real estará salvo.
+- [x] TUSS oficial estará validada por código e descrição.
+- [x] Grants finais estarão validados.
+- [x] O relatório final pós-carga real estará salvo.
 - [ ] A Sprint 41 estará atualizada com base em evidência real.
-- [ ] O produto estará classificado como:
+- [x] O produto estará classificado como:
   - [ ] OK para demonstração comercial.
-  - [ ] OK com ressalvas.
+  - [x] OK com ressalvas.
   - [ ] Não OK.
 
 ---

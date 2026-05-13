@@ -1,197 +1,151 @@
-# Relatório Final — Validação Pós-Carga Real ANS (Sprint 42)
+# Relatorio Final - Validacao Pos-Carga Real ANS (Sprint 42)
 
-**Data/hora:** 2026-05-11T22:07:46Z  
-**Commit:** e665fbf  
-**VPS:** 5.189.160.27  
-**Executado por:** Sprint 42 — validar_pos_carga_real_sprint_42.sh  
+**Data/hora:** 2026-05-13T11:28:52Z
 
----
+**Commit VPS validado:** 072c13c
 
-## 1. Status dos Containers
+**VPS:** 5.189.160.27
 
-| Serviço | Status |
-|---|---|
-| healthintel_postgres | Up 3 days (healthy) |
-| healthintel_mongo | Up 3 days (healthy) |
-| healthintel_redis | Up 3 days (healthy) |
-| healthintel_airflow_scheduler | Up 3 days (healthy) |
-| healthintel_airflow_webserver | Up 3 days (healthy) |
-| healthintel_api | Up 3 days |
-| healthintel_nginx | Up 3 days |
-| healthintel_frontend | Up 29 minutes |
-| healthintel_grafana | Up 8 hours |
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_ambiente.md`
-
-**Conclusão:** ✅ Ambiente VPS íntegro — todos os serviços Up.
+**Execucao:** `scripts/validar_pos_carga_real_sprint_42.sh` + `dbt build --select tag:delta_ans_100`
 
 ---
 
-## 2. API Health Check
+## 1. Ambiente e deploy
 
-| Endpoint | Resultado |
-|---|---|
-| `/saude` (interno VPS) | HTTP 200 `{"status":"ok"}` |
-| `/prontidao` (interno VPS) | HTTP 401 (protegido por auth — correto) |
-| `app.healthintel.com.br` (externo) | HTTP 200 |
+- VPS em `/opt/healthintel` no commit `072c13c`.
+- Containers principais `Up`; Postgres, Mongo, Redis, Airflow e API operacionais.
+- CI GitHub verde para os commits:
+  - `25e2bc5` / run `25794261398`
+  - `67cc020` / run `25794831236`
+  - `d98f304` / run `25795263440`
+  - `072c13c` / run `25795744668`
+- Deploy GitHub verde para `072c13c` / run `25795970097`.
 
-**Observação:** `/saude` externo via `api.healthintel.com.br` retorna 400 "Invalid host header" — comportamento do Caddy com IP não autorizado. Interno funciona corretamente.
-
-**Conclusão:** ✅ API operacional.
-
----
-
-## 3. Status dos DAGs Delta ANS
-
-| DAG | Carregado | Ativo | Execuções |
-|---|---|---|---|
-| dag_ingest_produto_plano | ✅ | True | ❌ Nenhuma |
-| dag_ingest_tuss_oficial | ✅ | True | ❌ Nenhuma |
-| dag_ingest_tiss_subfamilias | ✅ | True | ❌ Nenhuma |
-| dag_ingest_sip_delta | ✅ | True | ❌ Nenhuma |
-| dag_ingest_ressarcimento_sus | ✅ | True | ❌ Nenhuma |
-| dag_ingest_precificacao_ntrp | ✅ | True | ❌ Nenhuma |
-| dag_ingest_rede_prestadores | ✅ | True | ❌ Nenhuma |
-| dag_ingest_regulatorios_complementares | ✅ | True | ❌ Nenhuma |
-| dag_ingest_beneficiarios_cobertura | ✅ | True | ❌ Nenhuma |
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_dags.md`
-
-**Conclusão:** ⚠️ DAGs carregados mas nunca executados. Carga real não realizada.
+Evidencia: `docs/evidencias/ans_100_delta/pos_carga_real_ambiente.md`.
 
 ---
 
-## 4. Status de `plataforma.arquivo_fonte_ans`
+## 2. Ingestao real executada
 
-```
-status | total_arquivos
--------+----------------
-(0 rows)
+Runs mais recentes com sucesso:
+
+- `dag_ingest_tuss_oficial`: `manual__2026-05-13T10:54:35+00:00`
+- `dag_ingest_sip_delta`: `manual__2026-05-13T10:54:52+00:00`
+- `dag_ingest_produto_plano`: `manual__2026-05-13T11:24:27+00:00`
+
+Correcoes feitas durante a validacao:
+
+- Discovery de diretorios oficiais ANS antes de baixar arquivos.
+- Registro auditavel em `plataforma.arquivo_fonte_ans`.
+- Carga direta/normalizada para fontes reais que nao batiam com aliases antigos.
+- Idempotencia na auditoria apos falha parcial.
+- Seletor dbt da DAG de produtos restrito a produtos/planos.
+
+Evidencia: `docs/evidencias/ans_100_delta/pos_carga_real_dags.md`.
+
+---
+
+## 3. Auditoria de arquivos
+
+Status final em `plataforma.arquivo_fonte_ans`:
+
+```text
+carregado  | 7
+erro_carga | 3
 ```
 
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_status_arquivos.md`
+Os 3 `erro_carga` sao tentativas historicas do arquivo `produto_tabela_auxiliar`
+antes da correcao de truncamento/idempotencia. A tentativa corrigida ficou
+`carregado`.
 
-**Conclusão:** ❌ Tabela vazia. Nenhum arquivo ANS foi baixado nem processado na VPS.
-
----
-
-## 5. Contagens `api_ans` — Tabelas Delta
-
-**Total de tabelas em api_ans:** 60 (pré-Sprint 41)  
-**Tabelas delta existentes:** 0 / 20
-
-Todas as 20 tabelas da Sprint 41 estão ausentes — erro "relation does not exist" para `api_produto_plano`, `api_tuss_procedimento_vigente` e demais.
-
-**Root cause:** `dbt build --select tag:delta_ans_100` não foi executado na VPS após o deploy.
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_api_ans_counts.md`
-
-**Conclusão:** ❌ Tabelas delta api_ans ausentes.
+Evidencia: `docs/evidencias/ans_100_delta/pos_carga_real_status_arquivos.md`.
 
 ---
 
-## 6. Contagens `consumo_ans` — Tabelas Delta
+## 4. Contagens finais
 
-**Total de tabelas em consumo_ans:** 8 (pré-Sprint 41)  
-**Tabelas delta existentes:** 0 / 11
+Principais tabelas com dados reais:
 
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_consumo_ans_counts.md`
+```text
+bruto_ans.produto_caracteristica          163969
+bruto_ans.produto_tabela_auxiliar         877472
+bruto_ans.tuss_terminologia_oficial       129402
+bruto_ans.sip_mapa_assistencial             5903
+api_ans.api_produto_plano                 163661
+api_ans.api_historico_plano               163567
+api_ans.api_quadro_auxiliar_corresponsabilidade 1032
+api_ans.api_tuss_procedimento_vigente      64654
+consumo_ans.consumo_produto_plano         163661
+consumo_ans.consumo_historico_plano       163567
+consumo_ans.consumo_tuss_procedimento_vigente 64654
+```
 
-**Conclusão:** ❌ Tabelas delta consumo_ans ausentes.
+SIP carregou bruto real, mas `api_sip_assistencial_operadora` e
+`consumo_sip_assistencial_operadora` ficaram com 0 linhas porque o arquivo SIP
+oficial carregado nao traz `registro_ans`, que e chave obrigatoria nos modelos
+atuais.
 
----
+Evidencias:
 
-## 7. Validação TISS/RPC — Janela 24 Meses
-
-**Status:** Não validável — tabelas ausentes.
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_tiss_rpc_24_meses.md`
-
-**Conclusão:** ⏳ Pendente de ingestão + dbt build na VPS.
-
----
-
-## 8. Validação TUSS Oficial
-
-**Status:** Não validável — `api_tuss_procedimento_vigente` ausente.
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_tuss_oficial_busca.md`
-
-**Conclusão:** ⏳ Pendente de `dag_ingest_tuss_oficial` + dbt build.
-
----
-
-## 9. Grants Finais
-
-| Role | Schema | Privilégios |
-|---|---|---|
-| healthintel | api_ans | 420 |
-| healthintel | consumo_ans | 56 |
-| healthintel | consumo_premium_ans | 77 |
-| healthintel_cliente_reader | consumo_ans | 8 |
-| healthintel_premium_reader | consumo_premium_ans | 11 |
-
-**Grants indevidos em bruto_ans / stg_ans / int_ans / nucleo_ans:** 0 rows ✅
-
-**Evidência:** `docs/evidencias/ans_100_delta/pos_carga_real_grants.md`
-
-**Conclusão:** ✅ Grants corretos — acesso comercial liberado, acesso interno protegido.
+- `docs/evidencias/ans_100_delta/pos_carga_real_api_ans_counts.md`
+- `docs/evidencias/ans_100_delta/pos_carga_real_consumo_ans_counts.md`
 
 ---
 
-## 10. Falhas Encontradas
+## 5. dbt e qualidade
 
-| Item | Falha | Diagnóstico |
-|---|---|---|
-| plataforma.arquivo_fonte_ans | Vazia | Nenhum DAG de ingestão executado na VPS |
-| api_ans — 20 tabelas delta | Ausentes | dbt build não executado na VPS |
-| consumo_ans — 11 tabelas delta | Ausentes | dbt build não executado na VPS |
-| TISS/RPC 24 meses | Não validado | Tabelas ausentes |
-| TUSS oficial | Não validado | Tabela ausente |
+Comando executado na VPS:
 
----
+```bash
+docker compose -f infra/docker-compose.yml run --rm dbt build --select tag:delta_ans_100
+```
 
-## 11. Pendências Pós-Carga Real
+Resultado:
 
-Para completar a Sprint 42, é necessário:
+```text
+PASS=161 WARN=1 ERROR=0 SKIP=0 TOTAL=162
+```
 
-1. **Executar os 9 DAGs delta** na VPS:
-   ```bash
-   ssh -i ~/.ssh/healthintel_vps root@5.189.160.27 \
-     'cd /opt/healthintel && docker compose -f infra/docker-compose.yml exec -T airflow-scheduler \
-      airflow dags trigger dag_ingest_tuss_oficial'
-   ```
-   Repetir para cada DAG.
+Warning mantido:
 
-2. **Aguardar conclusão das ingestões** — monitorar `plataforma.arquivo_fonte_ans` e `plataforma.job`.
+- `relationships_stg_produto_caracteristica_registro_ans__registro_ans__ref_stg_cadop_`
+- 57.074 registros de produtos nao encontraram correspondencia em `stg_cadop`.
 
-3. **Executar dbt build** na VPS:
-   ```bash
-   ssh -i ~/.ssh/healthintel_vps root@5.189.160.27 \
-     'cd /opt/healthintel && docker compose -f infra/docker-compose.yml exec -T api \
-      bash -c "cd /app && dbt build --select tag:delta_ans_100 --target prod"'
-   ```
-
-4. **Re-executar** `bash scripts/validar_pos_carga_real_sprint_42.sh` após as ingestões.
-
-5. **Atualizar** este relatório com os dados reais.
+Esse warning nao bloqueia o build, mas impede classificar a carga como "OK sem
+ressalvas".
 
 ---
 
-## 12. Decisão Final
+## 6. Pendencias reais
 
-**Classificação:** ❌ Não OK para demonstração comercial com dados reais
-
-**Justificativa:**
-- O ambiente VPS está íntegro e a API está operacional.
-- Os grants estão corretos — nenhum acesso indevido.
-- Os 9 DAGs delta estão carregados no Airflow.
-- **Porém:** Nenhum DAG foi executado → nenhuma ingestão real → nenhuma tabela delta criada.
-- As 20 tabelas `api_ans` e 11 tabelas `consumo_ans` da Sprint 41 não existem na VPS.
-- TISS, RPC e TUSS não podem ser validados sem as tabelas.
-
-**Próximo estado esperado:** OK com ressalvas — após ingestão + dbt build, o produto estará disponível para demonstração, com a ressalva de que endpoints FastAPI para os novos datasets ainda não existem (escopo de sprint posterior, conforme §11.4 da Sprint 41).
+- TISS subfamilias ainda nao tem carga real validada; tabelas API/consumo TISS
+  ficaram com 0 linhas.
+- `DADOS_DE_PLANOS` oficial da ANS publica `PLANOS.zip` direto na pasta, sem
+  ano/UF, e o arquivo nao traz `registro_ans`; isso exige ajuste de contrato
+  antes de declarar cobertura TISS completa.
+- SIP bruto foi carregado, mas a camada API/consumo atual filtra por
+  `registro_ans`; sem enriquecimento ou contrato alternativo, a camada final
+  fica vazia.
+- Permanecem 3 linhas historicas `erro_carga` na auditoria, preservadas como
+  evidencia de tentativas falhas antes da correcao.
 
 ---
 
-*Gerado por: Sprint 42 — scripts/validar_pos_carga_real_sprint_42.sh*
+## 7. Decisao final
+
+**Classificacao:** OK com ressalvas.
+
+Justificativa:
+
+- Ambiente, CI e deploy estao verdes.
+- `dag_ingest_tuss_oficial`, `dag_ingest_produto_plano` e
+  `dag_ingest_sip_delta` executaram com sucesso.
+- `dbt build --select tag:delta_ans_100` passou na VPS.
+- Produtos/planos e TUSS oficial estao com dados reais em `api_ans` e
+  `consumo_ans`.
+- TISS subfamilias e SIP final ainda precisam de ajuste de contrato/fonte para
+  nao declarar cobertura nacional/completa sem evidencia.
+
+---
+
+*Gerado por validacao operacional Codex em 2026-05-13.*
