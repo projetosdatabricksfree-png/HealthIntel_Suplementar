@@ -12,6 +12,13 @@ with DAG(
     catchup=False,
     tags=["healthintel", "sip", "delta_ans_100"],
 ) as dag:
+    _ENV_BASE = {
+        "HEALTHINTEL_COMPETENCIA": (
+            "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
+        ),
+        "ANS_DELTA_MAX_FILES": "{{ dag_run.conf.get('ANS_DELTA_MAX_FILES', '1') }}",
+    }
+
     _BASE = r"""
         PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace python -c "
 import asyncio, os
@@ -23,11 +30,7 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
     ingerir_sip_mapa_assistencial = BashOperator(
         task_id="ingerir_sip_mapa_assistencial",
         cwd="/workspace",
-        env={
-            "HEALTHINTEL_COMPETENCIA": (
-                "{{ dag_run.conf.get('competencia', '') or ds_nodash[:6] }}"
-            ),
-        },
+        env=_ENV_BASE,
         append_env=True,
         bash_command=_BASE.format(func="executar_ingestao_sip_mapa_assistencial"),
     )

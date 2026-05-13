@@ -1,309 +1,196 @@
-"""Testes unitários para os parsers do módulo ingestao_delta_ans (Sprint 41).
-
-Cada teste verifica que a função de ingestão:
-1. Chama baixar_arquivo com o dataset_codigo correto.
-2. Passa os registros para processar_arquivo_bruto.
-3. Retorna o resultado do pipeline.
-"""
+"""Testes da ingestao delta ANS real (Sprint 41/42)."""
 
 from __future__ import annotations
 
-import io
-import zipfile
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-pytestmark = pytest.mark.asyncio
-
-_PIPELINE_RESULT = {
-    "status": "carregado",
-    "lote_id": "lote-delta-test",
-    "tabela_destino": "bruto_ans.test",
-    "total_registros": 1,
-}
-
-_ARQUIVO_MOCK = {
-    "path": "/tmp/fake.csv",
-    "arquivo_origem": "fake.csv",
-    "hash_arquivo": "sha256:fake",
-}
+from ingestao.app import ingestao_delta_ans as delta
 
 
-def _mock_csv_path(tmp_path: Path, conteudo: str = "col_a;col_b\nval1;val2\n") -> Path:
-    p = tmp_path / "fake.csv"
-    p.write_text(conteudo, encoding="utf-8")
-    return p
+def test_ler_csv_bytes_rejeita_html() -> None:
+    with pytest.raises(ValueError, match="HTML"):
+        delta._ler_csv_bytes(b"<!doctype html><html><body>index</body></html>")
 
 
-def _make_mocks(path: str):
-    arquivo_mock = {**_ARQUIVO_MOCK, "path": path}
-    baixar = AsyncMock(return_value=arquivo_mock)
-    pipeline = AsyncMock(return_value=_PIPELINE_RESULT)
-    return baixar, pipeline
+def test_ler_csv_bytes_detecta_delimitador_ponto_virgula() -> None:
+    registros = delta._ler_csv_bytes(b"col_a;col_b\nvalor_a;valor_b\n")
+
+    assert registros == [{"col_a": "valor_a", "col_b": "valor_b"}]
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_produto_caracteristica_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_produto_caracteristica
-
-    resultado = await executar_ingestao_produto_caracteristica("202501")
-
-    mock_baixar.assert_called_once()
-    assert mock_baixar.call_args[0][0] == "produto_caracteristica"
-    mock_pipeline.assert_called_once()
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_historico_plano_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_historico_plano
-
-    resultado = await executar_ingestao_historico_plano("202501")
-
-    assert mock_baixar.call_args[0][0] == "historico_plano"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_plano_servico_opcional_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_plano_servico_opcional
-
-    resultado = await executar_ingestao_plano_servico_opcional("202501")
-
-    assert mock_baixar.call_args[0][0] == "plano_servico_opcional"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_quadro_auxiliar_corresponsabilidade_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import (
-        executar_ingestao_quadro_auxiliar_corresponsabilidade,
+def test_normalizar_produto_caracteristica_para_raw_delta() -> None:
+    registros = delta._normalizar_registros(
+        "produto_caracteristica",
+        [
+            {
+                "CD_PLANO": "123",
+                "NM_PLANO": "Plano X",
+                "REGISTRO_OPERADORA": "582",
+                "DT_ATUALIZACAO": "2025-03-31",
+            }
+        ],
+        "202503",
+        "produtos.csv",
     )
 
-    resultado = await executar_ingestao_quadro_auxiliar_corresponsabilidade("202501")
-
-    assert mock_baixar.call_args[0][0] == "quadro_auxiliar_corresponsabilidade"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_tuss_oficial_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    # TUSS usa ZIP — criar arquivo zip falso com CSV interno
-    csv_bytes = b"codigo_tuss;descricao\n123456;CONSULTA MEDICA\n"
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w") as zf:
-        zf.writestr("TUSS.csv", csv_bytes)
-    zip_path = tmp_path / "TUSS.zip"
-    zip_path.write_bytes(buf.getvalue())
-
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(zip_path)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_tuss_oficial
-
-    resultado = await executar_ingestao_tuss_oficial("202501")
-
-    assert mock_baixar.call_args[0][0] == "tuss_oficial"
-    assert resultado["status"] == "carregado"
+    assert registros[0]["registro_ans"] == "582"
+    assert registros[0]["codigo_produto"] == "123"
+    assert registros[0]["nome_produto"] == "Plano X"
+    assert registros[0]["competencia"] == 202503
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_tiss_ambulatorial_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_tiss_ambulatorial
-
-    resultado = await executar_ingestao_tiss_ambulatorial("202501")
-
-    assert mock_baixar.call_args[0][0] == "tiss_ambulatorial"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_sip_mapa_assistencial_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_sip_mapa_assistencial
-
-    resultado = await executar_ingestao_sip_mapa_assistencial("202501")
-
-    assert mock_baixar.call_args[0][0] == "sip_mapa_assistencial"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_ressarcimento_sus_operadora_plano_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import (
-        executar_ingestao_ressarcimento_sus_operadora_plano,
+def test_normalizar_quadro_auxiliar_com_valor_decimal() -> None:
+    registros = delta._normalizar_registros(
+        "quadro_auxiliar_corresponsabilidade",
+        [
+            {
+                "CD_OPERADORA": "000701",
+                "DE_CORRESPONSABILIDADE": "Corresponsabilidade cedida",
+                "VL_SALDO_FINAL": "1.234,56",
+            }
+        ],
+        "202501",
+        "QUADRO AUXILIAR 1.csv",
     )
 
-    resultado = await executar_ingestao_ressarcimento_sus_operadora_plano("202501")
-
-    assert mock_baixar.call_args[0][0] == "ressarcimento_sus_operadora_plano"
-    assert resultado["status"] == "carregado"
+    assert registros[0]["registro_ans"] == "000701"
+    assert str(registros[0]["valor_corresponsabilidade"]) == "1234.56"
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_painel_precificacao_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
+@pytest.mark.asyncio
+async def test_resolver_fontes_diretorio_filtra_arquivos_tabulares() -> None:
+    with patch(
+        "ingestao.app.ingestao_delta_ans._listar_links",
+        new=AsyncMock(
+            return_value=[
+                "https://dadosabertos.ans.gov.br/FTP/PDA/base/dicionario.ods",
+                "https://dadosabertos.ans.gov.br/FTP/PDA/base/dados_202401.csv",
+                "https://dadosabertos.ans.gov.br/FTP/PDA/base/readme.html",
+            ]
+        ),
+    ):
+        fontes = await delta._resolver_fontes(
+            dataset_codigo="teste",
+            familia="familia",
+            competencia="202501",
+            base_url="https://dadosabertos.ans.gov.br/FTP/PDA/base/",
+            padrao=r"dados_20\d{4}\.csv$",
+        )
 
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_painel_precificacao
-
-    resultado = await executar_ingestao_painel_precificacao("202501")
-
-    assert mock_baixar.call_args[0][0] == "painel_precificacao"
-    assert resultado["status"] == "carregado"
-
-
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_operadora_cancelada_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_operadora_cancelada
-
-    resultado = await executar_ingestao_operadora_cancelada("202501")
-
-    assert mock_baixar.call_args[0][0] == "operadora_cancelada"
-    assert resultado["status"] == "carregado"
+    assert [fonte.nome_arquivo for fonte in fontes] == ["dados_202401.csv"]
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_penalidade_operadora_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_penalidade_operadora
-
-    resultado = await executar_ingestao_penalidade_operadora("202501")
-
-    assert mock_baixar.call_args[0][0] == "penalidade_operadora"
-    assert resultado["status"] == "carregado"
+@pytest.mark.asyncio
+async def test_resolver_fontes_diretorio_sem_csv_falha_explicita() -> None:
+    with patch(
+        "ingestao.app.ingestao_delta_ans._listar_links",
+        new=AsyncMock(return_value=["https://dadosabertos.ans.gov.br/FTP/PDA/base/index.html"]),
+    ):
+        with pytest.raises(RuntimeError, match="Nenhum arquivo tabular"):
+            await delta._resolver_fontes(
+                dataset_codigo="teste",
+                familia="familia",
+                competencia="202501",
+                base_url="https://dadosabertos.ans.gov.br/FTP/PDA/base/",
+            )
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_beneficiario_regiao_geografica_chama_pipeline(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    p = _mock_csv_path(tmp_path)
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import (
-        executar_ingestao_beneficiario_regiao_geografica,
+@pytest.mark.asyncio
+async def test_processar_fonte_registra_baixado_e_carregado(tmp_path: Path) -> None:
+    arquivo = tmp_path / "dados.csv"
+    arquivo.write_text("col_a;col_b\n1;2\n", encoding="utf-8")
+    fonte = delta.FonteDelta(
+        dataset_codigo="dataset",
+        familia="familia",
+        url="https://dadosabertos.ans.gov.br/FTP/PDA/base/dados.csv",
+        nome_arquivo="dados.csv",
+        competencia="202501",
     )
 
-    resultado = await executar_ingestao_beneficiario_regiao_geografica("202501")
+    with (
+        patch(
+            "ingestao.app.ingestao_delta_ans._baixar_fonte",
+            new=AsyncMock(
+                return_value={
+                    "path": str(arquivo),
+                    "arquivo_origem": "dados.csv",
+                    "hash_arquivo": "sha256:test",
+                    "tamanho_bytes": "14",
+                }
+            ),
+        ),
+        patch(
+            "ingestao.app.ingestao_delta_ans._registrar_arquivo_fonte",
+            new=AsyncMock(),
+        ) as registrar,
+        patch(
+            "ingestao.app.ingestao_delta_ans.processar_arquivo_bruto",
+            new=AsyncMock(
+                return_value={
+                    "status": "carregado",
+                    "lote_id": "lote",
+                    "tabela_destino": "bruto_ans.dataset",
+                    "total_registros": 1,
+                }
+            ),
+        ),
+    ):
+        resultado = await delta._processar_fonte(fonte, normalizar=False)
 
-    assert mock_baixar.call_args[0][0] == "beneficiario_regiao_geografica"
     assert resultado["status"] == "carregado"
+    assert [call.args[2] for call in registrar.call_args_list] == ["baixado", "carregado"]
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_csv_zip_extrai_e_processa(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    """Garante que arquivos ZIP com CSV interno são extraídos antes do processamento."""
-    csv_bytes = b"col_a;col_b\nval1;val2\n"
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w") as zf:
-        zf.writestr("dados.csv", csv_bytes)
-    zip_path = tmp_path / "dados.zip"
-    zip_path.write_bytes(buf.getvalue())
+@pytest.mark.asyncio
+async def test_ingestao_produto_usa_discovery_e_carga_direta() -> None:
+    fonte = delta.FonteDelta(
+        dataset_codigo="produto_caracteristica",
+        familia="produtos_planos",
+        url="https://dadosabertos.ans.gov.br/FTP/PDA/produtos.csv",
+        nome_arquivo="produtos.csv",
+        competencia="202501",
+    )
+    with (
+        patch(
+            "ingestao.app.ingestao_delta_ans._resolver_fontes",
+            new=AsyncMock(return_value=[fonte]),
+        ) as resolver,
+        patch(
+            "ingestao.app.ingestao_delta_ans._processar_fonte",
+            new=AsyncMock(return_value={"status": "carregado", "total_registros": 1}),
+        ) as processar,
+    ):
+        resultado = await delta.executar_ingestao_produto_caracteristica("202501")
 
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(zip_path)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_produto_caracteristica
-
-    await executar_ingestao_produto_caracteristica("202501")
-
-    # pipeline deve ter sido chamado com registros extraídos do CSV interno
-    call_kwargs = mock_pipeline.call_args[1]
-    assert len(call_kwargs.get("registros", [])) > 0
+    assert resultado["status"] == "carregado"
+    assert resolver.call_args.kwargs["padrao"].endswith(r"\.csv$")
+    assert processar.call_args.kwargs["direto"] is True
 
 
-@patch("ingestao.app.ingestao_delta_ans.processar_arquivo_bruto", new_callable=AsyncMock)
-@patch("ingestao.app.ingestao_delta_ans.baixar_arquivo", new_callable=AsyncMock)
-async def test_ingestao_propagates_competencia_quando_ausente(
-    mock_baixar: AsyncMock, mock_pipeline: AsyncMock, tmp_path: Path
-) -> None:
-    """Garante que competencia é injetada via setdefault quando não vem no CSV."""
-    csv_bytes = b"registro_ans;nome\n123456;OPERADORA X\n"
-    p = tmp_path / "sem_competencia.csv"
-    p.write_bytes(csv_bytes)
+@pytest.mark.asyncio
+async def test_ingestao_tiss_usa_resolucao_hierarquica_e_carga_direta() -> None:
+    fonte = delta.FonteDelta(
+        dataset_codigo="tiss_ambulatorial",
+        familia="tiss",
+        url="https://dadosabertos.ans.gov.br/FTP/PDA/TISS/AMBULATORIAL/2024/SP/a.zip",
+        nome_arquivo="SP_202412_AMB_REM.zip",
+        competencia="202412",
+    )
+    with (
+        patch(
+            "ingestao.app.ingestao_delta_ans._resolver_fontes_tiss",
+            new=AsyncMock(return_value=[fonte]),
+        ) as resolver,
+        patch(
+            "ingestao.app.ingestao_delta_ans._processar_fonte",
+            new=AsyncMock(return_value={"status": "carregado", "total_registros": 1}),
+        ) as processar,
+    ):
+        resultado = await delta.executar_ingestao_tiss_ambulatorial("202604")
 
-    mock_baixar.return_value = {**_ARQUIVO_MOCK, "path": str(p)}
-    mock_pipeline.return_value = _PIPELINE_RESULT
-
-    from ingestao.app.ingestao_delta_ans import executar_ingestao_produto_caracteristica
-
-    await executar_ingestao_produto_caracteristica("202506")
-
-    registros = mock_pipeline.call_args[1].get("registros", [])
-    assert all(r.get("competencia") == "202506" for r in registros)
+    assert resultado["status"] == "carregado"
+    assert resolver.call_args.kwargs["subfamilia"] == "AMBULATORIAL"
+    assert processar.call_args.kwargs["direto"] is True
