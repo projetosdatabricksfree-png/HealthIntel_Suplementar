@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, Query, Request
 
 from api.app.dependencia import verificar_plano
@@ -8,6 +10,9 @@ from api.app.services.financeiro_v2 import (
     detalhar_score_v2_operadora,
 )
 
+# Release 0.9: oculta endpoints com tabela origem zerada (financeiro_periodo).
+_SHOW_EMPTY = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") != "1"
+
 router = APIRouter(
     prefix="/operadoras",
     tags=["financeiro-v2"],
@@ -15,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{registro_ans}/financeiro")
+@router.get("/{registro_ans}/financeiro", include_in_schema=_SHOW_EMPTY)
 async def get_financeiro(
     registro_ans: str,
     request: Request,

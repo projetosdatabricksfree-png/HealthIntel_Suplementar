@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, Query, Request
 
 from api.app.dependencia import verificar_camada, verificar_plano
@@ -8,6 +10,12 @@ from api.app.services.prata import (
     buscar_quarentena_dataset,
     buscar_quarentena_resumo,
 )
+
+# Release 0.9: oculta do Swagger endpoints cuja tabela origem esta zerada.
+# Endpoints continuam respondendo (retornam {dados:[], meta:{...}}) para nao-quebra,
+# mas ficam fora do /openapi.json e /docs.
+_RELEASE_0_9_HIDE = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") == "1"
+_SHOW_EMPTY = not _RELEASE_0_9_HIDE
 
 router = APIRouter(
     prefix="/prata",
@@ -97,7 +105,7 @@ async def get_prata_sib_municipio(
     )
 
 
-@router.get("/igr", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/igr", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_igr(
     request: Request,
     competencia: str = Query(..., min_length=5),
@@ -115,7 +123,7 @@ async def get_prata_igr(
     )
 
 
-@router.get("/nip", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/nip", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_nip(
     request: Request,
     competencia: str = Query(..., min_length=5),
@@ -133,7 +141,7 @@ async def get_prata_nip(
     )
 
 
-@router.get("/idss", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/idss", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_idss(
     request: Request,
     competencia: str = Query(..., min_length=4, max_length=4),
@@ -151,7 +159,7 @@ async def get_prata_idss(
     )
 
 
-@router.get("/diops", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/diops", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_diops(
     request: Request,
     competencia: str = Query(..., min_length=5),
@@ -169,7 +177,7 @@ async def get_prata_diops(
     )
 
 
-@router.get("/fip", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/fip", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_fip(
     request: Request,
     competencia: str = Query(..., min_length=5),
@@ -187,7 +195,7 @@ async def get_prata_fip(
     )
 
 
-@router.get("/vda", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/vda", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_vda(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -205,7 +213,7 @@ async def get_prata_vda(
     )
 
 
-@router.get("/glosa", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/glosa", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_glosa(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -229,7 +237,7 @@ async def get_prata_glosa(
     )
 
 
-@router.get("/rede-assistencial", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/rede-assistencial", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_rede_assistencial(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -294,7 +302,7 @@ async def get_prata_municipio_metrica(
     )
 
 
-@router.get("/financeiro/periodo", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/financeiro/periodo", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_financeiro_periodo(
     request: Request,
     competencia: str = Query(..., min_length=5),
@@ -312,7 +320,7 @@ async def get_prata_financeiro_periodo(
     )
 
 
-@router.get("/cnes/municipio", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/cnes/municipio", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_cnes_municipio(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -335,7 +343,7 @@ async def get_prata_cnes_municipio(
     )
 
 
-@router.get("/cnes/rede-gap", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/cnes/rede-gap", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_cnes_rede_gap(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -359,7 +367,7 @@ async def get_prata_cnes_rede_gap(
     )
 
 
-@router.get("/tiss/procedimento", dependencies=[Depends(verificar_camada("prata"))])
+@router.get("/tiss/procedimento", dependencies=[Depends(verificar_camada("prata"))], include_in_schema=_SHOW_EMPTY)
 async def get_prata_tiss_procedimento(
     request: Request,
     competencia: str = Query(..., min_length=5),

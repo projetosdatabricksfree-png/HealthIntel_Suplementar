@@ -84,20 +84,30 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.middleware("http")(aplicar_hardening_http)
 app.middleware("http")(registrar_tempo_requisicao)
+
+# Release 0.9 — Core ANS Comercial:
+# routers que apontam exclusivamente para tabelas api_ans zeradas ficam ocultos
+# do Swagger ate carga real popular. Os endpoints continuam respondendo (nao-quebra),
+# mas nao aparecem em /openapi.json nem /docs. Auditoria em
+# scripts/auditoria/auditar_endpoints_api_release_0_9.py.
+import os
+
+_HIDE_EMPTY = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") == "1"
+
 app.include_router(meta.router, prefix=settings.app_prefixo)
 app.include_router(operadora.router, prefix=settings.app_prefixo)
 app.include_router(produto.router, prefix=settings.app_prefixo)
 app.include_router(mercado.router, prefix=settings.app_prefixo)
-app.include_router(rede.router, prefix=settings.app_prefixo)
+app.include_router(rede.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(ranking.router, prefix=settings.app_prefixo)
-app.include_router(regulatorio.router, prefix=settings.app_prefixo)
-app.include_router(regulatorio_v2.router, prefix=settings.app_prefixo)
+app.include_router(regulatorio.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
+app.include_router(regulatorio_v2.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(financeiro.router, prefix=settings.app_prefixo)
-app.include_router(bronze.router, prefix=settings.app_prefixo)
+app.include_router(bronze.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(prata.router, prefix=settings.app_prefixo)
 app.include_router(premium.router, prefix=settings.app_prefixo)
-app.include_router(cnes.router, prefix=settings.app_prefixo)
-app.include_router(tiss.router, prefix=settings.app_prefixo)
+app.include_router(cnes.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
+app.include_router(tiss.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)

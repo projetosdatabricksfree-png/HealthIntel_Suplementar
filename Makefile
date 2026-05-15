@@ -10,6 +10,7 @@ RUFF_BIN ?= .venv/bin/ruff
 
 PYTHON ?= .venv/bin/python
 PYTEST_BIN := .venv/bin/pytest
+PYTHON_BIN := .venv/bin/python
 ELT_ESCOPO ?= sector_core
 ELT_FAMILIAS ?=
 ELT_LIMITE ?= 100
@@ -429,3 +430,47 @@ monitor-full2a-sem-tiss:
 
 monitor-full2a-sem-tiss-once:
 	bash scripts/capacidade/monitorar_full2a_sem_tiss.sh --once
+
+# =========================================================================
+# Release 0.9 Core ANS Comercial — agrupa validacoes para a release
+# =========================================================================
+
+# Pre-merge: validacoes locais (lint, sql-lint, tests, dbt parse, hard gate sem db)
+release-0-9-check:
+	@echo "[release-0-9-check] compose-config..."
+	@$(COMPOSE) config -q
+	@echo "[release-0-9-check] dbt parse..."
+	cd healthintel_dbt && $(DBT_ENV) $(DBT_BIN) parse
+	@echo "[release-0-9-check] hard gate --sem-db..."
+	$(PYTHON_BIN) scripts/auditoria/validar_consumo_ans_comercial.py --sem-db
+	@echo "[release-0-9-check] OK"
+
+# Hard gates contra banco real (3 auditorias gerando evidencia)
+release-0-9-hardgate:
+	@mkdir -p docs/evidencias/release_0_9
+	@echo "[release-0-9-hardgate] consumo_ans..."
+	$(PYTHON_BIN) scripts/auditoria/validar_consumo_ans_comercial.py \
+		--evidencia docs/evidencias/release_0_9/evidencia_consumo_ans_release_0_9.md
+	@echo "[release-0-9-hardgate] grants cliente_reader..."
+	$(PYTHON_BIN) scripts/auditoria/auditar_grants_cliente_reader.py \
+		--evidencia docs/evidencias/release_0_9/evidencia_grants_cliente_reader_release_0_9.md
+	@echo "[release-0-9-hardgate] endpoints API..."
+	$(PYTHON_BIN) scripts/auditoria/auditar_endpoints_api_release_0_9.py \
+		--evidencia docs/evidencias/release_0_9/evidencia_api_release_0_9.md
+	@echo "[release-0-9-hardgate] OK"
+
+# Smoke contra API e consumo
+release-0-9-smoke:
+	@echo "[release-0-9-smoke] smoke API..."
+	HEALTHINTEL_API_KEY=$${HEALTHINTEL_API_KEY:-hi_local_dev_2026_api_key} \
+		bash scripts/smoke/smoke_api_release_0_9.sh
+	@echo "[release-0-9-smoke] OK"
+
+# Smoke API standalone (target curto)
+smoke-api-release-0-9:
+	HEALTHINTEL_API_KEY=$${HEALTHINTEL_API_KEY:-hi_local_dev_2026_api_key} \
+		bash scripts/smoke/smoke_api_release_0_9.sh
+
+# Encadeia tudo: check -> hardgate -> smoke
+release-0-9-all: release-0-9-check release-0-9-hardgate release-0-9-smoke
+	@echo "[release-0-9-all] ✅ Release 0.9 validacao completa"

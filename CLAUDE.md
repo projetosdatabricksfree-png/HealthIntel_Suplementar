@@ -125,6 +125,7 @@ Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest
 | Fase 7 (Sprints 34–36 implementados, 37–40 backlog) | EM ANDAMENTO | `v4.2.0-dataops` |
 | Fase 9 (Sprints 1–7: MVP comercial Core ANS) | EM ANDAMENTO | `v5.0.0-core-mvp` |
 | Fase 10 (deploy VPS por IP / homologação) | EM ANDAMENTO | — |
+| **Release 0.9 Core ANS Comercial** (Sprint 44) | **EM ANDAMENTO** | **`v0.9.0-core-ans` (pendente merge+tag)** |
 
 **Regras ativas (todas aditivas — não alterar artefatos de fase anterior):**
 - **Fase 5**: `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline v3.0.0 são imutáveis.

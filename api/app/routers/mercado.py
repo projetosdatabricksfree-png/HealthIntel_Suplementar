@@ -1,9 +1,14 @@
+import os
+
 from fastapi import APIRouter, Depends, Query, Request
 
 from api.app.dependencia import verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.services.mercado import listar_mercado_municipio, listar_vazios_assistenciais
+
+# Release 0.9: oculta endpoints com tabela origem zerada (api_vazio_assistencial).
+_SHOW_EMPTY = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") != "1"
 
 router = APIRouter(
     prefix="/mercado",
@@ -33,7 +38,7 @@ async def get_mercado_municipio(
     return payload
 
 
-@router.get("/vazio-assistencial")
+@router.get("/vazio-assistencial", include_in_schema=_SHOW_EMPTY)
 async def get_vazio_assistencial(
     request: Request,
     uf: str | None = Query(default=None, min_length=2, max_length=2),

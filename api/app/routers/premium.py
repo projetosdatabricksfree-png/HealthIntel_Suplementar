@@ -1,4 +1,9 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+
+# Release 0.9: oculta endpoints premium com tabela origem zerada.
+_SHOW_EMPTY = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") != "1"
 
 from api.app.dependencia import verificar_camada
 from api.app.middleware.autenticacao import validar_api_key
@@ -95,7 +100,7 @@ async def get_premium_operadoras(
     )
 
 
-@router.get("/cnes/estabelecimentos", response_model=PremiumCnesEstabelecimentoValidadoResponse)
+@router.get("/cnes/estabelecimentos", response_model=PremiumCnesEstabelecimentoValidadoResponse, include_in_schema=_SHOW_EMPTY)
 async def get_premium_cnes_estabelecimentos(
     request: Request,
     competencia: str = Query(..., min_length=6, max_length=6),
@@ -122,7 +127,7 @@ async def get_premium_cnes_estabelecimentos(
     )
 
 
-@router.get("/tiss/procedimentos", response_model=PremiumTissProcedimentoResponse)
+@router.get("/tiss/procedimentos", response_model=PremiumTissProcedimentoResponse, include_in_schema=_SHOW_EMPTY)
 async def get_premium_tiss_procedimentos(
     request: Request,
     trimestre: str | None = Query(default=None, min_length=5),
@@ -195,7 +200,7 @@ async def get_premium_mdm_operadoras(
     )
 
 
-@router.get("/mdm/prestadores", response_model=PremiumMdmPrestadorResponse)
+@router.get("/mdm/prestadores", response_model=PremiumMdmPrestadorResponse, include_in_schema=_SHOW_EMPTY)
 async def get_premium_mdm_prestadores(
     request: Request,
     cnes_canonico: str | None = Query(default=None),
@@ -236,7 +241,7 @@ def _obter_tenant_id(request: Request) -> str:
     return str(tenant_id)
 
 
-@router.get("/contratos", response_model=PremiumContratoResponse)
+@router.get("/contratos", response_model=PremiumContratoResponse, include_in_schema=_SHOW_EMPTY)
 async def get_premium_contratos(
     request: Request,
     numero_contrato_normalizado: str | None = Query(default=None),
@@ -262,7 +267,7 @@ async def get_premium_contratos(
     )
 
 
-@router.get("/subfaturas", response_model=PremiumSubfaturaResponse)
+@router.get("/subfaturas", response_model=PremiumSubfaturaResponse, include_in_schema=_SHOW_EMPTY)
 async def get_premium_subfaturas(
     request: Request,
     competencia: str | None = Query(default=None, min_length=6, max_length=6),
