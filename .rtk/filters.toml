@@ -1,0 +1,166 @@
+# HealthIntel Project RTK Filters
+# Filters here override user-global and built-in filters
+# Schema: https://github.com/rtk-ai/rtk#custom-filters
+schema_version = 1
+
+# Make commands (build, test, etc.)
+[filters.make]
+description = "Compact make output"
+match_command = "^make\\s+"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Entering directory",
+  "^Leaving directory",
+  "^(make|mkdir|rm|cp|mv|cd)\\s+"
+]
+max_lines = 50
+on_empty = "make: ok"
+
+# Docker commands
+[filters.docker-ps]
+description = "Compact docker ps output"
+match_command = "^docker\\s+ps"
+strip_ansi = true
+max_lines = 20
+
+[filters.docker-compose]
+description = "Compact docker-compose output"
+match_command = "^(docker-?compose|make\\s+(up|down|logs))"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Creating|^Starting|^Stopping|^Removing"
+]
+max_lines = 30
+on_empty = "docker-compose: ok"
+
+# dbt commands (build, test, compile)
+[filters.dbt-build]
+description = "Compact dbt build output"
+match_command = "^dbt\\s+build"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Running with dbt",
+  "^Completed successfully",
+  "^✓|^✔"
+]
+max_lines = 50
+on_empty = "dbt build: completed"
+
+[filters.dbt-test]
+description = "Compact dbt test output"
+match_command = "^dbt\\s+test"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Running with dbt",
+  "^Completed successfully"
+]
+max_lines = 40
+on_empty = "dbt test: passed"
+
+[filters.dbt-compile]
+description = "Compact dbt compile output"
+match_command = "^dbt\\s+compile"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^Running with dbt"
+]
+max_lines = 30
+on_empty = "dbt compile: ok"
+
+# Git commands
+[filters.git-status]
+description = "Compact git status"
+match_command = "^git\\s+status"
+strip_ansi = true
+max_lines = 20
+
+[filters.git-diff]
+description = "Compact git diff"
+match_command = "^git\\s+diff"
+strip_ansi = true
+max_lines = 100
+
+[filters.git-log]
+description = "Compact git log"
+match_command = "^git\\s+log"
+strip_ansi = true
+max_lines = 30
+
+# Pytest
+[filters.pytest]
+description = "Compact pytest output"
+match_command = "^pytest"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^=+ (PASSED|FAILED|ERROR|test session starts)",
+  "^collecting",
+  "^collected",
+  "^<Module"
+]
+max_lines = 60
+on_empty = "pytest: ok"
+
+# Python linting/formatting
+[filters.ruff]
+description = "Compact ruff check output"
+match_command = "^ruff\\s+(check|format)"
+strip_ansi = true
+max_lines = 40
+
+# PostgreSQL/psql
+[filters.psql]
+description = "Compact psql output"
+match_command = "^psql"
+strip_ansi = true
+max_lines = 50
+
+# Airflow CLI
+[filters.airflow]
+description = "Compact airflow output"
+match_command = "^airflow\\s+"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^(\\[|{).*?(\\]|})$"
+]
+max_lines = 50
+on_empty = "airflow: ok"
+
+# npm/node
+[filters.npm]
+description = "Compact npm output"
+match_command = "^npm\\s+"
+strip_ansi = true
+strip_lines_matching = [
+  "^\\s*$",
+  "^added|^removed|^up to date"
+]
+max_lines = 30
+on_empty = "npm: ok"
+
+# General ls/tree
+[filters.ls]
+description = "Compact ls/tree output"
+match_command = "^(ls|tree)\\s+"
+strip_ansi = true
+max_lines = 30
+
+# curl/HTTP
+[filters.curl]
+description = "Compact curl output"
+match_command = "^curl"
+strip_ansi = true
+max_lines = 50
+
+# SQL query results
+[filters.sql-query]
+description = "Compact SQL output"
+match_command = "^(psql|sqlite3|mysql)"
+strip_ansi = true
+max_lines = 100

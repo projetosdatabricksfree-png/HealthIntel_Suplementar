@@ -1,0 +1,53 @@
+{
+  "model": "claude-haiku-4-5-20251001",
+  "rtk_enabled": true,
+  "rtk_path": "~/.local/bin/rtk",
+  "rtk_project_config": ".rtk/filters.toml",
+  "hooks": {
+    "bash_command_hook": {
+      "enabled": true,
+      "description": "Enable RTK token optimization for bash commands",
+      "hook_type": "bash_pre_execution",
+      "behavior": "RTK filters all bash output to reduce token consumption"
+    }
+  },
+  "permissions": {
+    "bash": {
+      "allowed": [
+        "make *",
+        "docker ps",
+        "docker-compose *",
+        "dbt *",
+        "pytest *",
+        "git *",
+        "npm *",
+        "ruff *",
+        "psql *",
+        "airflow *",
+        "curl *",
+        "ls *",
+        "find *",
+        "grep *",
+        "sed *",
+        "awk *",
+        "cat *",
+        "head *",
+        "tail *",
+        "wc *",
+        "du *",
+        "df *"
+      ]
+    }
+  },
+  "environment": {
+    "PATH": "$HOME/.local/bin:$PATH",
+    "RTK_CONFIG": ".rtk/filters.toml"
+  },
+  "features": {
+    "token_optimization": {
+      "enabled": true,
+      "target_reduction": "60-80%",
+      "tools": ["rtk"]
+    }
+  }
+}

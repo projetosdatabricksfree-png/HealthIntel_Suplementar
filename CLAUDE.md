@@ -6,6 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
 
+## RTK — Token Optimization
+
+**RTK (Rust Token Killer)** v0.40.0 está instalado e configurado. Reduz consumo de tokens em **60-90%** filtrando saídas de comandos.
+
+✅ **Status**: Habilitado  
+✅ **Config**: `.rtk/filters.toml` (17 filtros customizados)  
+✅ **Integration**: `.claude/settings.json`  
+✅ **Verification**: `./.rtk/verify.sh`  
+
+**Documentação**: `.rtk/README.md` · **Repo**: https://github.com/rtk-ai/rtk
+
+Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest`, `docker`, `git`, etc. Ver `.rtk/filters.toml` para customização.
+
 ### Skills temáticos HealthIntel (acionar quando o trabalho tocar a área)
 
 - **healthintel-daas-governance** — qualquer mudança que afete identidade/posicionamento DaaS ou escopo do produto.
