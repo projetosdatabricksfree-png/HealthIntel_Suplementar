@@ -8,10 +8,7 @@ from sqlalchemy import text
 from api.app.core.config import get_settings
 from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
-from api.app.schemas.financeiro_v2 import (
-    FinanceiroOperadoraResponse,
-    ScoreV2OperadoraResponse,
-)
+from api.app.schemas.financeiro_v2 import ScoreV2OperadoraResponse
 from api.app.schemas.meta import MetaEnvelope
 
 settings = get_settings()
@@ -94,22 +91,21 @@ async def detalhar_financeiro_operadora(
     params: dict[str, object] = {"registro_ans": registro_ans.zfill(6)}
     filtro_competencia = ""
     if competencia:
-        filtro_competencia = "and competencia = :competencia"
-        params["competencia"] = competencia
+        filtro_competencia = "and trimestre = :competencia"
+        params["competencia"] = competencia.upper()
 
     async with SessionLocal() as session:
         result = await session.execute(
             text(
                 f"""
                 select
-                    operadora_id,
                     registro_ans,
-                    nome,
+                    razao_social as nome,
                     nome_fantasia,
                     modalidade,
-                    uf_sede,
-                    competencia,
-                    trimestre_referencia,
+                    uf as uf_sede,
+                    trimestre as competencia,
+                    trimestre as trimestre_referencia,
                     ativo_total,
                     passivo_total,
                     patrimonio_liquido,
@@ -132,24 +128,12 @@ async def detalhar_financeiro_operadora(
                     resultado_operacional_bruto,
                     score_financeiro_base,
                     rating_financeiro,
-                    vda_valor_devido,
-                    vda_valor_pago,
-                    vda_saldo_devedor,
-                    vda_situacao_cobranca,
-                    vda_inadimplente,
-                    vda_meses_inadimplente_consecutivos,
-                    vda_data_vencimento,
-                    qt_glosa,
-                    valor_glosa,
-                    valor_faturado,
-                    glosa_taxa_glosa_calculada,
-                    severidade_glosa,
-                    tipos_glosa,
-                    versao_dataset
-                from api_ans.api_financeiro_operadora_mensal
+                    parto_cesareo_pct,
+                    versao_financeira as versao_dataset
+                from consumo_ans.consumo_financeiro_operadora_trimestre
                 where registro_ans = :registro_ans
                 {filtro_competencia}
-                order by competencia desc
+                order by trimestre desc
                 limit 24
                 """
             ),
@@ -166,11 +150,11 @@ async def detalhar_financeiro_operadora(
             )
         meta_dataset = await _resolver_meta_dataset(
             session,
-            "financeiro_v2",
+            "financeiro_periodo",
             rows[0]["competencia"],
         )
 
-    dados = [FinanceiroOperadoraResponse(**row).model_dump() for row in rows]
+    dados = [dict(row) for row in rows]
     payload = {
         "dados": dados,
         "meta": MetaEnvelope(

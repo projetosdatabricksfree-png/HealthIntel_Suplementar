@@ -14,6 +14,9 @@ class DatasetMetaResponse(BaseModel):
     descricao: str
     cadencia: str
     status: str
+    produto: str | None = None
+    fonte_serving: str | None = None
+    row_count: int | None = None
 
 
 class PipelineMetaResponse(BaseModel):
@@ -41,3 +44,12 @@ class EndpointMetaResponse(BaseModel):
     camada: str | None = None
     dataset_origem: str | None = None
     versao: str
+    method: str | None = None
+    path: str | None = None
+    grupo: str | None = None
+    status: str | None = None
+    produto: str | None = None
+    fonte_serving: str | None = None
+    requer_api_key: bool | None = None
+    row_count: int | None = None
+    aparece_catalogo_publico: bool | None = None

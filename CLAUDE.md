@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Skills Obrigatórios
 
 - → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
@@ -52,8 +54,10 @@
 | Capacidade / Disco | `make capacidade-snapshot` · `make capacidade-monitor` · `make capacidade-relatorio` · `make monitor-disco` |
 | Carga ANS VPS | `make carga-ans-padrao-vps[-dry-run|-incluir-pendentes]` · `make monitor-full2a-sem-tiss[-once]` |
 | ELT | `make elt-discover / elt-extract / elt-load / elt-all / elt-status` · `make elt-transform-all / elt-validate-all` |
-| Dev backend | `make api-dev` (:8000) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
+| Dev backend | `make api-dev` (:8000 direto) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
 | Dev frontend (Fase 9) | `cd frontend/healthintel_frontend_fase9 && npm install && npm run dev` (:5173) · `npm run build` · `npm run lint` |
+| Venv local | `.venv/bin/pytest <path> -v` · `.venv/bin/python <script>` (ativar: `source .venv/bin/activate`) |
+| Deploy VPS hml | `scripts/vps/deploy_hml_ip.sh` · `scripts/vps/check_hml_ip.sh` (API: `http://5.189.160.27:8080`) |
 
 ---
 
@@ -73,7 +77,7 @@
 
 | Serviço | Porta | Notas |
 |---------|-------|-------|
-| API | 8000 | Lê só `api_ans`; auth cache 60s |
+| API | **8080** (externo via Nginx) / 8000 (interno container / `make api-dev`) | Lê só `api_ans`; auth cache 60s |
 | Layout Service | 8001 | MongoDB, token-gated |
 | Airflow | 8088 | DAGs em `ingestao/dags/` |
 | Frontend Fase 9 | 5173 | Vite dev server (`npm run dev`); build Nginx via `Dockerfile` |
@@ -107,6 +111,7 @@
 | Fase 6 (operação comercial, backlog) | BACKLOG | `v4.0.0` |
 | Fase 7 (Sprints 34–36 implementados, 37–40 backlog) | EM ANDAMENTO | `v4.2.0-dataops` |
 | Fase 9 (Sprints 1–7: MVP comercial Core ANS) | EM ANDAMENTO | `v5.0.0-core-mvp` |
+| Fase 10 (deploy VPS por IP / homologação) | EM ANDAMENTO | — |
 
 **Regras ativas (todas aditivas — não alterar artefatos de fase anterior):**
 - **Fase 5**: `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline v3.0.0 são imutáveis.

@@ -1,5 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from api.app.dependencia import verificar_plano
+from api.app.middleware.autenticacao import validar_api_key
 from api.app.services.meta import (
     listar_atualizacao,
     listar_datasets,
@@ -9,7 +11,11 @@ from api.app.services.meta import (
     listar_versoes,
 )
 
-router = APIRouter(prefix="/meta", tags=["meta"])
+router = APIRouter(
+    prefix="/meta",
+    tags=["meta"],
+    dependencies=[Depends(validar_api_key), Depends(verificar_plano)],
+)
 
 
 @router.get("/datasets")

@@ -722,6 +722,422 @@ CATALOGO_ENDPOINTS += [
 ]
 
 
+STATUS_DISPONIVEL = "disponivel"
+STATUS_EM_VALIDACAO = "em_validacao"
+STATUS_FORA_DO_MVP = "fora_do_mvp"
+PRODUTO_CORE_ANS = "Core ANS"
+
+DATASETS_CORE_ANS = [
+    {
+        "nome": "cadop_operadora",
+        "descricao": "Cadastro publico de operadoras ANS.",
+        "cadencia": "mensal",
+        "fonte_serving": "api_ans.api_operadora",
+    },
+    {
+        "nome": "produto_plano",
+        "descricao": "Produtos e planos de saude suplementar.",
+        "cadencia": "mensal",
+        "fonte_serving": "api_ans.api_produto_plano",
+    },
+    {
+        "nome": "historico_plano",
+        "descricao": "Historico de situacao dos planos.",
+        "cadencia": "mensal",
+        "fonte_serving": "api_ans.api_historico_plano",
+    },
+    {
+        "nome": "tuss_procedimento_vigente",
+        "descricao": "Tabela TUSS oficial vigente.",
+        "cadencia": "sob demanda",
+        "fonte_serving": "api_ans.api_tuss_procedimento_vigente",
+    },
+    {
+        "nome": "sib_beneficiario_operadora",
+        "descricao": "Beneficiarios SIB por operadora e competencia.",
+        "cadencia": "mensal",
+        "fonte_serving": "consumo_ans.consumo_beneficiarios_operadora_mes",
+    },
+    {
+        "nome": "sib_beneficiario_municipio",
+        "descricao": "Beneficiarios SIB por municipio e competencia.",
+        "cadencia": "mensal",
+        "fonte_serving": "consumo_ans.consumo_beneficiarios_municipio_mes",
+    },
+    {
+        "nome": "idss",
+        "descricao": "IDSS anual por operadora.",
+        "cadencia": "anual",
+        "fonte_serving": "api_ans.api_prata_idss",
+    },
+    {
+        "nome": "igr",
+        "descricao": "IGR trimestral por operadora.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_prata_igr",
+    },
+    {
+        "nome": "nip",
+        "descricao": "NIP por operadora.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_prata_nip",
+    },
+    {
+        "nome": "diops",
+        "descricao": "DIOPS financeiro trimestral.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_prata_diops",
+    },
+    {
+        "nome": "financeiro_periodo",
+        "descricao": "Indicadores economico-financeiros por periodo trimestral.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_prata_financeiro_periodo",
+    },
+    {
+        "nome": "glosa",
+        "descricao": "Glosa mensal por operadora.",
+        "cadencia": "mensal",
+        "fonte_serving": "api_ans.api_glosa_operadora_mensal",
+    },
+    {
+        "nome": "prudencial",
+        "descricao": "Indicadores prudenciais trimestrais.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_prudencial_operadora_trimestral",
+    },
+    {
+        "nome": "regime_especial",
+        "descricao": "Regime especial trimestral por operadora.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_regime_especial_operadora_trimestral",
+    },
+    {
+        "nome": "taxa_resolutividade",
+        "descricao": "Taxa de resolutividade trimestral por operadora.",
+        "cadencia": "trimestral",
+        "fonte_serving": "api_ans.api_taxa_resolutividade_operadora_trimestral",
+    },
+]
+
+ENDPOINTS_CORE_ANS = [
+    {
+        "method": "GET",
+        "path": "/saude",
+        "grupo": "meta",
+        "descricao": "Status basico da API.",
+        "fonte_serving": None,
+        "requer_api_key": False,
+    },
+    {
+        "method": "GET",
+        "path": "/prontidao",
+        "grupo": "meta",
+        "descricao": "Prontidao operacional. Requer token interno.",
+        "fonte_serving": None,
+        "requer_api_key": False,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/meta/dataset",
+        "grupo": "meta",
+        "descricao": "Catalogo de datasets do Core ANS.",
+        "fonte_serving": "catalogo interno",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/meta/versao",
+        "grupo": "meta",
+        "descricao": "Versoes recentes de datasets.",
+        "fonte_serving": "plataforma.versao_dataset",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/meta/pipeline",
+        "grupo": "meta",
+        "descricao": "Estado recente das cargas.",
+        "fonte_serving": "plataforma.job",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/meta/endpoints",
+        "grupo": "meta",
+        "descricao": "Catalogo publico Core ANS.",
+        "fonte_serving": "catalogo interno",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras",
+        "grupo": "operadoras",
+        "descricao": "Lista operadoras publicadas.",
+        "fonte_serving": "api_ans.api_operadora",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}",
+        "grupo": "operadoras",
+        "descricao": "Detalhe de operadora.",
+        "fonte_serving": "api_ans.api_operadora",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/score",
+        "grupo": "score",
+        "descricao": "Score mensal consolidado.",
+        "fonte_serving": "api_ans.api_score_operadora_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/score-v2",
+        "grupo": "score",
+        "descricao": "Score composto v2.",
+        "fonte_serving": "api_ans.api_score_v2_operadora_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/score-v3",
+        "grupo": "score",
+        "descricao": "Score composto v3.",
+        "fonte_serving": "api_ans.api_score_v3_operadora_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/score-v3/historico",
+        "grupo": "score",
+        "descricao": "Historico do score v3.",
+        "fonte_serving": "api_ans.api_score_v3_operadora_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/score-regulatorio",
+        "grupo": "regulatorio",
+        "descricao": "Score regulatorio composto.",
+        "fonte_serving": "api_ans.api_score_regulatorio_operadora_mensal",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/regulatorio",
+        "grupo": "regulatorio",
+        "descricao": "Consolidado regulatorio IDSS, IGR, NIP e sinais complementares.",
+        "fonte_serving": "api_ans.api_regulatorio_operadora_trimestral",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/regime-especial",
+        "grupo": "regulatorio",
+        "descricao": "Regime especial trimestral.",
+        "fonte_serving": "api_ans.api_regime_especial_operadora_trimestral",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/regulatorio/rn623",
+        "grupo": "regulatorio",
+        "descricao": "Listas RN623.",
+        "fonte_serving": "api_ans.api_rn623_lista_trimestral",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/portabilidade",
+        "grupo": "portabilidade",
+        "descricao": "Portabilidade por operadora.",
+        "fonte_serving": "api_ans.api_portabilidade_operadora_mensal",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/operadoras/{registro_ans}/financeiro",
+        "grupo": "financeiro",
+        "descricao": "Indicadores economico-financeiros por operadora e periodo trimestral.",
+        "fonte_serving": "consumo_ans.consumo_financeiro_operadora_trimestre",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/mercado/municipio",
+        "grupo": "mercado",
+        "descricao": "Beneficiarios e mercado por municipio.",
+        "fonte_serving": "consumo_ans.consumo_beneficiarios_municipio_mes",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rankings/operadora/crescimento",
+        "grupo": "rankings",
+        "descricao": "Ranking de crescimento por operadora.",
+        "fonte_serving": "api_ans.api_ranking_crescimento",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rankings/operadora/score",
+        "grupo": "rankings",
+        "descricao": "Ranking de score por operadora.",
+        "fonte_serving": "api_ans.api_ranking_score",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rankings/municipio/oportunidade",
+        "grupo": "rankings",
+        "descricao": "Ranking de oportunidade por municipio.",
+        "fonte_serving": "api_ans.api_ranking_oportunidade",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rankings/municipio/oportunidade-v2",
+        "grupo": "rankings",
+        "descricao": "Ranking de oportunidade v2 por municipio.",
+        "fonte_serving": "api_ans.api_oportunidade_v2_municipio_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rankings/composto",
+        "grupo": "rankings",
+        "descricao": "Ranking composto v3 por operadora.",
+        "fonte_serving": "api_ans.api_ranking_composto_mensal",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/mercado/vazio-assistencial",
+        "grupo": "rede",
+        "descricao": "Vazio assistencial.",
+        "fonte_serving": "api_ans.api_vazio_assistencial",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/rede/municipio/{cd_municipio}",
+        "grupo": "rede",
+        "descricao": "Rede assistencial por municipio.",
+        "fonte_serving": "api_ans.api_rede_assistencial",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/cnes/municipio/{cd_municipio}",
+        "grupo": "cnes",
+        "descricao": "CNES por municipio.",
+        "fonte_serving": "api_ans.api_cnes_municipio",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/cnes/uf/{sg_uf}",
+        "grupo": "cnes",
+        "descricao": "CNES por UF.",
+        "fonte_serving": "api_ans.api_cnes_municipio",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/produtos/planos",
+        "grupo": "produto_plano",
+        "descricao": "Lista produtos e planos.",
+        "fonte_serving": "api_ans.api_produto_plano",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/produtos/planos/{codigo_plano}",
+        "grupo": "produto_plano",
+        "descricao": "Detalhe de produto/plano.",
+        "fonte_serving": "api_ans.api_produto_plano",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/produtos/historico",
+        "grupo": "produto_plano",
+        "descricao": "Historico de planos.",
+        "fonte_serving": "api_ans.api_historico_plano",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/tuss/procedimentos",
+        "grupo": "tuss",
+        "descricao": "Procedimentos TUSS oficiais vigentes.",
+        "fonte_serving": "api_ans.api_tuss_procedimento_vigente",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/tuss/procedimentos/{codigo_tuss}",
+        "grupo": "tuss",
+        "descricao": "Detalhe de procedimento TUSS.",
+        "fonte_serving": "api_ans.api_tuss_procedimento_vigente",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/tiss/{registro_ans}/procedimentos",
+        "grupo": "tiss",
+        "descricao": "TISS em validacao para o Core ANS.",
+        "fonte_serving": "api_ans.api_tiss_operadora_trimestral",
+        "requer_api_key": True,
+        "status_if_empty": STATUS_EM_VALIDACAO,
+    },
+]
+
+
+def _relacao_segura(relacao: str | None) -> str | None:
+    if not relacao or relacao == "catalogo interno":
+        return None
+    partes = relacao.split(".")
+    if len(partes) != 2 or not all(parte.replace("_", "").isalnum() for parte in partes):
+        return None
+    return f"{partes[0]}.{partes[1]}"
+
+
+async def _contar_relacoes(relacoes: set[str]) -> dict[str, int | None]:
+    counts: dict[str, int | None] = {}
+    async with SessionLocal() as session:
+        for relacao in sorted(relacoes):
+            segura = _relacao_segura(relacao)
+            if not segura:
+                counts[relacao] = None
+                continue
+            existe = await session.execute(text("select to_regclass(:relacao)"), {"relacao": segura})
+            if existe.scalar_one() is None:
+                counts[relacao] = None
+                continue
+            total = await session.execute(text(f"select count(*) from {segura}"))
+            counts[relacao] = int(total.scalar_one())
+    return counts
+
+
+def _status_por_row_count(row_count: int | None, status_if_empty: str = STATUS_EM_VALIDACAO) -> str:
+    if row_count is None:
+        return status_if_empty
+    if row_count > 0:
+        return STATUS_DISPONIVEL
+    return status_if_empty
+
+
 def _meta_padrao(total: int) -> dict:
     return MetaEnvelope(
         competencia_referencia="atual",
@@ -733,35 +1149,22 @@ def _meta_padrao(total: int) -> dict:
 
 
 async def listar_datasets() -> dict:
-    async with SessionLocal() as session:
-        result = await session.execute(
-            text(
-                """
-                select dataset, max(carregado_em) as carregado_em
-                from plataforma.versao_dataset
-                group by dataset
-                order by dataset
-                """
-            )
+    relacoes = {dataset["fonte_serving"] for dataset in DATASETS_CORE_ANS}
+    counts = await _contar_relacoes(relacoes)
+    datasets = []
+    for dataset in DATASETS_CORE_ANS:
+        row_count = counts.get(dataset["fonte_serving"])
+        datasets.append(
+            DatasetMetaResponse(
+                nome=dataset["nome"],
+                descricao=dataset["descricao"],
+                cadencia=dataset["cadencia"],
+                status="publicado" if row_count and row_count > 0 else "em_validacao",
+                produto=PRODUTO_CORE_ANS,
+                fonte_serving=dataset["fonte_serving"],
+                row_count=row_count,
+            ).model_dump()
         )
-        datasets = []
-        for row in result.mappings():
-            definicao = CATALOGO_DATASETS.get(
-                row["dataset"],
-                {
-                    "descricao": "Dataset catalogado na plataforma.",
-                    "cadencia": "sob demanda",
-                    "status": "ativo",
-                },
-            )
-            datasets.append(
-                DatasetMetaResponse(
-                    nome=row["dataset"],
-                    descricao=definicao["descricao"],
-                    cadencia=definicao["cadencia"],
-                    status=definicao["status"],
-                ).model_dump()
-            )
     return {"dados": datasets, "meta": _meta_padrao(len(datasets))}
 
 
@@ -826,20 +1229,44 @@ async def listar_pipeline() -> dict:
 
 
 async def listar_endpoints() -> dict:
+    relacoes = {
+        endpoint["fonte_serving"]
+        for endpoint in ENDPOINTS_CORE_ANS
+        if endpoint.get("fonte_serving")
+        and endpoint.get("fonte_serving") != "catalogo interno"
+    }
+    counts = await _contar_relacoes(relacoes)
     dados = []
-    for endpoint in CATALOGO_ENDPOINTS:
-        rota = endpoint["rota"]
-        if rota.startswith("/v1/bronze"):
-            camada = "bronze"
-        elif rota.startswith("/v1/prata"):
-            camada = "prata"
-        elif rota.startswith("/v1/premium"):
-            camada = "premium"
-        elif rota.startswith("/v1"):
-            camada = "ouro"
-        else:
-            camada = "publico"
-        dados.append(EndpointMetaResponse(**{**endpoint, "camada": camada}).model_dump())
+    for endpoint in ENDPOINTS_CORE_ANS:
+        fonte = endpoint.get("fonte_serving")
+        row_count = counts.get(fonte) if fonte else None
+        status = STATUS_DISPONIVEL
+        if fonte and fonte != "catalogo interno":
+            status = _status_por_row_count(
+                row_count,
+                endpoint.get("status_if_empty", STATUS_EM_VALIDACAO),
+            )
+        aparece = status == STATUS_DISPONIVEL
+        payload = {
+            "method": endpoint["method"],
+            "path": endpoint["path"],
+            "grupo": endpoint["grupo"],
+            "status": status,
+            "produto": PRODUTO_CORE_ANS,
+            "fonte_serving": fonte,
+            "requer_api_key": endpoint["requer_api_key"],
+            "row_count": row_count,
+            "aparece_catalogo_publico": aparece,
+            "metodo": endpoint["method"],
+            "rota": endpoint["path"],
+            "descricao": endpoint["descricao"],
+            "autenticacao": "sim" if endpoint["requer_api_key"] else "nao",
+            "plano_minimo": "core",
+            "camada": "ouro" if endpoint["path"].startswith("/v1") else "publico",
+            "dataset_origem": fonte,
+            "versao": "v1",
+        }
+        dados.append(EndpointMetaResponse(**payload).model_dump())
     return {"dados": dados, "meta": _meta_padrao(len(dados))}
 
 

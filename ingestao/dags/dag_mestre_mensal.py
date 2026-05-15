@@ -3,13 +3,13 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 DBT_ENV = (
     "DBT_PROFILES_DIR=/workspace/healthintel_dbt "
     "DBT_LOG_PATH=/tmp/healthintel_dbt_logs "
     "DBT_TARGET_PATH=/tmp/healthintel_dbt_target"
 )
+PYTHON_ENV = "PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace"
 
 with DAG(
     dag_id="dag_mestre_mensal",
@@ -18,22 +18,38 @@ with DAG(
     catchup=False,
     tags=["healthintel", "mensal"],
 ) as dag:
-    preparar_particoes = PostgresOperator(
+    preparar_particoes = BashOperator(
         task_id="preparar_particoes_sib",
-        postgres_conn_id="postgres_default",
-        sql="""
-        select plataforma.preparar_particoes_janela_atual(
-            'bruto_ans',
-            'sib_beneficiario_operadora',
-            2
-        );
+        cwd="/workspace",
+        bash_command=rf"""{PYTHON_ENV} python - <<'PY'
+import asyncio
 
-        select plataforma.preparar_particoes_janela_atual(
-            'bruto_ans',
-            'sib_beneficiario_municipio',
-            2
-        );
-        """,
+from sqlalchemy import text
+
+from ingestao.app.carregar_postgres import SessionLocal
+
+
+async def main():
+    async with SessionLocal() as session:
+        await session.execute(text('''
+            select plataforma.preparar_particoes_janela_atual(
+                'bruto_ans',
+                'sib_beneficiario_operadora',
+                2
+            )
+        '''))
+        await session.execute(text('''
+            select plataforma.preparar_particoes_janela_atual(
+                'bruto_ans',
+                'sib_beneficiario_municipio',
+                2
+            )
+        '''))
+        await session.commit()
+
+
+asyncio.run(main())
+PY""",
     )
 
     ingest_cadop = TriggerDagRunOperator(

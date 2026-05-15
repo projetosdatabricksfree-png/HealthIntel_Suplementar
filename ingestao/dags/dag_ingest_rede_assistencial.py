@@ -1,20 +1,33 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from airflow import DAG
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.bash import BashOperator
+
+PYTHON_ENV = "PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace"
 
 with DAG(
     dag_id="dag_ingest_rede_assistencial",
     start_date=datetime(2026, 1, 1),
-    schedule="0 5 20 * *",
+    schedule="0 6 20 * *",
     catchup=False,
-    tags=["healthintel", "rede", "cobertura"],
+    tags=["healthintel", "rede", "cobertura", "delta_ans_100"],
 ) as dag:
-    inicio = EmptyOperator(task_id="inicio")
-    mapear_publicacao = EmptyOperator(task_id="mapear_publicacao")
-    validar_layout = EmptyOperator(task_id="validar_layout")
-    carregar_bruto = EmptyOperator(task_id="carregar_bruto")
-    registrar_versao = EmptyOperator(task_id="registrar_versao")
-    fim = EmptyOperator(task_id="fim")
-
-    inicio >> mapear_publicacao >> validar_layout >> carregar_bruto >> registrar_versao >> fim
+    registrar = BashOperator(
+        task_id="registrar_fonte_indisponivel",
+        cwd="/workspace",
+        bash_command=f"""{PYTHON_ENV} python -c "
+import asyncio
+from ingestao.app.auditoria_tentativa_carga import registrar_fonte_indisponivel
+asyncio.run(registrar_fonte_indisponivel(
+    dominio='rede',
+    dataset_codigo='rede_assistencial_quarentena',
+    fonte_url='https://dadosabertos.ans.gov.br/FTP/PDA/',
+    dag_id='dag_ingest_rede_assistencial',
+    task_id='registrar_fonte_indisponivel',
+    erro_mensagem='Rede assistencial detalhada (municipio+operadora) nao disponivel como arquivo plano no ANS FTP PDA. Dados de rede_prestador_municipio sao carregados via dag_ingest_rede_prestadores.',
+))
+"
+""",
+    )

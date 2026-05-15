@@ -61,6 +61,81 @@ async def _resolver_meta_dataset(session, dataset: str, fallback_competencia: st
     }
 
 
+async def listar_tuss_procedimentos(
+    *,
+    codigo_tuss: str | None = None,
+    descricao: str | None = None,
+    pagina: int = 1,
+    por_pagina: int = 50,
+) -> dict:
+    pagina = max(pagina, 1)
+    por_pagina = min(max(por_pagina, 1), 100)
+    offset = (pagina - 1) * por_pagina
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    filtros = ["1=1"]
+    if codigo_tuss:
+        filtros.append("codigo_tuss = :codigo_tuss")
+        params["codigo_tuss"] = codigo_tuss
+    if descricao:
+        filtros.append("descricao ilike :descricao")
+        params["descricao"] = f"%{descricao.strip()}%"
+    where_clause = " where " + " and ".join(filtros)
+
+    async with SessionLocal() as session:
+        total_result = await session.execute(
+            text(f"select count(*) from api_ans.api_tuss_procedimento_vigente {where_clause}"),
+            params,
+        )
+        total = int(total_result.scalar_one())
+        result = await session.execute(
+            text(
+                f"""
+                select
+                    codigo_tuss,
+                    descricao,
+                    versao_tuss,
+                    vigencia_inicio,
+                    vigencia_fim,
+                    is_tuss_vigente,
+                    grupo,
+                    subgrupo
+                from api_ans.api_tuss_procedimento_vigente
+                {where_clause}
+                order by codigo_tuss
+                limit :limit offset :offset
+                """
+            ),
+            params,
+        )
+        rows = result.mappings().all()
+
+    return {
+        "dados": [dict(row) for row in rows],
+        "meta": MetaEnvelope(
+            competencia_referencia="vigente",
+            versao_dataset="tuss_oficial_v1",
+            total=total,
+            pagina=pagina,
+            por_pagina=por_pagina,
+        ).model_dump(),
+    }
+
+
+async def detalhar_tuss_procedimento(codigo_tuss: str) -> dict:
+    payload = await listar_tuss_procedimentos(codigo_tuss=codigo_tuss, pagina=1, por_pagina=1)
+    if not payload["dados"]:
+        from fastapi import HTTPException, status
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "codigo_erro": "TUSS_NAO_ENCONTRADO",
+                "mensagem": "Procedimento TUSS nao encontrado na camada de servico.",
+            },
+        )
+    return payload
+
+
 async def listar_tiss_procedimentos(
     registro_ans: str,
     *,

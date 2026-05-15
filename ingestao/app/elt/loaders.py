@@ -9,9 +9,39 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from ingestao.app.auditoria_tentativa_carga import (
+    registrar_final_tentativa,
+    registrar_inicio_tentativa,
+)
 from ingestao.app.carregar_postgres import SessionLocal
 
 TABULAR_EXTENSOES = {"csv", "txt"}
+MAX_GENERIC_FILE_BYTES = 100 * 1024 * 1024
+MAX_GENERIC_ROWS = 1_000_000
+GENERIC_DATASET_ALLOWLIST = frozenset({
+    "ans_linha_generica",
+    "ans_pda_generico",
+    "caderno_ss_generico",
+    "historico_sob_demanda",
+})
+GENERIC_BLOCKED_TOKENS = frozenset({
+    "rede",
+    "prestador",
+    "cnes",
+    "tiss",
+    "diops",
+    "fip",
+    "ntrp",
+    "sip",
+    "sib",
+})
+
+
+class CargaGenericaBloqueadaError(RuntimeError):
+    def __init__(self, status: str, mensagem: str) -> None:
+        super().__init__(mensagem)
+        self.status = status
+        self.mensagem = mensagem
 
 
 def _detectar_encoding(path: Path) -> str:
@@ -163,13 +193,132 @@ async def _marcar_status_arquivo(
         await session.commit()
 
 
+def _normalizar_codigo(valor: object) -> str:
+    return str(valor or "").strip().lower()
+
+
+def _tamanho_arquivo_bytes(arquivo: dict, path: Path) -> int:
+    tamanho = arquivo.get("tamanho_bytes")
+    if tamanho is not None:
+        return int(tamanho)
+    return path.stat().st_size
+
+
+def _texto_classificacao_generica(arquivo: dict) -> str:
+    partes = [
+        arquivo.get("dataset_codigo"),
+        arquivo.get("familia"),
+        arquivo.get("nome_arquivo"),
+        arquivo.get("url"),
+    ]
+    return " ".join(_normalizar_codigo(parte) for parte in partes)
+
+
+def _dataset_bloqueado_para_generico(arquivo: dict) -> bool:
+    texto = _texto_classificacao_generica(arquivo)
+    return any(token in texto for token in GENERIC_BLOCKED_TOKENS)
+
+
+def _validar_uso_bronze_generico(arquivo: dict, path: Path) -> None:
+    dataset_codigo = _normalizar_codigo(arquivo.get("dataset_codigo"))
+    tamanho_bytes = _tamanho_arquivo_bytes(arquivo, path)
+    if _dataset_bloqueado_para_generico(arquivo):
+        raise CargaGenericaBloqueadaError(
+            "LAYOUT_NAO_MAPEADO",
+            (
+                "dataset/familia critica nao pode usar bruto_ans.ans_linha_generica; "
+                "exige tabela bronze canonica propria"
+            ),
+        )
+    if dataset_codigo not in GENERIC_DATASET_ALLOWLIST:
+        raise CargaGenericaBloqueadaError(
+            "LAYOUT_NAO_MAPEADO",
+            (
+                f"dataset {dataset_codigo!r} fora da allowlist explicita para "
+                "bruto_ans.ans_linha_generica"
+            ),
+        )
+    if tamanho_bytes > MAX_GENERIC_FILE_BYTES:
+        raise CargaGenericaBloqueadaError(
+            "LAYOUT_NAO_MAPEADO",
+            (
+                "arquivo sem layout/tabela bronze canonica excede 100 MB; "
+                "carga generica bloqueada"
+            ),
+        )
+
+
+async def _registrar_bloqueio_generico(
+    arquivo: dict,
+    *,
+    status: str,
+    mensagem: str,
+    linhas_lidas: int | None = None,
+) -> None:
+    status_arquivo = "erro_carga" if status == "ERRO_VALIDACAO" else "baixado_sem_parser"
+    await _marcar_status_arquivo(str(arquivo["id"]), status_arquivo, mensagem)
+    tentativa_id = await registrar_inicio_tentativa(
+        dominio=_normalizar_codigo(arquivo.get("familia")) or "generico",
+        dataset_codigo=_normalizar_codigo(arquivo.get("dataset_codigo")) or "desconhecido",
+        arquivo_nome=arquivo.get("nome_arquivo"),
+        arquivo_hash=arquivo.get("hash_arquivo"),
+        fonte_url=arquivo.get("url"),
+        tabela_destino="bruto_ans.ans_linha_generica",
+        motivo=mensagem,
+    )
+    await registrar_final_tentativa(
+        tentativa_id,
+        status_final=status,
+        motivo=mensagem,
+        erro_tipo="VALIDACAO",
+        erro_mensagem=mensagem,
+        linhas_lidas=linhas_lidas,
+        tabela_destino="bruto_ans.ans_linha_generica",
+        arquivo_hash=arquivo.get("hash_arquivo"),
+        arquivo_fonte_ans_id=arquivo.get("id"),
+    )
+
+
 async def carregar_arquivo_tabular_generico(arquivo: dict) -> dict:
     path = Path(str(arquivo["caminho_landing"]))
     extensao = str(arquivo.get("extensao") or path.suffix.removeprefix(".")).lower()
+    try:
+        _validar_uso_bronze_generico(arquivo, path)
+    except CargaGenericaBloqueadaError as exc:
+        await _registrar_bloqueio_generico(
+            arquivo,
+            status=exc.status,
+            mensagem=exc.mensagem,
+        )
+        return {
+            "status": exc.status,
+            "linhas_carregadas": 0,
+            "dataset_codigo": arquivo["dataset_codigo"],
+            "familia": arquivo["familia"],
+            "erro": exc.mensagem,
+        }
     iterador = _iter_zip_csv(path) if extensao == "zip" else _iter_csv(path)
     total_linhas = 0
     try:
         for batch in iterador:
+            if total_linhas + len(batch) > MAX_GENERIC_ROWS:
+                msg = (
+                    "carga generica excederia 1 milhao de linhas em "
+                    "bruto_ans.ans_linha_generica"
+                )
+                await _registrar_bloqueio_generico(
+                    arquivo,
+                    status="ERRO_VALIDACAO",
+                    mensagem=msg,
+                    linhas_lidas=total_linhas + len(batch),
+                )
+                return {
+                    "status": "ERRO_VALIDACAO",
+                    "linhas_carregadas": total_linhas,
+                    "dataset_codigo": arquivo["dataset_codigo"],
+                    "familia": arquivo["familia"],
+                    "erro": msg,
+                }
             total_linhas += await _inserir_linhas_genericas(arquivo, batch)
         await _marcar_status_arquivo(str(arquivo["id"]), "carregado")
     except Exception as exc:

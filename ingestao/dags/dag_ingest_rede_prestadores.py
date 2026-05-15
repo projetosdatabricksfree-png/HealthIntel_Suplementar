@@ -109,11 +109,12 @@ asyncio.run({func}(os.environ['HEALTHINTEL_COMPETENCIA']))
         ),
     )
 
-    [
-        ingerir_operadora_cancelada,
-        ingerir_operadora_acreditada,
-        ingerir_prestador_acreditado,
-        ingerir_produto_prestador_hosp,
-        ingerir_operadora_prestador_nao_hosp,
-        ingerir_solicitacao_alteracao,
-    ] >> dbt_transform
+    (
+        ingerir_operadora_cancelada
+        >> ingerir_operadora_acreditada
+        >> ingerir_prestador_acreditado
+        >> ingerir_produto_prestador_hosp
+        >> ingerir_operadora_prestador_nao_hosp
+        >> ingerir_solicitacao_alteracao
+        >> dbt_transform
+    )

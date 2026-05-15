@@ -4,9 +4,11 @@ from api.app.dependencia import verificar_plano
 from api.app.middleware.autenticacao import validar_api_key
 from api.app.middleware.rate_limit import aplicar_rate_limit
 from api.app.services.tiss import (
+    detalhar_tuss_procedimento,
     listar_gap_rede_municipio,
     listar_sinistralidade_procedimento,
     listar_tiss_procedimentos,
+    listar_tuss_procedimentos,
 )
 
 router = APIRouter(
@@ -32,6 +34,33 @@ async def get_tiss_procedimentos(
         pagina=pagina,
         por_pagina=por_pagina,
     )
+    request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
+    return payload
+
+
+@router.get("/tuss/procedimentos")
+async def get_tuss_procedimentos(
+    request: Request,
+    codigo_tuss: str | None = Query(default=None),
+    descricao: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=50, ge=1, le=100),
+) -> dict:
+    await aplicar_rate_limit(request)
+    payload = await listar_tuss_procedimentos(
+        codigo_tuss=codigo_tuss,
+        descricao=descricao,
+        pagina=page,
+        por_pagina=per_page,
+    )
+    request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
+    return payload
+
+
+@router.get("/tuss/procedimentos/{codigo_tuss}")
+async def get_tuss_procedimento(codigo_tuss: str, request: Request) -> dict:
+    await aplicar_rate_limit(request)
+    payload = await detalhar_tuss_procedimento(codigo_tuss)
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload
 

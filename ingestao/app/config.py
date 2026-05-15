@@ -63,6 +63,15 @@ class Settings(BaseSettings):
     )
     ans_allow_landing_cache: bool = Field(default=True, alias="ANS_ALLOW_LANDING_CACHE")
 
+    # CNES / DATASUS settings
+    datasus_cnes_base_url: str = Field(
+        default=(
+            "https://cnes.datasus.gov.br/pages/estabelecimentos/geradorDeArquivos.jsp"
+        ),
+        alias="DATASUS_CNES_BASE_URL",
+    )
+    datasus_cnes_batch_size: int = Field(default=5000, alias="DATASUS_CNES_BATCH_SIZE")
+
     @property
     def postgres_dsn(self) -> str:
         return (

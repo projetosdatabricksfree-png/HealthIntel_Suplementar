@@ -19,10 +19,14 @@ router = APIRouter(
 async def get_financeiro(
     registro_ans: str,
     request: Request,
+    trimestre: str | None = Query(default=None, min_length=6, max_length=6),
     competencia: str | None = Query(default=None, min_length=6, max_length=6),
 ) -> dict:
     await aplicar_rate_limit(request)
-    payload = await detalhar_financeiro_operadora(registro_ans, competencia=competencia)
+    payload = await detalhar_financeiro_operadora(
+        registro_ans,
+        competencia=trimestre or competencia,
+    )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload
 

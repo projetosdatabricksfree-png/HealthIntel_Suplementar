@@ -30,7 +30,11 @@ async def _obter_cache(chave: str) -> dict | None:
 
 async def _salvar_cache(chave: str, payload: dict) -> None:
     try:
-        await redis_client.set(chave, json.dumps(payload), ex=settings.app_cache_ttl_segundos)
+        await redis_client.set(
+            chave,
+            json.dumps(payload, default=str),
+            ex=settings.app_cache_ttl_segundos,
+        )
     except Exception:
         return
 
@@ -171,7 +175,7 @@ async def listar_regime_especial_operadora(registro_ans: str) -> dict:
                     data_inicio,
                     data_fim,
                     versao_dataset
-                from api_ans.api_regime_especial_operadora
+                from api_ans.api_regime_especial_operadora_trimestral
                 where registro_ans = :registro_ans
                 order by data_inicio desc nulls last, trimestre desc
                 limit 20

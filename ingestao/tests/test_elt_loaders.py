@@ -6,6 +6,23 @@ import pytest
 
 from ingestao.app.elt import downloader, loaders
 
+DATASETS_NUNCA_GENERICOS = [
+    ("produto_prestador_hospitalar", "rede_prestadores"),
+    ("operadora_prestador_nao_hospitalar", "rede_prestadores"),
+    ("prestador_acreditado", "rede_prestadores"),
+    ("rede_assistencial", "rede_assistencial"),
+    ("cnes", "cnes"),
+    ("tiss_ambulatorial", "tiss"),
+    ("tiss_hospitalar", "tiss"),
+    ("tiss_dados_plano", "tiss"),
+    ("tiss_procedimento", "tiss"),
+    ("diops", "diops"),
+    ("fip", "fip"),
+    ("ntrp", "precificacao_ntrp"),
+    ("sip", "sip"),
+    ("sib", "sib"),
+]
+
 
 @pytest.mark.asyncio
 async def test_csv_pequeno_carrega_em_linha_generica(
@@ -46,7 +63,10 @@ async def test_csv_pequeno_carrega_em_linha_generica(
 
 
 @pytest.mark.asyncio
-async def test_zip_com_csv_carrega_streaming(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_zip_com_csv_allowlist_carrega_streaming(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     zip_path = tmp_path / "dados.zip"
     with zipfile.ZipFile(zip_path, "w") as pacote:
         pacote.writestr("dados.csv", "codigo;nome\n1;Teste\n")
@@ -65,8 +85,8 @@ async def test_zip_com_csv_carrega_streaming(tmp_path, monkeypatch: pytest.Monke
     resultado = await loaders.carregar_arquivo_tabular_generico(
         {
             "id": "arquivo-1",
-            "dataset_codigo": "sib_ativo_uf",
-            "familia": "sib",
+            "dataset_codigo": "historico_sob_demanda",
+            "familia": "historico_sob_demanda",
             "nome_arquivo": "dados.zip",
             "hash_arquivo": "hash",
             "caminho_landing": str(zip_path),
@@ -76,6 +96,162 @@ async def test_zip_com_csv_carrega_streaming(tmp_path, monkeypatch: pytest.Monke
 
     assert resultado["linhas_carregadas"] == 1
     assert total == [1]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("dataset_codigo", "familia"), DATASETS_NUNCA_GENERICOS)
+async def test_datasets_criticos_nunca_usam_linha_generica(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+    dataset_codigo: str,
+    familia: str,
+) -> None:
+    csv_path = tmp_path / f"{dataset_codigo}.csv"
+    csv_path.write_text("codigo;nome\n1;Teste\n", encoding="utf-8")
+    insercoes = []
+    bloqueios = []
+
+    async def fake_inserir(arquivo, batch):
+        insercoes.append(batch)
+        return len(batch)
+
+    async def fake_bloqueio(arquivo, *, status, mensagem, linhas_lidas=None):
+        bloqueios.append((arquivo["dataset_codigo"], status, mensagem, linhas_lidas))
+
+    monkeypatch.setattr(loaders, "_inserir_linhas_genericas", fake_inserir)
+    monkeypatch.setattr(loaders, "_registrar_bloqueio_generico", fake_bloqueio)
+
+    resultado = await loaders.carregar_arquivo_tabular_generico(
+        {
+            "id": "arquivo-critico",
+            "dataset_codigo": dataset_codigo,
+            "familia": familia,
+            "url": f"https://dadosabertos.ans.gov.br/{dataset_codigo}.csv",
+            "nome_arquivo": f"{dataset_codigo}.csv",
+            "hash_arquivo": "hash",
+            "caminho_landing": str(csv_path),
+            "extensao": "csv",
+        }
+    )
+
+    assert resultado["status"] == "LAYOUT_NAO_MAPEADO"
+    assert "bronze canonica" in resultado["erro"]
+    assert insercoes == []
+    assert bloqueios and bloqueios[0][0] == dataset_codigo
+
+
+@pytest.mark.asyncio
+async def test_dataset_fora_allowlist_nao_usa_linha_generica(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    csv_path = tmp_path / "desconhecido.csv"
+    csv_path.write_text("codigo;nome\n1;Teste\n", encoding="utf-8")
+    bloqueios = []
+
+    async def fake_bloqueio(arquivo, *, status, mensagem, linhas_lidas=None):
+        bloqueios.append((status, mensagem, linhas_lidas))
+
+    monkeypatch.setattr(loaders, "_registrar_bloqueio_generico", fake_bloqueio)
+
+    resultado = await loaders.carregar_arquivo_tabular_generico(
+        {
+            "id": "arquivo-desconhecido",
+            "dataset_codigo": "fonte_desconhecida",
+            "familia": "outros",
+            "nome_arquivo": "desconhecido.csv",
+            "hash_arquivo": "hash",
+            "caminho_landing": str(csv_path),
+            "extensao": "csv",
+        }
+    )
+
+    assert resultado["status"] == "LAYOUT_NAO_MAPEADO"
+    assert "allowlist" in resultado["erro"]
+    assert bloqueios[0][0] == "LAYOUT_NAO_MAPEADO"
+
+
+@pytest.mark.asyncio
+async def test_arquivo_generico_acima_de_100mb_e_bloqueado(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    csv_path = tmp_path / "dados.csv"
+    csv_path.write_text("codigo;nome\n1;Teste\n", encoding="utf-8")
+    bloqueios = []
+
+    async def fake_bloqueio(arquivo, *, status, mensagem, linhas_lidas=None):
+        bloqueios.append((status, mensagem, linhas_lidas))
+
+    monkeypatch.setattr(loaders, "_registrar_bloqueio_generico", fake_bloqueio)
+
+    resultado = await loaders.carregar_arquivo_tabular_generico(
+        {
+            "id": "arquivo-grande",
+            "dataset_codigo": "ans_pda_generico",
+            "familia": "desconhecido",
+            "nome_arquivo": "dados.csv",
+            "hash_arquivo": "hash",
+            "caminho_landing": str(csv_path),
+            "extensao": "csv",
+            "tamanho_bytes": loaders.MAX_GENERIC_FILE_BYTES + 1,
+        }
+    )
+
+    assert resultado["status"] == "LAYOUT_NAO_MAPEADO"
+    assert "100 MB" in resultado["erro"]
+    assert bloqueios[0][0] == "LAYOUT_NAO_MAPEADO"
+
+
+@pytest.mark.asyncio
+async def test_linha_generica_aborta_ao_passar_limite_de_linhas(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    csv_path = tmp_path / "dados.csv"
+    csv_path.write_text("codigo;nome\n1;Teste\n", encoding="utf-8")
+    insercoes = []
+    bloqueios = []
+
+    async def fake_inserir(arquivo, batch):
+        insercoes.append(batch)
+        return len(batch)
+
+    async def fake_status(arquivo_id, novo_status, erro_mensagem=None):
+        return None
+
+    async def fake_bloqueio(arquivo, *, status, mensagem, linhas_lidas=None):
+        bloqueios.append((status, mensagem, linhas_lidas))
+
+    monkeypatch.setattr(loaders, "MAX_GENERIC_ROWS", 2)
+    monkeypatch.setattr(
+        loaders,
+        "_iter_csv",
+        lambda path: iter([
+            [(2, {"codigo": "1"})],
+            [(3, {"codigo": "2"}), (4, {"codigo": "3"})],
+        ]),
+    )
+    monkeypatch.setattr(loaders, "_inserir_linhas_genericas", fake_inserir)
+    monkeypatch.setattr(loaders, "_marcar_status_arquivo", fake_status)
+    monkeypatch.setattr(loaders, "_registrar_bloqueio_generico", fake_bloqueio)
+
+    resultado = await loaders.carregar_arquivo_tabular_generico(
+        {
+            "id": "arquivo-limite",
+            "dataset_codigo": "ans_pda_generico",
+            "familia": "desconhecido",
+            "nome_arquivo": "dados.csv",
+            "hash_arquivo": "hash",
+            "caminho_landing": str(csv_path),
+            "extensao": "csv",
+        }
+    )
+
+    assert resultado["status"] == "ERRO_VALIDACAO"
+    assert resultado["linhas_carregadas"] == 1
+    assert len(insercoes) == 1
+    assert bloqueios == [("ERRO_VALIDACAO", resultado["erro"], 3)]
 
 
 @pytest.mark.asyncio

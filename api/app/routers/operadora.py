@@ -25,17 +25,24 @@ async def get_operadoras(
     request: Request,
     pagina: int = Query(default=1, ge=1),
     por_pagina: int = Query(default=50, ge=1, le=100),
+    page: int | None = Query(default=None, ge=1),
+    per_page: int | None = Query(default=None, ge=1, le=100),
+    registro_ans: str | None = Query(default=None),
+    nome: str | None = Query(default=None),
     busca: str | None = Query(default=None),
     uf: str | None = Query(default=None, min_length=2, max_length=2),
     modalidade: str | None = Query(default=None),
+    situacao: str | None = Query(default=None),
 ) -> dict:
     await aplicar_rate_limit(request)
     payload = await listar_operadoras(
-        pagina=pagina,
-        por_pagina=por_pagina,
-        busca=busca,
+        pagina=page or pagina,
+        por_pagina=per_page or por_pagina,
+        registro_ans=registro_ans,
+        busca=busca or nome,
         uf=uf,
         modalidade=modalidade,
+        situacao=situacao,
     )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload

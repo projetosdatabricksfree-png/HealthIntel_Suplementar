@@ -40,3 +40,4 @@ select
     _lote_id
 from base
 where rn = 1
+  and registro_ans ~ '^[0-9]{6}$'

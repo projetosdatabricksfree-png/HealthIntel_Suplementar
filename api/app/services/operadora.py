@@ -61,14 +61,19 @@ async def listar_operadoras(
     *,
     pagina: int = 1,
     por_pagina: int = 50,
+    registro_ans: str | None = None,
     busca: str | None = None,
     uf: str | None = None,
     modalidade: str | None = None,
+    situacao: str | None = None,
 ) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"operadoras:{pagina}:{por_pagina}:{busca or ''}:{uf or ''}:{modalidade or ''}"
+    cache_key = (
+        f"operadoras:{pagina}:{por_pagina}:{registro_ans or ''}:"
+        f"{busca or ''}:{uf or ''}:{modalidade or ''}:{situacao or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
@@ -76,6 +81,9 @@ async def listar_operadoras(
 
     params: dict[str, object] = {"limit": por_pagina, "offset": offset}
     filtros = ["1=1"]
+    if registro_ans:
+        params["registro_ans"] = registro_ans.zfill(6)
+        filtros.append("registro_ans = :registro_ans")
     if busca:
         busca_normalizada = busca.strip()
         params["busca_like"] = f"%{busca_normalizada}%"

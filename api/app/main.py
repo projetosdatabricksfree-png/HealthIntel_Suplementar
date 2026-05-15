@@ -25,6 +25,7 @@ from api.app.routers import (
     operadora,
     prata,
     premium,
+    produto,
     public_checkout,
     ranking,
     rede,
@@ -85,6 +86,7 @@ app.middleware("http")(aplicar_hardening_http)
 app.middleware("http")(registrar_tempo_requisicao)
 app.include_router(meta.router, prefix=settings.app_prefixo)
 app.include_router(operadora.router, prefix=settings.app_prefixo)
+app.include_router(produto.router, prefix=settings.app_prefixo)
 app.include_router(mercado.router, prefix=settings.app_prefixo)
 app.include_router(rede.router, prefix=settings.app_prefixo)
 app.include_router(ranking.router, prefix=settings.app_prefixo)
