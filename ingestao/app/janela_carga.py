@@ -127,7 +127,13 @@ async def obter_janela(
                 f"Dataset {dataset_codigo} nao usa janela dinamica de carga temporal."
             )
 
-        anos_carga = politica["anos_carga_hot"] or anos or obter_anos_carga_default()
+        env_override = os.getenv("ANS_ANOS_CARGA_HOT")
+        anos_carga = (
+            anos
+            or (obter_anos_carga_default() if env_override else None)
+            or politica["anos_carga_hot"]
+            or obter_anos_carga_default()
+        )
         if int(anos_carga) < 1:
             raise ConfiguracaoJanelaInvalidaError(
                 f"anos_carga_hot invalido para {dataset_codigo}: {anos_carga}."

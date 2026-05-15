@@ -60,6 +60,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule="0 5 16 */3 *",
     catchup=False,
+    is_paused_upon_creation=False,
     default_args={
         "retries": 2,
         "retry_delay": timedelta(minutes=10),

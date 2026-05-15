@@ -24,12 +24,16 @@ from urllib.parse import unquote, urljoin, urlparse
 from uuid import uuid4
 
 import httpx
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
 
 from ingestao.app.carregar_postgres import (
+    POLITICA_DATASET_ALIAS,
     SessionLocal,
     carregar_dataset_bruto,
     carregar_dataset_bruto_em_batches,
+    coluna_periodo_dataset,
+    dataset_periodo_ja_carregado,
     registrar_job_carga,
     registrar_lote_ingestao,
 )
@@ -133,7 +137,7 @@ def _detectar_dialect(amostra: str) -> csv.Dialect:
 
 def _ler_csv_bytes(conteudo: bytes) -> list[dict[str, str]]:
     encoding = _detectar_encoding(conteudo[:8192])
-    texto = conteudo.decode(encoding)
+    texto = conteudo.decode(encoding, errors="replace")
     amostra = texto[:8192]
     if "<html" in amostra.lower() or "<!doctype html" in amostra.lower():
         raise ValueError("Arquivo HTML nao e fonte tabular ANS valida.")
@@ -145,8 +149,9 @@ def _ler_csv_bytes(conteudo: bytes) -> list[dict[str, str]]:
 
 
 def _iter_csv_path(path: Path) -> Iterator[list[dict[str, str]]]:
-    encoding = _detectar_encoding(path.read_bytes()[:8192])
-    with path.open("r", encoding=encoding, newline="") as arquivo:
+    with path.open("rb") as binario:
+        encoding = _detectar_encoding(binario.read(8192))
+    with path.open("r", encoding=encoding, errors="replace", newline="") as arquivo:
         amostra = arquivo.read(8192)
         arquivo.seek(0)
         if "<html" in amostra.lower() or "<!doctype html" in amostra.lower():
@@ -171,7 +176,12 @@ def _iter_zip_path(path: Path) -> Iterator[list[dict[str, str]]]:
                 conteudo_amostra = binario.read(8192)
                 encoding = _detectar_encoding(conteudo_amostra)
                 binario.seek(0)
-                wrapper = io.TextIOWrapper(binario, encoding=encoding, newline="")
+                wrapper = io.TextIOWrapper(
+                    binario,
+                    encoding=encoding,
+                    errors="replace",
+                    newline="",
+                )
                 amostra = wrapper.read(8192)
                 wrapper.seek(0)
                 reader = csv.DictReader(wrapper, dialect=_detectar_dialect(amostra))
@@ -411,41 +421,104 @@ async def _registrar_arquivo_fonte(
                 "erro_mensagem": erro,
             },
         )
+        try:
+            await session.execute(
+                text(
+                    """
+                    update plataforma.arquivo_fonte_ans
+                    set status = :status,
+                        erro_mensagem = :erro_mensagem,
+                        caminho_landing = coalesce(:caminho_landing, caminho_landing),
+                        updated_at = now()
+                    where id = (
+                        select id
+                        from plataforma.arquivo_fonte_ans
+                        where dataset_codigo = :dataset_codigo
+                          and url = :url
+                          and (
+                            hash_arquivo is not distinct from :hash_arquivo
+                            or :hash_arquivo is null
+                          )
+                        order by
+                          case
+                            when status in ('baixado', 'carregado', 'baixado_sem_parser')
+                            then 0
+                            else 1
+                          end,
+                          created_at desc
+                        limit 1
+                    )
+                    """
+                ),
+                {
+                    "dataset_codigo": fonte.dataset_codigo,
+                    "url": fonte.url,
+                    "hash_arquivo": payload.get("hash_arquivo"),
+                    "caminho_landing": payload.get("path"),
+                    "status": status,
+                    "erro_mensagem": erro,
+                },
+            )
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+
+
+async def _registrar_tentativa(
+    *,
+    dag_id: str,
+    task_id: str,
+    dominio: str,
+    dataset_codigo: str,
+    fonte_url: str | None = None,
+    arquivo_nome: str | None = None,
+    arquivo_hash: str | None = None,
+    competencia: int | None = None,
+    status: str,
+    motivo: str | None = None,
+    linhas_lidas: int = 0,
+    linhas_validas: int = 0,
+    linhas_inseridas: int = 0,
+    tabela_destino: str | None = None,
+    erro_tipo: str | None = None,
+    erro_mensagem: str | None = None,
+) -> None:
+    async with SessionLocal() as session:
         await session.execute(
             text(
                 """
-                update plataforma.arquivo_fonte_ans
-                set status = :status,
-                    erro_mensagem = :erro_mensagem,
-                    caminho_landing = coalesce(:caminho_landing, caminho_landing),
-                    updated_at = now()
-                where id = (
-                    select id
-                    from plataforma.arquivo_fonte_ans
-                    where dataset_codigo = :dataset_codigo
-                      and url = :url
-                      and (
-                        hash_arquivo is not distinct from :hash_arquivo
-                        or :hash_arquivo is null
-                      )
-                    order by
-                      case
-                        when status in ('baixado', 'carregado', 'baixado_sem_parser')
-                        then 0
-                        else 1
-                      end,
-                      created_at desc
-                    limit 1
+                insert into plataforma.tentativa_carga_ans (
+                    dag_id, task_id, dominio, dataset_codigo, fonte_url,
+                    arquivo_nome, arquivo_hash, competencia, status, motivo,
+                    linhas_lidas, linhas_validas, linhas_inseridas,
+                    tabela_destino, erro_tipo, erro_mensagem,
+                    iniciado_em, finalizado_em
+                ) values (
+                    :dag_id, :task_id, :dominio, :dataset_codigo, :fonte_url,
+                    :arquivo_nome, :arquivo_hash, :competencia, :status, :motivo,
+                    :linhas_lidas, :linhas_validas, :linhas_inseridas,
+                    :tabela_destino, :erro_tipo, :erro_mensagem,
+                    now(), now()
                 )
                 """
             ),
             {
-                "dataset_codigo": fonte.dataset_codigo,
-                "url": fonte.url,
-                "hash_arquivo": payload.get("hash_arquivo"),
-                "caminho_landing": payload.get("path"),
+                "dag_id": dag_id,
+                "task_id": task_id,
+                "dominio": dominio,
+                "dataset_codigo": dataset_codigo,
+                "fonte_url": fonte_url,
+                "arquivo_nome": arquivo_nome,
+                "arquivo_hash": arquivo_hash,
+                "competencia": competencia,
                 "status": status,
-                "erro_mensagem": erro,
+                "motivo": motivo,
+                "linhas_lidas": linhas_lidas,
+                "linhas_validas": linhas_validas,
+                "linhas_inseridas": linhas_inseridas,
+                "tabela_destino": tabela_destino,
+                "erro_tipo": erro_tipo,
+                "erro_mensagem": erro_mensagem,
             },
         )
         await session.commit()
@@ -754,6 +827,21 @@ async def _carregar_direto_streaming(
     lote_id = str(uuid4())
     total_linhas = 0
     total_aprovadas = 0
+    competencias_fora_janela_registradas: set[int] = set()
+    janela_carga = None
+    try:
+        from ingestao.app.janela_carga import (
+            DatasetNaoTemporalError,
+            PoliticaDatasetNaoEncontradaError,
+            obter_janela,
+        )
+
+        janela_carga = await obter_janela(
+            POLITICA_DATASET_ALIAS.get(fonte.dataset_codigo, fonte.dataset_codigo)
+        )
+    except (DatasetNaoTemporalError, PoliticaDatasetNaoEncontradaError):
+        janela_carga = None
+
     for batch in _iter_arquivo(path):
         total_linhas += len(batch)
         registros = (
@@ -766,6 +854,34 @@ async def _carregar_direto_streaming(
             if normalizar
             else batch
         )
+        if janela_carga is not None:
+            from ingestao.app.janela_carga import (
+                competencia_dentro_janela,
+                normalizar_competencia,
+                registrar_decisao,
+            )
+
+            coluna_competencia = janela_carga.coluna_competencia or "competencia"
+            registros_dentro_janela = []
+            for item in registros:
+                valor_competencia = item.get(coluna_competencia) or item.get("competencia")
+                try:
+                    competencia_item = normalizar_competencia(valor_competencia)
+                except (TypeError, ValueError):
+                    continue
+                if competencia_dentro_janela(competencia_item, janela_carga):
+                    registros_dentro_janela.append(item)
+                    continue
+                if competencia_item not in competencias_fora_janela_registradas:
+                    await registrar_decisao(
+                        janela_carga.dataset_codigo,
+                        competencia_item,
+                        "ignorado_fora_janela",
+                        janela_carga,
+                        "Registro fora da janela dinamica de carga.",
+                    )
+                    competencias_fora_janela_registradas.add(competencia_item)
+            registros = registros_dentro_janela
         aprovados = [
             item
             for item in registros
@@ -823,10 +939,38 @@ async def _processar_fonte(
 ) -> dict:
     payload: dict[str, str] = {}
     try:
+        coluna_periodo = coluna_periodo_dataset(fonte.dataset_codigo)
+        if coluna_periodo and await dataset_periodo_ja_carregado(
+            fonte.dataset_codigo,
+            fonte.competencia,
+        ):
+            await _registrar_tentativa(
+                dag_id=f"ingestao_delta_ans.{fonte.dataset_codigo}",
+                task_id="verificar_periodo_existente",
+                dominio=fonte.familia,
+                dataset_codigo=fonte.dataset_codigo,
+                fonte_url=fonte.url,
+                arquivo_nome=fonte.nome_arquivo,
+                competencia=_inteiro(_competencia_iso(fonte.competencia)),
+                status="ARQUIVO_JA_CARREGADO",
+                motivo=(
+                    f"Periodo {fonte.competencia} ja existe em bronze; "
+                    "carga idempotente ignorada antes do download."
+                ),
+                tabela_destino=fonte.dataset_codigo,
+            )
+            return {
+                "status": "carregado",
+                "lote_id": None,
+                "tabela_destino": fonte.dataset_codigo,
+                "total_registros": 0,
+                "arquivo": fonte.nome_arquivo,
+                "motivo": "periodo_ja_carregado",
+            }
         payload = await _baixar_fonte(fonte)
         await _registrar_arquivo_fonte(fonte, payload, "baixado")
         path = Path(payload["path"])
-        if direto and fonte.dataset_codigo.startswith("tiss_"):
+        if direto:
             resultado = await _carregar_direto_streaming(
                 fonte=fonte,
                 path=path,
@@ -875,13 +1019,38 @@ async def _ingerir_fontes(
     padrao: str | None = None,
     direto: bool = False,
 ) -> dict:
-    fontes = await _resolver_fontes(
-        dataset_codigo=dataset_codigo,
-        familia=familia,
-        competencia=competencia,
-        base_url=base_url,
-        padrao=padrao,
-    )
+    try:
+        fontes = await _resolver_fontes(
+            dataset_codigo=dataset_codigo,
+            familia=familia,
+            competencia=competencia,
+            base_url=base_url,
+            padrao=padrao,
+        )
+    except (RuntimeError, httpx.HTTPStatusError) as exc:
+        mensagem = str(exc)
+        if isinstance(exc, RuntimeError) and "Nenhum arquivo tabular encontrado" not in mensagem:
+            raise
+        await _registrar_tentativa(
+            dag_id=f"ingestao_delta_ans.{dataset_codigo}",
+            task_id="resolver_fontes",
+            dominio=familia,
+            dataset_codigo=dataset_codigo,
+            fonte_url=base_url,
+            competencia=_inteiro(_competencia_iso(competencia)),
+            status="FONTE_INDISPONIVEL",
+            motivo="Fonte ANS sem arquivo tabular disponivel para a carga solicitada.",
+            erro_tipo=type(exc).__name__,
+            erro_mensagem=mensagem[:500],
+        )
+        return {
+            "status": "sem_fonte",
+            "dataset_codigo": dataset_codigo,
+            "arquivos": 0,
+            "total_registros": 0,
+            "resultados": [],
+            "motivo": mensagem,
+        }
     resultados = []
     for fonte in fontes:
         resultados.append(await _processar_fonte(fonte, direto=direto))
@@ -1101,6 +1270,7 @@ async def executar_ingestao_painel_precificacao(competencia: str) -> dict:
         familia="precificacao_ntrp",
         competencia=competencia,
         base_url=_url("painel_precificacao-053/"),
+        direto=True,
     )
 
 
@@ -1178,6 +1348,7 @@ async def executar_ingestao_produto_prestador_hospitalar(competencia: str) -> di
         familia="rede_prestadores",
         competencia=competencia,
         base_url=_url("produtos_e_prestadores_hospitalares/"),
+        direto=True,
     )
 
 
@@ -1187,6 +1358,7 @@ async def executar_ingestao_operadora_prestador_nao_hospitalar(competencia: str)
         familia="rede_prestadores",
         competencia=competencia,
         base_url=_url("operadoras_e_prestadores_nao_hospitalares/"),
+        direto=True,
     )
 
 
@@ -1306,3 +1478,179 @@ async def executar_ingestao_taxa_cobertura_plano(competencia: str) -> dict:
         competencia=competencia,
         base_url=_url("taxa_de_cobertura_de_planos_de_saude-047/"),
     )
+
+
+# ---------------------------------------------------------------------------
+# Onda 10 - Prudencial, Regime Especial, Taxa Resolutividade
+# ---------------------------------------------------------------------------
+
+
+def _prudencial(row: dict[str, str], competencia: str, _: str) -> dict:
+    dt = str(row.get("DT_TRIMESTRE_REFERENCIA") or "").strip()
+    trim = ""
+    if len(dt) >= 7:
+        ano = dt[:4]
+        mes = int(dt[5:7]) if dt[5:7].isdigit() else 0
+        trim_num = ((mes - 1) // 3 + 1) if mes else 1
+        trim = f"{trim_num}T{ano}"
+    return {
+        "trimestre": trim or competencia,
+        "registro_ans": row.get("REGISTRO_OPERADORA") or "",
+        "situacao_prudencial": row.get("TP_CLASSIFICACAO") or "",
+        "margem_solvencia": None,
+        "capital_minimo_requerido": None,
+        "capital_disponivel": None,
+        "indice_liquidez": None,
+        "fonte_publicacao": "ans_ftp",
+    }
+
+
+def _regime_especial(row: dict[str, str], competencia: str, _: str) -> dict:
+    ano = str(row.get("ANO") or "").strip()
+    return {
+        "trimestre": f"1T{ano}" if ano else competencia,
+        "registro_ans": str(row.get("REGISTRO_OPERADORA") or "").strip(),
+        "tipo_regime": str(row.get("RESOLUCAO_OPERACIONAL") or "").strip(),
+        "data_inicio": _data_iso(row.get("DATA_PUBLICACAO")),
+        "data_fim": None,
+        "descricao": str(row.get("RAZAO_SOCIAL") or "").strip(),
+        "fonte_publicacao": "ans_ftp",
+    }
+
+
+def _taxa_resolutividade(row: dict[str, str], competencia: str, _: str) -> dict:
+    comp_str = str(row.get("CD_COMPETENCIA") or competencia).strip()
+    return {
+        "trimestre": _competencia_iso(comp_str),
+        "registro_ans": str(row.get("CD_REGISTRO_ANS") or "").strip(),
+        "modalidade": str(row.get("TP_NATUREZA") or "").strip(),
+        "taxa_resolutividade": _decimal(
+            str(row.get("VL_TR") or "0").replace(",", ".")
+        ),
+        "n_reclamacao_resolvida": _inteiro(row.get("NR_NUMERADOR")),
+        "n_reclamacao_total": _inteiro(row.get("NR_DENOMINADOR")),
+        "fonte_publicacao": "ans_ftp",
+    }
+
+
+def _glosa(row: dict[str, str], competencia: str, _: str) -> dict:
+    periodo = str(row.get("CD_PERIODO") or competencia).strip()
+    return {
+        "competencia": _competencia_iso(periodo.replace("-", "")),
+        "registro_ans": str(row.get("REGISTRO_OPERADORA") or "").strip(),
+        "tipo_glosa": str(row.get("CD_INDICADOR") or row.get("NM_INDICADOR") or "").strip(),
+        "qt_glosa": _inteiro(row.get("QT_GLOSA") or row.get("NR_GUIAS_SEM_RETORNO")),
+        "valor_glosa": _decimal(
+            str(row.get("VL_GLOSA") or row.get("VL_GUIAS_SEM_RETORNO") or "0").replace(",", ".")
+        ),
+        "valor_faturado": _decimal(
+            str(row.get("VL_FATURADO") or "0").replace(",", ".")
+        ),
+        "fonte_publicacao": "ans_ftp",
+    }
+
+
+def _diops(row: dict[str, str], competencia: str, arquivo_origem: str) -> dict:
+    dt = str(row.get("DATA") or "").strip()
+    trim = ""
+    if len(dt) >= 7:
+        # Suporta YYYY-MM-DD e DD/MM/YYYY (formato antigo pre-2024)
+        if len(dt) >= 10 and dt[2] == "/" and dt[5] == "/":
+            # DD/MM/YYYY → reordenar para extração consistente
+            ano = dt[6:10]
+            mes = int(dt[3:5]) if dt[3:5].isdigit() else 0
+        else:
+            ano = dt[:4]
+            mes = int(dt[5:7]) if dt[5:7].isdigit() else 0
+        trim_num = ((mes - 1) // 3 + 1) if mes else 1
+        trim = f"{trim_num}T{ano}"
+    return {
+        "trimestre": trim or competencia,
+        "registro_ans": str(row.get("REG_ANS") or "").strip(),
+        "cnpj": str(row.get("CNPJ") or "").strip(),
+        "ativo_total": _decimal(row.get("ATIVO_TOTAL") or row.get("VL_SALDO_FINAL")),
+        "passivo_total": None,
+        "patrimonio_liquido": None,
+        "receita_total": None,
+        "despesa_total": None,
+        "resultado_periodo": None,
+        "provisao_tecnica": None,
+        "margem_solvencia_calculada": None,
+        "fonte_publicacao": "ans_ftp_diops",
+    }
+
+
+_NORMALIZADORES.update({
+    "prudencial_operadora_trimestral": _prudencial,
+    "regime_especial_operadora_trimestral": _regime_especial,
+    "taxa_resolutividade_operadora_trimestral": _taxa_resolutividade,
+    "glosa_operadora_mensal": _glosa,
+    "diops_operadora_trimestral": _diops,
+})
+
+
+async def executar_ingestao_prudencial_operadora(competencia: str) -> dict:
+    return await _ingerir_fontes(
+        dataset_codigo="prudencial_operadora_trimestral",
+        familia="financeiro",
+        competencia=competencia,
+        base_url=_url("classificacao_prudencial-056/pda-056-classificacao_prudencial.csv"),
+        direto=True,
+    )
+
+
+async def executar_ingestao_regime_especial_direcao_tecnica(competencia: str) -> dict:
+    return await _ingerir_fontes(
+        dataset_codigo="regime_especial_operadora_trimestral",
+        familia="regulatorio",
+        competencia=competencia,
+        base_url=_url("regimes_especiais_direcao_tecnica/pda-040-regimes_especiais_direcao_tecnica.csv"),
+        direto=True,
+    )
+
+
+async def executar_ingestao_taxa_resolutividade_operadora(competencia: str) -> dict:
+    return await _ingerir_fontes(
+        dataset_codigo="taxa_resolutividade_operadora_trimestral",
+        familia="regulatorio",
+        competencia=competencia,
+        base_url=_url("taxa_de_resolutividade/pda-048-taxa_de_resolutividade.csv"),
+        direto=True,
+    )
+
+
+async def executar_ingestao_glosa_operadora(competencia: str) -> dict:
+    return await _ingerir_fontes(
+        dataset_codigo="glosa_operadora_mensal",
+        familia="financeiro",
+        competencia=competencia,
+        base_url=_url("painel_de_glosas-057/dados/"),
+        direto=True,
+    )
+
+
+async def executar_ingestao_diops_operadora(competencia: str) -> dict:
+    ano = (competencia or "")[:4] or str(date.today().year - 1)
+    ano_fechado_anterior = str(date.today().year - 1)
+    if not re.fullmatch(r"20\d{2}", ano) or int(ano) >= date.today().year:
+        ano = str(date.today().year - 1)
+    try:
+        return await _ingerir_fontes(
+            dataset_codigo="diops_operadora_trimestral",
+            familia="financeiro",
+            competencia=competencia,
+            base_url=_url(f"demonstracoes_contabeis/{ano}/"),
+            padrao=r"\dT20\d{2}\.zip$",
+            direto=True,
+        )
+    except Exception:
+        if ano == ano_fechado_anterior:
+            raise
+        return await _ingerir_fontes(
+            dataset_codigo="diops_operadora_trimestral",
+            familia="financeiro",
+            competencia=competencia,
+            base_url=_url(f"demonstracoes_contabeis/{ano_fechado_anterior}/"),
+            padrao=r"\dT20\d{2}\.zip$",
+            direto=True,
+        )

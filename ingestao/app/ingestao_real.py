@@ -33,7 +33,11 @@ def _ler_csv_bytes(conteudo: bytes) -> list[dict[str, str]]:
     encoding = _detectar_encoding(conteudo)
     texto = conteudo.decode(encoding)
     amostra = texto[:4096]
-    dialect = csv.Sniffer().sniff(amostra, delimiters=";,|,\t")
+    try:
+        dialect = csv.Sniffer().sniff(amostra, delimiters=";,|\t")
+    except csv.Error:
+        dialect = csv.excel
+        dialect.delimiter = ";"
     reader = csv.DictReader(io.StringIO(texto), dialect=dialect)
     return [dict(row) for row in reader]
 
@@ -94,6 +98,38 @@ async def executar_ingestao_sib_uf(competencia: str, uf: str) -> dict:
 # ---------------------------------------------------------------------------
 # Streaming / Batch helpers (new — for real heavy ingestion)
 # ---------------------------------------------------------------------------
+
+def iterar_csv_plain(
+    path_csv: Path,
+    *,
+    encoding: str | None = None,
+    batch_size: int = 5000,
+) -> Iterator[list[dict[str, str]]]:
+    """Yield batches de dicts de um CSV plano sem carregar todo o arquivo em memória."""
+    if encoding is None:
+        encoding = _detectar_encoding(path_csv.read_bytes()[:8192])
+
+    with open(path_csv, encoding=encoding, newline="", errors="replace") as f:
+        sample = f.read(4096)
+        f.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(sample, delimiters=";,|\t")
+        except csv.Error:
+            dialect = csv.excel
+            dialect.delimiter = ";"
+
+        reader = csv.DictReader(f, dialect=dialect)
+        batch: list[dict[str, str]] = []
+
+        for row in reader:
+            batch.append(dict(row))
+            if len(batch) >= batch_size:
+                yield batch
+                batch = []
+
+        if batch:
+            yield batch
+
 
 def iterar_csv_zip(
     path_zip: Path,
@@ -422,3 +458,188 @@ async def executar_ingestao_sib_uf_streaming(
         "uf": uf,
         "hash_arquivo": hash_arquivo,
     }
+
+
+# ---------------------------------------------------------------------------
+# CNES / DATASUS streaming flow
+# ---------------------------------------------------------------------------
+
+async def executar_ingestao_cnes(
+    competencia: str,
+    *,
+    batch_size: int | None = None,
+) -> dict:
+    """
+    Fluxo CNES streaming (DATASUS):
+    - baixa CSV (ou ZIP) da URL configurada em datasus_cnes_base_url;
+    - injeta coluna Competencia se ausente no arquivo fonte;
+    - verifica duplicidade por hash;
+    - identifica layout via MongoDB;
+    - processa em batches com processar_arquivo_bruto_streaming.
+    """
+    from sqlalchemy import text
+
+    from ingestao.app.carregar_postgres import (
+        SessionLocal,
+        dataset_periodo_ja_carregado,
+        registrar_lote_ingestao,
+    )
+    from ingestao.app.pipeline_bronze import processar_arquivo_bruto_streaming
+
+    settings = get_settings()
+    bs = batch_size or settings.datasus_cnes_batch_size
+
+    if await dataset_periodo_ja_carregado("cnes_estabelecimento", competencia):
+        lote_id = str(uuid4())
+        await registrar_lote_ingestao(
+            lote_id=lote_id,
+            dataset_codigo="cnes_estabelecimento",
+            competencia=competencia,
+            arquivo_origem="cnes_estabelecimento",
+            hash_arquivo=f"periodo-ja-carregado:{competencia}",
+            hash_estrutura=None,
+            versao_layout=None,
+            status="ignorado_duplicata",
+            total_linhas_raw=0,
+            total_aprovadas=0,
+            total_quarentena=0,
+            origem_execucao="streaming_cnes",
+            erro_mensagem=(
+                f"Competencia {competencia} ja existe em bronze; "
+                "carga idempotente ignorada antes do download."
+            ),
+        )
+        return {
+            "status": "ignorado_competencia_existente",
+            "lote_id": lote_id,
+            "competencia": competencia,
+        }
+
+    try:
+        arquivo = await baixar_arquivo(
+            "cnes_estabelecimento", competencia, settings.datasus_cnes_base_url
+        )
+    except Exception as exc:
+        from ingestao.app.auditoria_tentativa_carga import registrar_fonte_indisponivel
+
+        await registrar_fonte_indisponivel(
+            dominio="cnes",
+            dataset_codigo="cnes_estabelecimento",
+            fonte_url=settings.datasus_cnes_base_url,
+            dag_id="dag_ingest_cnes",
+            task_id="ingerir_cnes",
+            erro_mensagem=str(exc)[:500],
+        )
+        return {
+            "status": "sem_fonte",
+            "dataset_codigo": "cnes_estabelecimento",
+            "total_registros": 0,
+            "motivo": str(exc)[:500],
+        }
+    path_arquivo = Path(arquivo["path"])
+    hash_arquivo = arquivo["hash_arquivo"]
+    nome_arquivo = arquivo["arquivo_origem"]
+
+    async with SessionLocal() as session:
+        dup_result = await session.execute(
+            text("""
+                select count(*) > 0
+                from plataforma.lote_ingestao
+                where dataset = 'cnes_estabelecimento'
+                  and hash_arquivo = :hash
+                  and status in ('sucesso', 'sucesso_com_alertas')
+            """),
+            {"hash": hash_arquivo},
+        )
+        duplicado = bool(dup_result.scalar_one())
+
+    if duplicado:
+        lote_id = str(uuid4())
+        await registrar_lote_ingestao(
+            lote_id=lote_id,
+            dataset_codigo="cnes_estabelecimento",
+            competencia=competencia,
+            arquivo_origem=nome_arquivo,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=None,
+            versao_layout=None,
+            status="ignorado_duplicata",
+            total_linhas_raw=0,
+            total_aprovadas=0,
+            total_quarentena=0,
+            origem_execucao="streaming_cnes",
+            erro_mensagem=(
+                "Lote duplicado rejeitado por hash_arquivo "
+                "com carga anterior bem-sucedida."
+            ),
+        )
+        return {
+            "status": "ignorado_duplicata",
+            "lote_id": lote_id,
+            "hash_arquivo": hash_arquivo,
+        }
+
+    sufixo = path_arquivo.suffix.lower()
+    if sufixo == ".zip":
+        iterador_base = iterar_csv_zip(path_arquivo, batch_size=bs)
+    else:
+        iterador_base = iterar_csv_plain(path_arquivo, batch_size=bs)
+
+    primeiro_batch = next(iterador_base, None)
+    if not primeiro_batch:
+        return {"status": "vazio", "hash_arquivo": hash_arquivo}
+
+    tem_competencia = (
+        "Competencia" in primeiro_batch[0] or "competencia" in primeiro_batch[0]
+    )
+    if not tem_competencia:
+        for registro in primeiro_batch:
+            registro["Competencia"] = competencia
+
+    colunas_detectadas = list(primeiro_batch[0].keys())
+    identificacao = await identificar_layout(
+        "cnes_estabelecimento", colunas_detectadas, nome_arquivo
+    )
+
+    if (
+        not identificacao.compativel
+        or not identificacao.layout_id
+        or not identificacao.layout_versao_id
+    ):
+        from ingestao.app.carregar_postgres import registrar_quarentena
+
+        quarentena_id = await registrar_quarentena(
+            dataset_codigo="cnes_estabelecimento",
+            arquivo_origem=nome_arquivo,
+            hash_arquivo=hash_arquivo,
+            hash_estrutura=identificacao.assinatura_colunas,
+            motivo="; ".join(identificacao.motivos) or "Layout incompativel para o arquivo.",
+        )
+        return {
+            "status": "quarentena",
+            "quarentena_id": quarentena_id,
+            "motivos": identificacao.motivos,
+        }
+
+    lote_id = str(uuid4())
+
+    def _batches_completos():
+        yield primeiro_batch
+        for batch in iterador_base:
+            if not tem_competencia:
+                for registro in batch:
+                    registro.setdefault("Competencia", competencia)
+            yield batch
+
+    return await processar_arquivo_bruto_streaming(
+        dataset_codigo="cnes_estabelecimento",
+        nome_arquivo=nome_arquivo,
+        hash_arquivo=hash_arquivo,
+        iterador_batches=_batches_completos(),
+        lote_id=lote_id,
+        layout_id=identificacao.layout_id,
+        layout_versao_id=identificacao.layout_versao_id,
+        hash_estrutura=identificacao.assinatura_colunas,
+        batch_size=bs,
+        colunas_mapeadas=identificacao.colunas_mapeadas,
+    )

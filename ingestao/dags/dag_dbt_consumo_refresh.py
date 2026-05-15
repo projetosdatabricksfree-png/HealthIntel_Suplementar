@@ -73,6 +73,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule="@daily",
     catchup=False,
+    is_paused_upon_creation=False,
     tags=["healthintel", "dbt", "consumo_ans"],
 ) as dag:
     run_marts = BashOperator(

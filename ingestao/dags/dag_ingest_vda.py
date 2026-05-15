@@ -1,20 +1,35 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from airflow import DAG
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.bash import BashOperator
+
+PYTHON_ENV = "PYTHONPATH=/workspace/.venv/lib/python3.12/site-packages:/workspace"
 
 with DAG(
     dag_id="dag_ingest_vda",
     start_date=datetime(2026, 1, 1),
-    schedule="0 4 15 * *",
+    schedule="0 6 15 * *",
     catchup=False,
-    tags=["healthintel", "financeiro_v2", "vda"],
+    is_paused_upon_creation=False,
+    tags=["healthintel", "financeiro", "vda", "delta_ans_100"],
 ) as dag:
-    inicio = EmptyOperator(task_id="inicio")
-    mapear_publicacao = EmptyOperator(task_id="mapear_publicacao")
-    validar_layout = EmptyOperator(task_id="validar_layout")
-    carregar_bruto = EmptyOperator(task_id="carregar_bruto")
-    registrar_versao = EmptyOperator(task_id="registrar_versao")
-    fim = EmptyOperator(task_id="fim")
-
-    inicio >> mapear_publicacao >> validar_layout >> carregar_bruto >> registrar_versao >> fim
+    registrar = BashOperator(
+        task_id="registrar_layout_nao_mapeado",
+        cwd="/workspace",
+        bash_command=f"""{PYTHON_ENV} python -c "
+import asyncio
+from ingestao.app.auditoria_tentativa_carga import registrar_layout_nao_mapeado
+asyncio.run(registrar_layout_nao_mapeado(
+    dominio='financeiro',
+    dataset_codigo='vda_operadora_mensal',
+    arquivo_nome='Beneficiarios_operadora_e_carteira.csv',
+    assinatura='CD_OPERADORA;GR_MODALIDADE;COBERTURA;VIGENCIA_PLANO;GR_CONTRATACAO;TIPO_FINANCIAMENTO;MES;ID_CMPT;NR_BENEF',
+    dag_id='dag_ingest_vda',
+    task_id='registrar_layout_nao_mapeado',
+    rascunho_id='vda_vinculo_beneficiario_vs_vda_financeiro_divergente',
+))
+"
+""",
+    )

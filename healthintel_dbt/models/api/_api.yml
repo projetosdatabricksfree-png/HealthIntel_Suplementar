@@ -174,3 +174,41 @@ models:
       - name: grupo_procedimento
         data_tests:
           - not_null
+  - name: api_glosa_operadora_mensal
+    description: Glosa mensal por operadora para o Core ANS.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: competencia
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "between 200001 and 209912"
+  - name: api_prudencial_operadora_trimestral
+    description: Indicadores prudenciais trimestrais por operadora para o Core ANS.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null
+  - name: api_regime_especial_operadora_trimestral
+    description: Regime especial trimestral por operadora para o Core ANS.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null
+  - name: api_taxa_resolutividade_operadora_trimestral
+    description: Taxa de resolutividade trimestral por operadora para o Core ANS.
+    columns:
+      - name: registro_ans
+        data_tests:
+          - not_null
+      - name: trimestre
+        data_tests:
+          - not_null

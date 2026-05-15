@@ -1,0 +1,245 @@
+version: 1
+schema: consumo_ans
+generated_for: sprint_consumo_ans_comercial
+statuses:
+  - disponivel
+  - parcial
+  - fora_do_escopo
+  - vazia_bloqueada
+tables:
+  - name: consumo_produto_plano
+    dominio: produto_plano
+    status: disponivel
+    fonte_ans: ANS PDA - caracteristicas de produtos e historico de planos
+    periodicidade: mensal
+    granularidade: registro_ans + codigo_produto + competencia
+    chave_negocio: [registro_ans, codigo_produto, competencia]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_historico_plano
+    dominio: produto_plano
+    status: disponivel
+    fonte_ans: ANS PDA - historico de planos
+    periodicidade: mensal
+    granularidade: registro_ans + codigo_plano + competencia
+    chave_negocio: [registro_ans, codigo_plano, competencia]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_regulatorio_operadora_trimestre
+    dominio: regulatorio
+    status: disponivel
+    fonte_ans: ANS PDA - NIP, IGR e taxa de resolutividade
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_igr
+    dominio: regulatorio
+    status: disponivel
+    fonte_ans: ANS PDA - IGR
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_nip
+    dominio: regulatorio
+    status: disponivel
+    fonte_ans: ANS PDA - NIP
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_idss
+    dominio: regulatorio
+    status: disponivel
+    fonte_ans: ANS PDA - IDSS
+    periodicidade: anual
+    granularidade: registro_ans + ano_base
+    chave_negocio: [registro_ans, ano_base]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_taxa_resolutividade_operadora_trimestral
+    dominio: regulatorio
+    status: disponivel
+    fonte_ans: ANS PDA - taxa de resolutividade
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_prudencial_operadora_trimestral
+    dominio: prudencial
+    status: disponivel
+    fonte_ans: ANS PDA - indicadores prudenciais
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_financeiro_operadora_trimestre
+    dominio: financeiro
+    status: disponivel
+    fonte_ans: ANS PDA - DIOPS/FIP
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre
+    chave_negocio: [registro_ans, trimestre]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_glosa_operadora_mensal
+    dominio: glosa
+    status: disponivel
+    fonte_ans: ANS PDA - glosa
+    periodicidade: mensal
+    granularidade: registro_ans + competencia + tipo_glosa
+    chave_negocio: [registro_ans, competencia, tipo_glosa]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_tuss_procedimento_vigente
+    dominio: tuss
+    status: disponivel
+    fonte_ans: ANS PDA - TUSS oficial vigente
+    periodicidade: versao_vigente
+    granularidade: codigo_tuss
+    chave_negocio: [codigo_tuss]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_regime_especial_operadora_trimestral
+    dominio: regime_especial
+    status: disponivel
+    fonte_ans: ANS PDA - regime especial
+    periodicidade: trimestral
+    granularidade: registro_ans + trimestre + tipo_regime
+    chave_negocio: [registro_ans, trimestre, tipo_regime]
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_rede_assistencial_municipio
+    dominio: cnes_rede_assistencial
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - rede assistencial; DataSUS CNES
+    periodicidade: mensal
+    granularidade: registro_ans + cd_municipio + competencia + segmento
+    chave_negocio: [registro_ans, cd_municipio, competencia, segmento]
+    limitacao: tabela consumo_ans zerada; componente CNES bloqueado por fonte DataSUS configurada retornando 404
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_sip_assistencial_operadora
+    dominio: sip
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - SIP mapa assistencial
+    periodicidade: mensal
+    granularidade: registro_ans + cd_municipio + competencia + tipo_assistencial
+    chave_negocio: [registro_ans, cd_municipio, competencia, tipo_assistencial]
+    limitacao: tabela consumo_ans zerada na validacao real; bloqueada ate carga SIP produzir linhas
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_precificacao_plano
+    dominio: ntrp
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - painel de precificacao/NTRP
+    periodicidade: mensal
+    granularidade: registro_ans + codigo_plano + competencia + faixa_etaria + sg_uf
+    chave_negocio: [registro_ans, codigo_plano, competencia, faixa_etaria, sg_uf]
+    limitacao: tabela consumo_ans zerada na validacao real; bloqueada ate carga NTRP produzir linhas
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_ressarcimento_sus_operadora
+    dominio: ressarcimento
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - ressarcimento ao SUS
+    periodicidade: mensal
+    granularidade: registro_ans + competencia
+    chave_negocio: [registro_ans, competencia]
+    limitacao: tabela consumo_ans zerada na validacao real; bloqueada ate carga ressarcimento produzir linhas
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_beneficiarios_operadora_mes
+    dominio: sib
+    status: parcial
+    fonte_ans: ANS PDA - SIB beneficiarios por operadora
+    periodicidade: mensal
+    granularidade: registro_ans + competencia
+    chave_negocio: [registro_ans, competencia]
+    limitacao: depende de SIB, fora do escopo de conclusao desta sprint
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_beneficiarios_municipio_mes
+    dominio: sib
+    status: parcial
+    fonte_ans: ANS PDA - SIB beneficiarios por municipio
+    periodicidade: mensal
+    granularidade: cd_municipio + competencia
+    chave_negocio: [cd_municipio, competencia]
+    limitacao: depende de SIB, fora do escopo de conclusao desta sprint
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_oportunidade_municipio
+    dominio: sib
+    status: parcial
+    fonte_ans: ANS PDA - SIB beneficiarios por municipio + refs IBGE
+    periodicidade: mensal
+    granularidade: cd_municipio + competencia
+    chave_negocio: [cd_municipio, competencia]
+    limitacao: metricas de beneficiarios dependem de SIB
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_operadora_360
+    dominio: sib
+    status: parcial
+    fonte_ans: ANS PDA - CADOP, regulatorio, financeiro, rede e SIB
+    periodicidade: mensal
+    granularidade: registro_ans + competencia
+    chave_negocio: [registro_ans, competencia]
+    limitacao: colunas de beneficiarios e scores derivados dependem de SIB
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_score_operadora_mes
+    dominio: sib
+    status: parcial
+    fonte_ans: ANS PDA - insumos regulatorio, financeiro, rede e SIB
+    periodicidade: mensal
+    granularidade: registro_ans + competencia
+    chave_negocio: [registro_ans, competencia]
+    limitacao: componente core e metricas de beneficiarios dependem de SIB
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_beneficiarios_cobertura_municipio
+    dominio: sib
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - taxa de cobertura plano e SIB
+    periodicidade: mensal
+    granularidade: cd_municipio + competencia + sg_uf
+    chave_negocio: [cd_municipio, competencia, sg_uf]
+    limitacao: tabela consumo_ans zerada; cobertura depende de SIB
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_tiss_utilizacao_operadora_mes
+    dominio: tiss
+    status: fora_do_escopo
+    fonte_ans: ANS PDA - TISS subfamilias
+    periodicidade: mensal
+    granularidade: registro_ans + competencia + tipo_tiss + sg_uf
+    chave_negocio: [registro_ans, competencia, tipo_tiss, sg_uf]
+    limitacao: TISS explicitamente fora do escopo desta sprint
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_plano_servico_opcional
+    dominio: produto_plano
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - servicos opcionais de planos
+    periodicidade: mensal
+    granularidade: registro_ans + codigo_plano + codigo_servico
+    chave_negocio: [registro_ans, codigo_plano, codigo_servico]
+    limitacao: bloquear catalogo ate confirmar carga real nao vazia
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_rede_acreditacao
+    dominio: cnes_rede_assistencial
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - operadora/prestador acreditado
+    periodicidade: snapshot
+    granularidade: tipo_acreditado + registro_ans/cnes
+    chave_negocio: [tipo_acreditado, registro_ans, cnes]
+    limitacao: bloquear catalogo ate confirmar carga real nao vazia
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md
+  - name: consumo_regulatorio_complementar_operadora
+    dominio: regulatorio
+    status: vazia_bloqueada
+    fonte_ans: ANS PDA - IAP/PFA
+    periodicidade: mensal
+    granularidade: registro_ans + competencia + tipo_indicador
+    chave_negocio: [registro_ans, competencia, tipo_indicador]
+    limitacao: bloquear catalogo ate confirmar carga real nao vazia
+    publicar_catalogo_comercial: false
+    doc_path: docs/catalogo_dados/consumo_ans/dicionario_consumo_ans.md

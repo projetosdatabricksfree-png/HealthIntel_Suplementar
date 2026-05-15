@@ -242,3 +242,229 @@ models:
         description: "Código do serviço opcional."
         tests:
           - not_null
+
+  - name: consumo_glosa_operadora_mensal
+    description: "Glosa mensal por operadora para consumo Core ANS."
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: competencia
+        tests:
+          - not_null
+
+  - name: consumo_prudencial_operadora_trimestral
+    description: "Indicadores prudenciais trimestrais para consumo Core ANS."
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: trimestre
+        tests:
+          - not_null
+
+  - name: consumo_regime_especial_operadora_trimestral
+    description: "Regime especial trimestral para consumo Core ANS."
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: trimestre
+        tests:
+          - not_null
+
+  - name: consumo_taxa_resolutividade_operadora_trimestral
+    description: "Taxa de resolutividade trimestral para consumo Core ANS."
+    columns:
+      - name: registro_ans
+        tests:
+          - not_null
+      - name: trimestre
+        tests:
+          - not_null
+
+  - name: consumo_idss
+    description: "Índice de Desempenho da Saúde Suplementar (IDSS) por operadora e ano-base. Fonte: api_prata_idss. Grão: registro_ans + ano_base."
+    columns:
+      - name: ano_base
+        description: "Ano de referência do IDSS."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: idss_total
+        description: "Índice IDSS total da operadora."
+      - name: idqs
+        description: "Índice de Qualidade dos Serviços (componente IDSS)."
+      - name: idga
+        description: "Índice de Garantia do Acesso (componente IDSS)."
+      - name: idsm
+        description: "Índice de Sustentabilidade do Mercado (componente IDSS)."
+      - name: idgr
+        description: "Índice de Gestão e Relacionamento (componente IDSS)."
+      - name: faixa_idss
+        description: "Classificação da faixa do IDSS (ex: ALTO, MEDIO, BAIXO)."
+      - name: versao_metodologia
+        description: "Versão da metodologia de cálculo do IDSS."
+
+  - name: consumo_igr
+    description: "Índice de Garantia de Resolutividade (IGR) por operadora e trimestre. Fonte: api_prata_igr. Grão: registro_ans + trimestre."
+    columns:
+      - name: trimestre
+        description: "Trimestre de referência."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: modalidade
+        description: "Modalidade da operadora."
+      - name: porte
+        description: "Porte da operadora."
+      - name: total_reclamacoes
+        description: "Total de reclamações no trimestre."
+      - name: beneficiarios
+        description: "Quantidade de beneficiários no trimestre."
+      - name: igr
+        description: "Valor do IGR calculado."
+      - name: meta_igr
+        description: "Meta IGR estabelecida pela ANS."
+      - name: atingiu_meta
+        description: "Indica se a operadora atingiu a meta IGR."
+
+  - name: consumo_nip
+    description: "Notificação de Intermediação Preliminar (NIP) por operadora e trimestre. Fonte: api_prata_nip. Grão: registro_ans + trimestre."
+    columns:
+      - name: trimestre
+        description: "Trimestre de referência."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: modalidade
+        description: "Modalidade da operadora."
+      - name: demandas_nip
+        description: "Total de demandas NIP abertas no trimestre."
+      - name: demandas_resolvidas
+        description: "Total de demandas NIP resolvidas no trimestre."
+      - name: beneficiarios
+        description: "Quantidade de beneficiários no trimestre."
+      - name: taxa_intermediacao_resolvida
+        description: "Taxa de demandas resolvidas via intermediação."
+      - name: taxa_resolutividade
+        description: "Taxa de resolutividade NIP da operadora."
+
+  - name: consumo_produto_plano
+    description: "Produtos e planos ANS por operadora para consumo comercial. Fonte: api_produto_plano. Grão: registro_ans + codigo_produto + competencia."
+    columns:
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: codigo_produto
+        description: "Código do produto/plano na ANS."
+        tests:
+          - not_null
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+
+  - name: consumo_tuss_procedimento_vigente
+    description: "Terminologia TUSS oficial vigente para consumo comercial. Fonte: api_tuss_procedimento_vigente. Grão: codigo_tuss."
+    columns:
+      - name: codigo_tuss
+        description: "Código TUSS oficial."
+        tests:
+          - not_null
+      - name: descricao
+        description: "Descrição oficial do procedimento TUSS."
+
+  - name: consumo_sip_assistencial_operadora
+    description: "SIP assistencial por operadora, município e tipo assistencial. Fonte: api_sip_assistencial_operadora. Grão: registro_ans + cd_municipio + competencia + tipo_assistencial."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: "Código IBGE do município."
+        tests:
+          - not_null
+
+  - name: consumo_precificacao_plano
+    description: "Precificação/NTRP por plano, faixa etária e UF. Fonte: api_painel_precificacao. Grão: registro_ans + codigo_plano + competencia + faixa_etaria + sg_uf."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+      - name: codigo_plano
+        description: "Código do plano na ANS."
+        tests:
+          - not_null
+
+  - name: consumo_ressarcimento_sus_operadora
+    description: "Ressarcimento ao SUS agregado por operadora e competência. Fonte: api_ressarcimento_sus_operadora_plano. Grão: registro_ans + competencia."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+
+  - name: consumo_beneficiarios_cobertura_municipio
+    description: "Cobertura de beneficiários por município. Fonte: api_taxa_cobertura_plano. Grão: sg_uf + cd_municipio + competencia. Status comercial parcial por dependência SIB."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: cd_municipio
+        description: "Código IBGE do município."
+        tests:
+          - not_null
+
+  - name: consumo_rede_acreditacao
+    description: "Rede e operadoras acreditadas. Fonte: api_operadora_acreditada e api_prestador_acreditado. Status comercial bloqueado até validação de carga real."
+    columns:
+      - name: tipo_acreditado
+        description: "Tipo do registro: operadora ou prestador."
+        tests:
+          - not_null
+
+  - name: consumo_regulatorio_complementar_operadora
+    description: "Indicadores regulatórios complementares IAP/PFA. Fonte: api_iap e api_pfa. Status comercial bloqueado até validação de carga real."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+        tests:
+          - not_null
+      - name: registro_ans
+        description: "Registro ANS da operadora."
+        tests:
+          - not_null
+
+  - name: consumo_tiss_utilizacao_operadora_mes
+    description: "Utilização TISS por operadora e competência. Fora do escopo comercial desta sprint."
+    columns:
+      - name: competencia
+        description: "Competência de referência no formato YYYYMM."
+      - name: registro_ans
+        description: "Registro ANS da operadora."

@@ -63,6 +63,7 @@ with DAG(
     # Anual: primeiro dia util de marco (IDSS publicado pela ANS em fevereiro/marco)
     schedule="0 6 1 3 *",
     catchup=False,
+    is_paused_upon_creation=False,
     default_args={
         "retries": 2,
         "retry_delay": timedelta(minutes=15),

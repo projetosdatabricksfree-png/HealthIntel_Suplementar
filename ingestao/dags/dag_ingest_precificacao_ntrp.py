@@ -10,6 +10,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule="@monthly",
     catchup=False,
+    is_paused_upon_creation=False,
     tags=["healthintel", "precificacao_ntrp", "delta_ans_100"],
 ) as dag:
     _BASE = r"""

@@ -15,6 +15,11 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSe
 
 POLITICA_DATASET_ALIAS = {
     "rede_assistencial": "rede_prestador",
+    "diops_operadora_trimestral": "diops",
+    "glosa_operadora_mensal": "glosa",
+    "prudencial_operadora_trimestral": "prudencial",
+    "regime_especial_operadora_trimestral": "regime_especial",
+    "taxa_resolutividade_operadora_trimestral": "taxa_resolutividade",
 }
 
 
@@ -877,6 +882,51 @@ DATASET_CONFIG = {
         ],
     },
 }
+
+DATASET_CONFIG.update({
+    "diops_operadora_trimestral": DATASET_CONFIG["diops"],
+    "glosa_operadora_mensal": DATASET_CONFIG["glosa"],
+    "prudencial_operadora_trimestral": DATASET_CONFIG["prudencial"],
+    "regime_especial_operadora_trimestral": DATASET_CONFIG["regime_especial"],
+    "taxa_resolutividade_operadora_trimestral": DATASET_CONFIG["taxa_resolutividade"],
+})
+
+
+def coluna_periodo_dataset(dataset_codigo: str) -> str | None:
+    """Retorna a coluna temporal usada para idempotencia por competencia."""
+    config = DATASET_CONFIG.get(dataset_codigo)
+    if not config:
+        return None
+    colunas = config.get("colunas", [])
+    for coluna in ("competencia", "trimestre", "ano_base"):
+        if coluna in colunas:
+            return coluna
+    return None
+
+
+async def dataset_periodo_ja_carregado(
+    dataset_codigo: str,
+    periodo: object,
+) -> bool:
+    """Verifica se ja existe dado real no bronze para o periodo solicitado."""
+    config = DATASET_CONFIG.get(dataset_codigo)
+    coluna = coluna_periodo_dataset(dataset_codigo)
+    if not config or not coluna or periodo is None:
+        return False
+    tabela_destino = config["tabela_destino"]
+    async with SessionLocal() as session:
+        resultado = await session.execute(
+            text(
+                f"""
+                select 1
+                from {tabela_destino}
+                where cast({coluna} as text) = cast(:periodo as text)
+                limit 1
+                """
+            ),
+            {"periodo": periodo},
+        )
+        return resultado.scalar_one_or_none() is not None
 
 
 def montar_registros_carga(
