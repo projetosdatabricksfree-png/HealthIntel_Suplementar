@@ -125,7 +125,13 @@ Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest
 | Fase 7 (Sprints 34–36 implementados, 37–40 backlog) | EM ANDAMENTO | `v4.2.0-dataops` |
 | Fase 9 (Sprints 1–7: MVP comercial Core ANS) | EM ANDAMENTO | `v5.0.0-core-mvp` |
 | Fase 10 (deploy VPS por IP / homologação) | EM ANDAMENTO | — |
-| **Release 0.9 Core ANS Comercial** (Sprint 44) | **EM ANDAMENTO** | **`v0.9.0-core-ans` (pendente merge+tag)** |
+| **Release 0.9 Core ANS Comercial** (Sprint 44) | **EM PRODUÇÃO** | **`v0.9.0-core-ans` (validada 2026-05-18)** |
+
+### ⚠️ PRODUÇÃO — TRABALHO EM PRODUÇÃO ATIVO
+
+**Status**: Validação Core ANS em produção iniciada em **18 mai 2026**. Cobertura 3 anos (2021-2023) validada. Todos endpoints comerciais (comercial, financeiro, mercado, operadora, ranking, regulatorio) em operação.
+
+**Regra crítica**: Nenhuma mudança em endpoints existentes, contratos de API ou modelos dbt aprovados sem **validação prévia em dev** e **ticket hardgate** para produção. Novos endpoints adicionam; não alteram.
 
 **Regras ativas (todas aditivas — não alterar artefatos de fase anterior):**
 - **Fase 5**: `stg_*`, `int_*`, `fat_*`, `mart_*`, `api_*`, `consumo_*` do baseline v3.0.0 são imutáveis.
