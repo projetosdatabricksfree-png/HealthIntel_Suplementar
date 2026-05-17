@@ -1,0 +1,269 @@
+version: 1
+produto: Core ANS
+regra_cobertura:
+  mensal: 36
+  trimestral: 12
+  anual: 3
+  snapshot_vigente: 1
+  nao_temporal: 0
+endpoints:
+  - endpoint: /v1/operadoras
+    nome_dataset: cadop_operadora
+    schema_origem: api_ans
+    tabela_origem: api_operadora
+    coluna_temporal: competencia_referencia
+    granularidade_temporal: snapshot_vigente
+    regra_3_anos: "snapshot vigente; nao exige 36 competencias"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Endpoint cadastral vigente tratado como snapshot_vigente."
+  - endpoint: /v1/produtos-planos
+    nome_dataset: produto_plano
+    schema_origem: consumo_ans
+    tabela_origem: consumo_produto_plano
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Publicar como disponivel somente apos cobertura mensal real."
+  - endpoint: /v1/historico-planos
+    nome_dataset: historico_plano
+    schema_origem: consumo_ans
+    tabela_origem: consumo_historico_plano
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Publicar como disponivel somente apos cobertura mensal real."
+  - endpoint: /v1/regulatorio
+    nome_dataset: regulatorio_operadora
+    schema_origem: consumo_ans
+    tabela_origem: consumo_regulatorio_operadora_trimestre
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Fonte oficial de consumo para contrato comercial."
+  - endpoint: /v1/igr
+    nome_dataset: igr
+    schema_origem: consumo_ans
+    tabela_origem: consumo_igr
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Serie trimestral real disponivel."
+  - endpoint: /v1/nip
+    nome_dataset: nip
+    schema_origem: consumo_ans
+    tabela_origem: consumo_nip
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Serie trimestral real disponivel."
+  - endpoint: /v1/idss
+    nome_dataset: idss
+    schema_origem: consumo_ans
+    tabela_origem: consumo_idss
+    coluna_temporal: ano_base
+    granularidade_temporal: anual
+    regra_3_anos: "minimo 3 anos-base distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Serie anual real disponivel."
+  - endpoint: /v1/financeiro
+    nome_dataset: financeiro_periodo
+    schema_origem: consumo_ans
+    tabela_origem: consumo_financeiro_operadora_trimestre
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Fonte oficial de consumo para DIOPS/FIP harmonizado."
+  - endpoint: /v1/prudencial
+    nome_dataset: prudencial
+    schema_origem: consumo_ans
+    tabela_origem: consumo_prudencial_operadora_trimestral
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Service legado ainda pode apontar para api_ans; migrar para consumo_ans quando validado."
+  - endpoint: /v1/glosa
+    nome_dataset: glosa
+    schema_origem: consumo_ans
+    tabela_origem: consumo_glosa_operadora_mensal
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Publicar como disponivel somente apos cobertura mensal real."
+  - endpoint: /v1/regime-especial
+    nome_dataset: regime_especial
+    schema_origem: consumo_ans
+    tabela_origem: consumo_regime_especial_operadora_trimestral
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Preferir consumo_ans; api_ans permanece compatibilidade tecnica."
+  - endpoint: /v1/mercado/municipio
+    nome_dataset: mercado_municipio
+    schema_origem: api_ans
+    tabela_origem: api_market_share_mensal
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Depende de serie mensal real derivada de SIB agregado; sem SIB historico completo."
+  - endpoint: /v1/mercado/vazio-assistencial
+    nome_dataset: vazio_assistencial
+    schema_origem: api_ans
+    tabela_origem: api_vazio_assistencial
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel enquanto total=0."
+  - endpoint: /v1/rankings/operadora/score
+    nome_dataset: ranking_score
+    schema_origem: api_ans
+    tabela_origem: api_ranking_score
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Ranking deve refletir serie mensal publicada, nao apenas snapshot."
+  - endpoint: /v1/rankings/operadora/crescimento
+    nome_dataset: ranking_crescimento
+    schema_origem: api_ans
+    tabela_origem: api_ranking_crescimento
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Ranking deve refletir serie mensal publicada, nao apenas snapshot."
+  - endpoint: /v1/rankings/municipio/oportunidade
+    nome_dataset: ranking_oportunidade
+    schema_origem: api_ans
+    tabela_origem: api_ranking_oportunidade
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Depende de cobertura municipal mensal."
+  - endpoint: /v1/rankings/municipio/oportunidade-v2
+    nome_dataset: oportunidade_v2
+    schema_origem: api_ans
+    tabela_origem: api_oportunidade_v2_municipio_mensal
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel se depender de rede/CNES vazios."
+  - endpoint: /v1/rankings/composto
+    nome_dataset: ranking_composto
+    schema_origem: api_ans
+    tabela_origem: api_ranking_composto_mensal
+    coluna_temporal: competencia_id
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Ranking composto deve refletir score v3 historico."
+  - endpoint: /v1/cnes/municipio/{cd_municipio}
+    nome_dataset: cnes_municipio
+    schema_origem: api_ans
+    tabela_origem: api_cnes_municipio
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas se publicado"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel enquanto total=0."
+  - endpoint: /v1/cnes/uf/{sg_uf}
+    nome_dataset: cnes_municipio
+    schema_origem: api_ans
+    tabela_origem: api_cnes_municipio
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas se publicado"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel enquanto total=0."
+  - endpoint: /v1/rede/municipio/{cd_municipio}
+    nome_dataset: rede_assistencial_municipio
+    schema_origem: api_ans
+    tabela_origem: api_rede_assistencial
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas se publicado"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel enquanto total=0."
+  - endpoint: /v1/regulatorio/rn623
+    nome_dataset: rn623_lista
+    schema_origem: api_ans
+    tabela_origem: api_rn623_lista_trimestral
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos se publicado"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Fonte nao localizada no ANS FTP PDA na sprint anterior."
+  - endpoint: /v1/operadoras/{registro_ans}/financeiro
+    nome_dataset: financeiro_periodo
+    schema_origem: consumo_ans
+    tabela_origem: consumo_financeiro_operadora_trimestre
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Endpoint por operadora usa a mesma fonte oficial do agregado financeiro."
+  - endpoint: /v1/operadoras/{registro_ans}/regulatorio
+    nome_dataset: regulatorio_operadora
+    schema_origem: consumo_ans
+    tabela_origem: consumo_regulatorio_operadora_trimestre
+    coluna_temporal: trimestre
+    granularidade_temporal: trimestral
+    regra_3_anos: "minimo 12 trimestres distintos"
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Endpoint por operadora usa a mesma fonte oficial do agregado regulatorio."
+  - endpoint: /v1/operadoras/{registro_ans}/score-v3/historico
+    nome_dataset: score_v3
+    schema_origem: api_ans
+    tabela_origem: api_score_v3_operadora_mensal
+    coluna_temporal: competencia_id
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas"
+    status_publicacao: parcial
+    exige_backfill: true
+    observacao: "Historico deve retornar ate 36 competencias quando coberto."
+  - endpoint: /v1/operadoras/{registro_ans}/portabilidade
+    nome_dataset: portabilidade
+    schema_origem: api_ans
+    tabela_origem: api_portabilidade_operadora_mensal
+    coluna_temporal: competencia
+    granularidade_temporal: mensal
+    regra_3_anos: "minimo 36 competencias distintas se publicado"
+    status_publicacao: roadmap
+    exige_backfill: true
+    observacao: "Nao publicar como disponivel enquanto total=0."

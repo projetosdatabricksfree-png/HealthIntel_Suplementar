@@ -16,6 +16,8 @@ router = APIRouter(
 async def get_rn623(
     request: Request,
     trimestre: str | None = Query(default=None, min_length=6, max_length=6),
+    trimestre_inicio: str | None = Query(default=None),
+    trimestre_fim: str | None = Query(default=None),
     tipo_lista: str | None = Query(default=None, pattern="^(excelencia|reducao)$"),
     pagina: int = Query(default=1, ge=1),
     por_pagina: int = Query(default=50, ge=1, le=100),
@@ -23,6 +25,8 @@ async def get_rn623(
     await aplicar_rate_limit(request)
     payload = await listar_rn623(
         trimestre=trimestre,
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
         tipo_lista=tipo_lista,
         pagina=pagina,
         por_pagina=por_pagina,

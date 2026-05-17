@@ -9,6 +9,7 @@ from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
 from api.app.schemas.meta import MetaEnvelope
 from api.app.schemas.score_v3 import ScoreV3Item
+from api.app.services.cobertura_temporal import adicionar_filtro_mensal, anexar_janela_temporal
 
 settings = get_settings()
 
@@ -113,20 +114,35 @@ async def buscar_score_v3_operadora(
 async def buscar_historico_score_v3(
     registro_ans: str,
     *,
-    periodos: int = 12,
+    periodos: int = 36,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
 ) -> dict:
     registro_ans = registro_ans.zfill(6)
-    periodos = min(max(periodos, 1), 24)
-    cache_key = f"score_v3_hist:{registro_ans}:{periodos}"
+    periodos = min(max(periodos, 1), 36)
+    cache_key = (
+        f"score_v3_hist:{registro_ans}:{periodos}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    params: dict[str, object] = {"registro_ans": registro_ans, "periodos": periodos}
+    filtros = ["registro_ans = :registro_ans"]
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia_id",
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
+    where_clause = " where " + " and ".join(filtros)
     async with SessionLocal() as session:
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     operadora_id,
                     competencia_id,
@@ -145,12 +161,12 @@ async def buscar_historico_score_v3(
                     score_v3_final,
                     versao_metodologia
                 from api_ans.api_score_v3_operadora_mensal
-                where registro_ans = :registro_ans
+                {where_clause}
                 order by competencia_id desc
                 limit :periodos
                 """
             ),
-            {"registro_ans": registro_ans, "periodos": periodos},
+            params,
         )
         rows = result.mappings().all()
 
@@ -165,5 +181,6 @@ async def buscar_historico_score_v3(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/operadoras/{registro_ans}/score-v3/historico")
     await _salvar_cache(cache_key, payload)
     return payload

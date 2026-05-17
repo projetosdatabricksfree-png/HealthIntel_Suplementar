@@ -1,0 +1,162 @@
+{
+  "gerado_em": "2026-05-16T18:48:58.435845+00:00",
+  "resultados": [
+    {
+      "endpoint": "/v1/operadoras",
+      "url_testada": "/v1/operadoras",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "snapshot_vigente",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/operadoras/{registro_ans}/score-v3/historico",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/operadoras/{registro_ans}/regulatorio",
+      "url_testada": "/v1/operadoras/359017/regulatorio",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/regulatorio/rn623",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/operadoras/{registro_ans}/portabilidade",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/operadoras/{registro_ans}/financeiro",
+      "url_testada": "/v1/operadoras/359017/financeiro",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/mercado/municipio",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rankings/operadora/crescimento",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rankings/operadora/score",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rankings/municipio/oportunidade",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rankings/municipio/oportunidade-v2",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rankings/composto",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/mercado/vazio-assistencial",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/rede/municipio/{cd_municipio}",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/cnes/municipio/{cd_municipio}",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/cnes/uf/{sg_uf}",
+      "status_publicacao": "roadmap",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/produtos-planos",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/historico-planos",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/regulatorio",
+      "url_testada": "/v1/regulatorio",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/igr",
+      "url_testada": "/v1/igr",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/nip",
+      "url_testada": "/v1/nip",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/idss",
+      "url_testada": "/v1/idss",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/financeiro",
+      "url_testada": "/v1/financeiro",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/prudencial",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    },
+    {
+      "endpoint": "/v1/regime-especial",
+      "url_testada": "/v1/regime-especial",
+      "status_publicacao": "disponivel",
+      "status_cobertura_3_anos": "ok_3_anos",
+      "resultado": "ok",
+      "erros": []
+    },
+    {
+      "endpoint": "/v1/glosa",
+      "status_publicacao": "parcial",
+      "resultado": "roadmap_ou_parcial_ok"
+    }
+  ]
+}

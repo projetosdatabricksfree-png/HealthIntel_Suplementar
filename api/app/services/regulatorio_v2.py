@@ -14,6 +14,11 @@ from api.app.schemas.regulatorio_v2 import (
     RegimeEspecialResponse,
     ScoreRegulatorioResponse,
 )
+from api.app.services.cobertura_temporal import (
+    adicionar_filtro_mensal,
+    adicionar_filtro_trimestral,
+    anexar_janela_temporal,
+)
 
 settings = get_settings()
 
@@ -149,17 +154,33 @@ async def detalhar_score_regulatorio_operadora(
     return payload
 
 
-async def listar_regime_especial_operadora(registro_ans: str) -> dict:
-    cache_key = f"regime_especial:{registro_ans}"
+async def listar_regime_especial_operadora(
+    registro_ans: str,
+    *,
+    trimestre_inicio: str | None = None,
+    trimestre_fim: str | None = None,
+) -> dict:
+    cache_key = f"regime_especial:{registro_ans}:{trimestre_inicio or ''}:{trimestre_fim or ''}"
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    params: dict[str, object] = {"registro_ans": registro_ans.zfill(6)}
+    filtros = ["registro_ans = :registro_ans"]
+    adicionar_filtro_trimestral(
+        filtros,
+        params,
+        "trimestre",
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
+    )
+    where_clause = " where " + " and ".join(filtros)
+
     async with SessionLocal() as session:
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     operadora_id,
                     registro_ans,
@@ -176,12 +197,12 @@ async def listar_regime_especial_operadora(registro_ans: str) -> dict:
                     data_fim,
                     versao_dataset
                 from api_ans.api_regime_especial_operadora_trimestral
-                where registro_ans = :registro_ans
+                {where_clause}
                 order by data_inicio desc nulls last, trimestre desc
                 limit 20
                 """
             ),
-            {"registro_ans": registro_ans.zfill(6)},
+            params,
         )
         rows = result.mappings().all()
         if not rows:
@@ -211,6 +232,7 @@ async def listar_regime_especial_operadora(registro_ans: str) -> dict:
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/regime-especial")
     await _salvar_cache(cache_key, payload)
     return payload
 
@@ -219,13 +241,18 @@ async def listar_portabilidade_operadora(
     registro_ans: str,
     *,
     competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
     pagina: int = 1,
     por_pagina: int = 50,
 ) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"portabilidade:{registro_ans}:{competencia or 'all'}:{pagina}:{por_pagina}"
+    cache_key = (
+        f"portabilidade:{registro_ans}:{competencia or 'all'}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}:{pagina}:{por_pagina}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
@@ -237,9 +264,14 @@ async def listar_portabilidade_operadora(
         "offset": offset,
     }
     filtros = ["registro_ans = :registro_ans"]
-    if competencia:
-        filtros.append("competencia = :competencia")
-        params["competencia"] = competencia
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
     where_clause = " where " + " and ".join(filtros)
 
     async with SessionLocal() as session:
@@ -296,5 +328,6 @@ async def listar_portabilidade_operadora(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/operadoras/{registro_ans}/portabilidade")
     await _salvar_cache(cache_key, payload)
     return payload

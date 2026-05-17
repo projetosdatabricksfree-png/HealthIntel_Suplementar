@@ -8,6 +8,10 @@ from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
 from api.app.schemas.meta import MetaEnvelope
 from api.app.schemas.regulatorio import OperadoraRegulatorioResponse, Rn623ListaResponse
+from api.app.services.cobertura_temporal import (
+    adicionar_filtro_trimestral,
+    anexar_janela_temporal,
+)
 
 settings = get_settings()
 
@@ -57,18 +61,29 @@ async def detalhar_regulatorio_operadora(
     registro_ans: str,
     *,
     trimestre: str | None = None,
+    trimestre_inicio: str | None = None,
+    trimestre_fim: str | None = None,
 ) -> dict:
-    cache_key = f"regulatorio:{registro_ans}:{trimestre or 'latest'}"
+    cache_key = (
+        f"regulatorio:{registro_ans}:{trimestre or 'latest'}:"
+        f"{trimestre_inicio or ''}:{trimestre_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
-    filtro_trimestre = ""
     params = {"registro_ans": registro_ans.zfill(6)}
-    if trimestre:
-        filtro_trimestre = "and trimestre = :trimestre"
-        params["trimestre"] = trimestre.upper()
+    filtros_trimestre: list[str] = []
+    adicionar_filtro_trimestral(
+        filtros_trimestre,
+        params,
+        "trimestre",
+        trimestre=trimestre,
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
+    )
+    filtro_trimestre = "and " + " and ".join(filtros_trimestre) if filtros_trimestre else ""
 
     async with SessionLocal() as session:
         result = await session.execute(
@@ -124,6 +139,7 @@ async def detalhar_regulatorio_operadora(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/operadoras/{registro_ans}/regulatorio")
     await _salvar_cache(cache_key, payload)
     return payload
 
@@ -131,6 +147,8 @@ async def detalhar_regulatorio_operadora(
 async def listar_rn623(
     *,
     trimestre: str | None = None,
+    trimestre_inicio: str | None = None,
+    trimestre_fim: str | None = None,
     tipo_lista: str | None = None,
     pagina: int = 1,
     por_pagina: int = 50,
@@ -140,7 +158,10 @@ async def listar_rn623(
     offset = (pagina - 1) * por_pagina
     trimestre = trimestre.upper() if trimestre else None
     tipo_lista = tipo_lista.lower() if tipo_lista else None
-    cache_key = f"rn623:{trimestre or 'latest'}:{tipo_lista or 'all'}:{pagina}:{por_pagina}"
+    cache_key = (
+        f"rn623:{trimestre or 'latest'}:{trimestre_inicio or ''}:{trimestre_fim or ''}:"
+        f"{tipo_lista or 'all'}:{pagina}:{por_pagina}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
@@ -148,9 +169,14 @@ async def listar_rn623(
 
     params: dict[str, object] = {"limit": por_pagina, "offset": offset}
     filtros = ["1=1"]
-    if trimestre:
-        filtros.append("trimestre = :trimestre")
-        params["trimestre"] = trimestre
+    adicionar_filtro_trimestral(
+        filtros,
+        params,
+        "trimestre",
+        trimestre=trimestre,
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
+    )
     if tipo_lista:
         filtros.append("tipo_lista = :tipo_lista")
         params["tipo_lista"] = tipo_lista
@@ -205,5 +231,6 @@ async def listar_rn623(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/regulatorio/rn623")
     await _salvar_cache(cache_key, payload)
     return payload

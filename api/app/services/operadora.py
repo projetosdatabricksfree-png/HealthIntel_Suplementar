@@ -12,6 +12,7 @@ from api.app.schemas.operadora import (
     OperadoraResumoResponse,
     OperadoraScoreResponse,
 )
+from api.app.services.cobertura_temporal import anexar_janela_temporal
 
 settings = get_settings()
 
@@ -153,6 +154,7 @@ async def listar_operadoras(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/operadoras")
     await _salvar_cache(cache_key, payload)
     return payload
 
@@ -209,6 +211,7 @@ async def detalhar_operadora(registro_ans: str) -> dict:
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/operadoras")
     await _salvar_cache(cache_key, payload)
     return payload
 

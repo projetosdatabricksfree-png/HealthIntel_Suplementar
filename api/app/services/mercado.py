@@ -9,6 +9,7 @@ from api.app.core.redis_client import redis_client
 from api.app.database import SessionLocal
 from api.app.schemas.mercado import MercadoResumoResponse, VazioAssistencialResponse
 from api.app.schemas.meta import MetaEnvelope
+from api.app.services.cobertura_temporal import adicionar_filtro_mensal, anexar_janela_temporal
 
 settings = get_settings()
 
@@ -34,6 +35,8 @@ async def listar_mercado_municipio(
     *,
     uf: str | None = None,
     competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
     segmento: str | None = None,
     pagina: int = 1,
     por_pagina: int = 50,
@@ -43,6 +46,7 @@ async def listar_mercado_municipio(
     offset = (pagina - 1) * por_pagina
     cache_key = (
         f"mercado:{uf or 'all'}:{competencia or 'latest'}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}:"
         f"{segmento or 'all'}:{pagina}:{por_pagina}"
     )
     cached = await _obter_cache(cache_key)
@@ -55,9 +59,14 @@ async def listar_mercado_municipio(
     if uf:
         filtros.append("sg_uf = :uf")
         params["uf"] = uf.upper()
-    if competencia:
-        filtros.append("competencia = :competencia")
-        params["competencia"] = competencia
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
     if segmento:
         filtros.append("segmento = :segmento")
         params["segmento"] = segmento.upper()
@@ -119,6 +128,7 @@ async def listar_mercado_municipio(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/mercado/municipio")
     await _salvar_cache(cache_key, payload)
     return payload
 
@@ -128,6 +138,8 @@ async def listar_vazios_assistenciais(
     uf: str | None = None,
     segmento: str | None = None,
     competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
     pagina: int = 1,
     por_pagina: int = 50,
 ) -> dict:
@@ -136,7 +148,8 @@ async def listar_vazios_assistenciais(
     offset = (pagina - 1) * por_pagina
     cache_key = (
         f"vazio:{uf or 'all'}:{segmento or 'all'}:"
-        f"{competencia or 'latest'}:{pagina}:{por_pagina}"
+        f"{competencia or 'latest'}:{competencia_inicio or ''}:{competencia_fim or ''}:"
+        f"{pagina}:{por_pagina}"
     )
     cached = await _obter_cache(cache_key)
     if cached:
@@ -151,9 +164,14 @@ async def listar_vazios_assistenciais(
     if segmento:
         filtros.append("segmento = :segmento")
         params["segmento"] = segmento.upper()
-    if competencia:
-        filtros.append("competencia = :competencia")
-        params["competencia"] = competencia
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
     where_clause = " where " + " and ".join(filtros)
 
     async with SessionLocal() as session:
@@ -210,5 +228,6 @@ async def listar_vazios_assistenciais(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/mercado/vazio-assistencial")
     await _salvar_cache(cache_key, payload)
     return payload

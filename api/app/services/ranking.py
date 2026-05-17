@@ -15,6 +15,7 @@ from api.app.schemas.ranking import (
     RankingOportunidadeResponse,
     RankingOportunidadeV2Response,
 )
+from api.app.services.cobertura_temporal import adicionar_filtro_mensal, anexar_janela_temporal
 
 settings = get_settings()
 
@@ -36,22 +37,46 @@ async def _salvar_cache(chave: str, payload: dict) -> None:
         return
 
 
-async def listar_ranking_score(*, pagina: int = 1, por_pagina: int = 50) -> dict:
+async def listar_ranking_score(
+    *,
+    pagina: int = 1,
+    por_pagina: int = 50,
+    competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
+) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"ranking:score:{pagina}:{por_pagina}"
+    cache_key = (
+        f"ranking:score:{pagina}:{por_pagina}:{competencia or ''}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    filtros: list[str] = []
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
+    where_clause = " where " + " and ".join(filtros) if filtros else ""
     async with SessionLocal() as session:
-        total_result = await session.execute(text("select count(*) from api_ans.api_ranking_score"))
+        total_result = await session.execute(
+            text(f"select count(*) from api_ans.api_ranking_score{where_clause}"),
+            params,
+        )
         total = int(total_result.scalar_one())
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     operadora_id,
                     registro_ans,
@@ -62,11 +87,12 @@ async def listar_ranking_score(*, pagina: int = 1, por_pagina: int = 50) -> dict
                     ranking_posicao,
                     versao_score
                 from api_ans.api_ranking_score
+                {where_clause}
                 order by ranking_posicao asc
                 limit :limit offset :offset
                 """
             ),
-            {"limit": por_pagina, "offset": offset},
+            params,
         )
         rows = result.mappings().all()
 
@@ -82,28 +108,51 @@ async def listar_ranking_score(*, pagina: int = 1, por_pagina: int = 50) -> dict
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/rankings/operadora/score")
     await _salvar_cache(cache_key, payload)
     return payload
 
 
-async def listar_ranking_crescimento(*, pagina: int = 1, por_pagina: int = 50) -> dict:
+async def listar_ranking_crescimento(
+    *,
+    pagina: int = 1,
+    por_pagina: int = 50,
+    competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
+) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"ranking:crescimento:{pagina}:{por_pagina}"
+    cache_key = (
+        f"ranking:crescimento:{pagina}:{por_pagina}:{competencia or ''}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    filtros: list[str] = []
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
+    where_clause = " where " + " and ".join(filtros) if filtros else ""
     async with SessionLocal() as session:
         total_result = await session.execute(
-            text("select count(*) from api_ans.api_ranking_crescimento")
+            text(f"select count(*) from api_ans.api_ranking_crescimento{where_clause}"),
+            params,
         )
         total = int(total_result.scalar_one())
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     operadora_id,
                     registro_ans,
@@ -114,11 +163,12 @@ async def listar_ranking_crescimento(*, pagina: int = 1, por_pagina: int = 50) -
                     beneficiario_12m_anterior,
                     ranking_posicao
                 from api_ans.api_ranking_crescimento
+                {where_clause}
                 order by ranking_posicao asc
                 limit :limit offset :offset
                 """
             ),
-            {"limit": por_pagina, "offset": offset},
+            params,
         )
         rows = result.mappings().all()
 
@@ -134,28 +184,51 @@ async def listar_ranking_crescimento(*, pagina: int = 1, por_pagina: int = 50) -
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/rankings/operadora/crescimento")
     await _salvar_cache(cache_key, payload)
     return payload
 
 
-async def listar_ranking_oportunidade(*, pagina: int = 1, por_pagina: int = 50) -> dict:
+async def listar_ranking_oportunidade(
+    *,
+    pagina: int = 1,
+    por_pagina: int = 50,
+    competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
+) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"ranking:oportunidade:{pagina}:{por_pagina}"
+    cache_key = (
+        f"ranking:oportunidade:{pagina}:{por_pagina}:{competencia or ''}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    filtros: list[str] = []
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
+    where_clause = " where " + " and ".join(filtros) if filtros else ""
     async with SessionLocal() as session:
         total_result = await session.execute(
-            text("select count(*) from api_ans.api_ranking_oportunidade")
+            text(f"select count(*) from api_ans.api_ranking_oportunidade{where_clause}"),
+            params,
         )
         total = int(total_result.scalar_one())
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     cd_municipio,
                     nm_municipio,
@@ -164,11 +237,12 @@ async def listar_ranking_oportunidade(*, pagina: int = 1, por_pagina: int = 50) 
                     oportunidade_score,
                     ranking_posicao
                 from api_ans.api_ranking_oportunidade
+                {where_clause}
                 order by ranking_posicao asc
                 limit :limit offset :offset
                 """
             ),
-            {"limit": por_pagina, "offset": offset},
+            params,
         )
         rows = result.mappings().all()
 
@@ -184,28 +258,54 @@ async def listar_ranking_oportunidade(*, pagina: int = 1, por_pagina: int = 50) 
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/rankings/municipio/oportunidade")
     await _salvar_cache(cache_key, payload)
     return payload
 
 
-async def listar_ranking_oportunidade_v2(*, pagina: int = 1, por_pagina: int = 50) -> dict:
+async def listar_ranking_oportunidade_v2(
+    *,
+    pagina: int = 1,
+    por_pagina: int = 50,
+    competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
+) -> dict:
     pagina = max(pagina, 1)
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
-    cache_key = f"ranking:oportunidade:v2:{pagina}:{por_pagina}"
+    cache_key = (
+        f"ranking:oportunidade:v2:{pagina}:{por_pagina}:{competencia or ''}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}"
+    )
     cached = await _obter_cache(cache_key)
     if cached:
         cached.setdefault("meta", {})["cache"] = "hit"
         return cached
 
+    filtros: list[str] = []
+    params: dict[str, object] = {"limit": por_pagina, "offset": offset}
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
+    where_clause = " where " + " and ".join(filtros) if filtros else ""
     async with SessionLocal() as session:
         total_result = await session.execute(
-            text("select count(*) from api_ans.api_oportunidade_v2_municipio_mensal")
+            text(
+                "select count(*) from api_ans.api_oportunidade_v2_municipio_mensal"
+                f"{where_clause}"
+            ),
+            params,
         )
         total = int(total_result.scalar_one())
         result = await session.execute(
             text(
-                """
+                f"""
                 select
                     cd_municipio,
                     nm_municipio,
@@ -233,11 +333,12 @@ async def listar_ranking_oportunidade_v2(*, pagina: int = 1, por_pagina: int = 5
                     sinal_vazio,
                     versao_algoritmo
                 from api_ans.api_oportunidade_v2_municipio_mensal
+                {where_clause}
                 order by ranking_posicao asc
                 limit :limit offset :offset
                 """
             ),
-            {"limit": por_pagina, "offset": offset},
+            params,
         )
         rows = result.mappings().all()
 
@@ -253,6 +354,7 @@ async def listar_ranking_oportunidade_v2(*, pagina: int = 1, por_pagina: int = 5
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/rankings/municipio/oportunidade-v2")
     await _salvar_cache(cache_key, payload)
     return payload
 
@@ -262,6 +364,8 @@ async def listar_ranking_composto(
     pagina: int = 1,
     por_pagina: int = 50,
     competencia: str | None = None,
+    competencia_inicio: str | None = None,
+    competencia_fim: str | None = None,
     modalidade: str | None = None,
     uf: str | None = None,
 ) -> dict:
@@ -269,7 +373,8 @@ async def listar_ranking_composto(
     por_pagina = min(max(por_pagina, 1), 100)
     offset = (pagina - 1) * por_pagina
     cache_key = (
-        f"ranking:composto:{pagina}:{por_pagina}:{competencia or ''}:{modalidade or ''}:{uf or ''}"
+        f"ranking:composto:{pagina}:{por_pagina}:{competencia or ''}:"
+        f"{competencia_inicio or ''}:{competencia_fim or ''}:{modalidade or ''}:{uf or ''}"
     )
     cached = await _obter_cache(cache_key)
     if cached:
@@ -278,9 +383,14 @@ async def listar_ranking_composto(
 
     filtros = ["1=1"]
     params: dict[str, object] = {"limit": por_pagina, "offset": offset}
-    if competencia:
-        filtros.append("competencia_id = :competencia")
-        params["competencia"] = competencia
+    adicionar_filtro_mensal(
+        filtros,
+        params,
+        "competencia_id",
+        competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
     if modalidade:
         filtros.append("modalidade = :modalidade")
         params["modalidade"] = modalidade
@@ -332,5 +442,6 @@ async def listar_ranking_composto(
         ).model_dump(),
     }
     payload["meta"]["cache"] = "miss"
+    await anexar_janela_temporal(payload, "/v1/rankings/composto")
     await _salvar_cache(cache_key, payload)
     return payload

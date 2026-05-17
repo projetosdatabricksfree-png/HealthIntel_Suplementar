@@ -90,9 +90,16 @@ async def get_operadora_regulatorio(
     registro_ans: str,
     request: Request,
     trimestre: str | None = Query(default=None, min_length=6, max_length=6),
+    trimestre_inicio: str | None = Query(default=None),
+    trimestre_fim: str | None = Query(default=None),
 ) -> dict:
     await aplicar_rate_limit(request)
-    payload = await detalhar_regulatorio_operadora(registro_ans, trimestre=trimestre)
+    payload = await detalhar_regulatorio_operadora(
+        registro_ans,
+        trimestre=trimestre,
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
+    )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload
 
@@ -136,9 +143,16 @@ async def get_operadora_score_v3(
 async def get_operadora_score_v3_historico(
     registro_ans: str,
     request: Request,
-    periodos: int = Query(default=12, ge=1, le=24),
+    periodos: int = Query(default=36, ge=1, le=36),
+    competencia_inicio: str | None = Query(default=None, min_length=6, max_length=6),
+    competencia_fim: str | None = Query(default=None, min_length=6, max_length=6),
 ) -> dict:
     await aplicar_rate_limit(request)
-    payload = await buscar_historico_score_v3(registro_ans, periodos=periodos)
+    payload = await buscar_historico_score_v3(
+        registro_ans,
+        periodos=periodos,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
+    )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload

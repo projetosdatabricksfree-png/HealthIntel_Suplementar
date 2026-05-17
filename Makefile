@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-COMPOSE := docker compose -f infra/docker-compose.yml
+COMPOSE := docker compose --env-file .env -f infra/docker-compose.yml
 COMPOSE_HML := docker compose --env-file .env.hml -f infra/docker-compose.yml -f infra/docker-compose.hml.yml
 DBT_ENV := DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target
 DBT_BIN := ../.venv/bin/dbt

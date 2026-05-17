@@ -19,6 +19,7 @@ from api.app.routers import (
     admin_layout,
     bronze,
     cnes,
+    comercial,
     financeiro,
     mercado,
     meta,
@@ -108,6 +109,7 @@ app.include_router(prata.router, prefix=settings.app_prefixo)
 app.include_router(premium.router, prefix=settings.app_prefixo)
 app.include_router(cnes.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(tiss.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
+app.include_router(comercial.router, prefix=settings.app_prefixo)
 app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)
 app.include_router(admin_layout.router)

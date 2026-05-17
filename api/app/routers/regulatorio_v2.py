@@ -32,9 +32,15 @@ async def get_score_regulatorio(
 async def get_regime_especial(
     registro_ans: str,
     request: Request,
+    trimestre_inicio: str | None = Query(default=None),
+    trimestre_fim: str | None = Query(default=None),
 ) -> dict:
     await aplicar_rate_limit(request)
-    payload = await listar_regime_especial_operadora(registro_ans)
+    payload = await listar_regime_especial_operadora(
+        registro_ans,
+        trimestre_inicio=trimestre_inicio,
+        trimestre_fim=trimestre_fim,
+    )
     request.state.cache_status = payload.get("meta", {}).get("cache", "miss")
     return payload
 
@@ -44,6 +50,8 @@ async def get_portabilidade(
     registro_ans: str,
     request: Request,
     competencia: str | None = Query(default=None, min_length=6, max_length=6),
+    competencia_inicio: str | None = Query(default=None, min_length=6, max_length=6),
+    competencia_fim: str | None = Query(default=None, min_length=6, max_length=6),
     pagina: int = Query(default=1, ge=1),
     por_pagina: int = Query(default=50, ge=1, le=100),
 ) -> dict:
@@ -51,6 +59,8 @@ async def get_portabilidade(
     payload = await listar_portabilidade_operadora(
         registro_ans,
         competencia=competencia,
+        competencia_inicio=competencia_inicio,
+        competencia_fim=competencia_fim,
         pagina=pagina,
         por_pagina=por_pagina,
     )

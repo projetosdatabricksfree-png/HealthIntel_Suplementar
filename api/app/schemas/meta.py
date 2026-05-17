@@ -7,6 +7,7 @@ class MetaEnvelope(BaseModel):
     total: int
     pagina: int
     por_pagina: int | None = None
+    janela_temporal: dict | None = None
 
 
 class DatasetMetaResponse(BaseModel):
@@ -17,6 +18,14 @@ class DatasetMetaResponse(BaseModel):
     produto: str | None = None
     fonte_serving: str | None = None
     row_count: int | None = None
+    cobertura_temporal_inicio: str | int | None = None
+    cobertura_temporal_fim: str | int | None = None
+    qtd_competencias: int | None = None
+    qtd_trimestres: int | None = None
+    qtd_anos: int | None = None
+    status_cobertura_3_anos: str | None = None
+    ultima_atualizacao: str | None = None
+    status_publicacao: str | None = None
 
 
 class PipelineMetaResponse(BaseModel):
@@ -53,3 +62,10 @@ class EndpointMetaResponse(BaseModel):
     requer_api_key: bool | None = None
     row_count: int | None = None
     aparece_catalogo_publico: bool | None = None
+    tipo_status: str | None = None
+    observacao_limite: str | None = None
+    exige_3_anos: bool | None = None
+    status_cobertura_3_anos: str | None = None
+    tipo_granularidade_temporal: str | None = None
+    endpoint_temporal: bool | None = None
+    status_publicacao: str | None = None

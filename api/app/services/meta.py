@@ -8,6 +8,13 @@ from api.app.schemas.meta import (
     PipelineMetaResponse,
     VersaoDatasetResponse,
 )
+from api.app.services.cobertura_temporal import (
+    STATUS_OK,
+    STATUS_SNAPSHOT,
+    auditar_item_cobertura,
+    cobertura_por_fonte,
+    endpoint_por_rota,
+)
 
 CATALOGO_DATASETS = {
     "cadop": {
@@ -725,6 +732,9 @@ CATALOGO_ENDPOINTS += [
 STATUS_DISPONIVEL = "disponivel"
 STATUS_EM_VALIDACAO = "em_validacao"
 STATUS_FORA_DO_MVP = "fora_do_mvp"
+STATUS_ROADMAP = "roadmap"
+STATUS_INTERNO = "interno"
+STATUS_VAZIO_BLOQUEADO = "vazio_bloqueado"
 PRODUTO_CORE_ANS = "Core ANS"
 
 DATASETS_CORE_ANS = [
@@ -738,13 +748,13 @@ DATASETS_CORE_ANS = [
         "nome": "produto_plano",
         "descricao": "Produtos e planos de saude suplementar.",
         "cadencia": "mensal",
-        "fonte_serving": "api_ans.api_produto_plano",
+        "fonte_serving": "consumo_ans.consumo_produto_plano",
     },
     {
         "nome": "historico_plano",
         "descricao": "Historico de situacao dos planos.",
         "cadencia": "mensal",
-        "fonte_serving": "api_ans.api_historico_plano",
+        "fonte_serving": "consumo_ans.consumo_historico_plano",
     },
     {
         "nome": "tuss_procedimento_vigente",
@@ -768,19 +778,19 @@ DATASETS_CORE_ANS = [
         "nome": "idss",
         "descricao": "IDSS anual por operadora.",
         "cadencia": "anual",
-        "fonte_serving": "api_ans.api_prata_idss",
+        "fonte_serving": "consumo_ans.consumo_idss",
     },
     {
         "nome": "igr",
         "descricao": "IGR trimestral por operadora.",
         "cadencia": "trimestral",
-        "fonte_serving": "api_ans.api_prata_igr",
+        "fonte_serving": "consumo_ans.consumo_igr",
     },
     {
         "nome": "nip",
         "descricao": "NIP por operadora.",
         "cadencia": "trimestral",
-        "fonte_serving": "api_ans.api_prata_nip",
+        "fonte_serving": "consumo_ans.consumo_nip",
     },
     {
         "nome": "diops",
@@ -792,7 +802,13 @@ DATASETS_CORE_ANS = [
         "nome": "financeiro_periodo",
         "descricao": "Indicadores economico-financeiros por periodo trimestral.",
         "cadencia": "trimestral",
-        "fonte_serving": "api_ans.api_prata_financeiro_periodo",
+        "fonte_serving": "consumo_ans.consumo_financeiro_operadora_trimestre",
+    },
+    {
+        "nome": "regulatorio_operadora",
+        "descricao": "Consolidado regulatorio trimestral por operadora.",
+        "cadencia": "trimestral",
+        "fonte_serving": "consumo_ans.consumo_regulatorio_operadora_trimestre",
     },
     {
         "nome": "glosa",
@@ -836,6 +852,8 @@ ENDPOINTS_CORE_ANS = [
         "descricao": "Prontidao operacional. Requer token interno.",
         "fonte_serving": None,
         "requer_api_key": False,
+        "tipo_status": STATUS_INTERNO,
+        "observacao_limite": "Acesso restrito à rede interna Docker. Requer X-Internal-Token.",
     },
     {
         "method": "GET",
@@ -925,6 +943,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_score_regulatorio_operadora_mensal",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_VAZIO_BLOQUEADO,
+        "observacao_limite": "Tabela api_score_regulatorio_operadora_mensal zerada. Score regulatório em validação.",
     },
     {
         "method": "GET",
@@ -950,6 +970,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_rn623_lista_trimestral",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_rn623_lista_trimestral zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -959,6 +981,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_portabilidade_operadora_mensal",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_portabilidade_operadora_mensal zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -1024,6 +1048,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_vazio_assistencial",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_vazio_assistencial zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -1033,6 +1059,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_rede_assistencial",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_rede_assistencial zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -1042,6 +1070,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_cnes_municipio",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_cnes_municipio zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -1051,6 +1081,8 @@ ENDPOINTS_CORE_ANS = [
         "fonte_serving": "api_ans.api_cnes_municipio",
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
+        "tipo_status": STATUS_ROADMAP,
+        "observacao_limite": "Tabela api_cnes_municipio zerada. Carga prevista para sprint futura.",
     },
     {
         "method": "GET",
@@ -1101,6 +1133,86 @@ ENDPOINTS_CORE_ANS = [
         "requer_api_key": True,
         "status_if_empty": STATUS_EM_VALIDACAO,
     },
+    {
+        "method": "GET",
+        "path": "/v1/produtos-planos",
+        "grupo": "produto_plano",
+        "descricao": "Produtos e planos de saude suplementar.",
+        "fonte_serving": "consumo_ans.consumo_produto_plano",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/historico-planos",
+        "grupo": "produto_plano",
+        "descricao": "Historico de situacao dos planos.",
+        "fonte_serving": "consumo_ans.consumo_historico_plano",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/regulatorio",
+        "grupo": "regulatorio",
+        "descricao": "Consolidado regulatorio trimestral por operadora.",
+        "fonte_serving": "consumo_ans.consumo_regulatorio_operadora_trimestre",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/igr",
+        "grupo": "regulatorio",
+        "descricao": "IGR trimestral por operadora.",
+        "fonte_serving": "consumo_ans.consumo_igr",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/nip",
+        "grupo": "regulatorio",
+        "descricao": "NIP trimestral por operadora.",
+        "fonte_serving": "consumo_ans.consumo_nip",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/idss",
+        "grupo": "regulatorio",
+        "descricao": "IDSS anual por operadora.",
+        "fonte_serving": "consumo_ans.consumo_idss",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/financeiro",
+        "grupo": "financeiro",
+        "descricao": "Indicadores economico-financeiros trimestrais por operadora.",
+        "fonte_serving": "consumo_ans.consumo_financeiro_operadora_trimestre",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/prudencial",
+        "grupo": "financeiro",
+        "descricao": "Indicadores prudenciais trimestrais por operadora.",
+        "fonte_serving": "api_ans.api_prudencial_operadora_trimestral",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/regime-especial",
+        "grupo": "regulatorio",
+        "descricao": "Regime especial trimestral por operadora.",
+        "fonte_serving": "api_ans.api_regime_especial_operadora_trimestral",
+        "requer_api_key": True,
+    },
+    {
+        "method": "GET",
+        "path": "/v1/glosa",
+        "grupo": "financeiro",
+        "descricao": "Glosa mensal por operadora.",
+        "fonte_serving": "api_ans.api_glosa_operadora_mensal",
+        "requer_api_key": True,
+    },
 ]
 
 
@@ -1138,6 +1250,16 @@ def _status_por_row_count(row_count: int | None, status_if_empty: str = STATUS_E
     return status_if_empty
 
 
+def _derivar_tipo_status(status: str, row_count: int | None) -> str:
+    if status == STATUS_DISPONIVEL:
+        return "disponivel"
+    if status == STATUS_EM_VALIDACAO:
+        return "vazio_bloqueado" if row_count == 0 else "roadmap"
+    if status == STATUS_FORA_DO_MVP:
+        return "roadmap"
+    return "em_validacao"
+
+
 def _meta_padrao(total: int) -> dict:
     return MetaEnvelope(
         competencia_referencia="atual",
@@ -1151,18 +1273,58 @@ def _meta_padrao(total: int) -> dict:
 async def listar_datasets() -> dict:
     relacoes = {dataset["fonte_serving"] for dataset in DATASETS_CORE_ANS}
     counts = await _contar_relacoes(relacoes)
+    cobertura_fontes = cobertura_por_fonte()
+    cobertura_cache: dict[str, dict] = {}
     datasets = []
     for dataset in DATASETS_CORE_ANS:
         row_count = counts.get(dataset["fonte_serving"])
+        cobertura = None
+        item_cobertura = cobertura_fontes.get(str(dataset["fonte_serving"]))
+        if item_cobertura:
+            fonte = str(dataset["fonte_serving"])
+            cobertura = cobertura_cache.get(fonte)
+            if cobertura is None:
+                cobertura = await auditar_item_cobertura(item_cobertura)
+                cobertura_cache[fonte] = cobertura
+        if row_count and row_count > 0:
+            status = "publicado"
+        elif row_count == 0:
+            status = "vazio_bloqueado"
+        else:
+            status = "roadmap"
+        inicio = fim = None
+        if cobertura:
+            inicio = (
+                cobertura["menor_competencia"]
+                or cobertura["menor_trimestre"]
+                or cobertura["menor_ano"]
+            )
+            fim = (
+                cobertura["maior_competencia"]
+                or cobertura["maior_trimestre"]
+                or cobertura["maior_ano"]
+            )
+            if cobertura["status_cobertura"] not in {STATUS_OK, STATUS_SNAPSHOT}:
+                status = "parcial" if row_count and row_count > 0 else status
         datasets.append(
             DatasetMetaResponse(
                 nome=dataset["nome"],
                 descricao=dataset["descricao"],
                 cadencia=dataset["cadencia"],
-                status="publicado" if row_count and row_count > 0 else "em_validacao",
+                status=status,
                 produto=PRODUTO_CORE_ANS,
                 fonte_serving=dataset["fonte_serving"],
                 row_count=row_count,
+                cobertura_temporal_inicio=inicio,
+                cobertura_temporal_fim=fim,
+                qtd_competencias=cobertura["qtd_competencias"] if cobertura else None,
+                qtd_trimestres=cobertura["qtd_trimestres"] if cobertura else None,
+                qtd_anos=cobertura["qtd_anos"] if cobertura else None,
+                status_cobertura_3_anos=(
+                    cobertura["status_cobertura"] if cobertura else None
+                ),
+                ultima_atualizacao=None,
+                status_publicacao=status,
             ).model_dump()
         )
     return {"dados": datasets, "meta": _meta_padrao(len(datasets))}
@@ -1236,6 +1398,8 @@ async def listar_endpoints() -> dict:
         and endpoint.get("fonte_serving") != "catalogo interno"
     }
     counts = await _contar_relacoes(relacoes)
+    cobertura_rotas = endpoint_por_rota()
+    cobertura_cache: dict[str, dict] = {}
     dados = []
     for endpoint in ENDPOINTS_CORE_ANS:
         fonte = endpoint.get("fonte_serving")
@@ -1246,7 +1410,35 @@ async def listar_endpoints() -> dict:
                 row_count,
                 endpoint.get("status_if_empty", STATUS_EM_VALIDACAO),
             )
-        aparece = status == STATUS_DISPONIVEL
+        cobertura = None
+        item_cobertura = cobertura_rotas.get(endpoint["path"])
+        if item_cobertura:
+            chave = item_cobertura["endpoint"]
+            cobertura = cobertura_cache.get(chave)
+            if cobertura is None:
+                cobertura = await auditar_item_cobertura(item_cobertura)
+                cobertura_cache[chave] = cobertura
+            if cobertura["status_cobertura"] not in {
+                "ok_3_anos",
+                "snapshot_vigente",
+                "nao_temporal",
+            }:
+                status = STATUS_EM_VALIDACAO
+        tipo_status = endpoint.get("tipo_status") or _derivar_tipo_status(status, row_count)
+        if cobertura and cobertura["status_cobertura"] == "parcial":
+            tipo_status = "parcial"
+        if cobertura and cobertura["status_cobertura"] == "vazio":
+            tipo_status = endpoint.get("tipo_status") or "vazio_bloqueado"
+        observacao_limite = endpoint.get("observacao_limite")
+        aparece = status == STATUS_DISPONIVEL and tipo_status not in ("interno", "roadmap", "vazio_bloqueado")
+        if cobertura and cobertura["status_cobertura"] not in {
+            "ok_3_anos",
+            "snapshot_vigente",
+            "nao_temporal",
+        }:
+            aparece = False
+            observacao_limite = observacao_limite or cobertura["motivo"]
+        granularidade = cobertura["granularidade_temporal"] if cobertura else None
         payload = {
             "method": endpoint["method"],
             "path": endpoint["path"],
@@ -1265,6 +1457,17 @@ async def listar_endpoints() -> dict:
             "camada": "ouro" if endpoint["path"].startswith("/v1") else "publico",
             "dataset_origem": fonte,
             "versao": "v1",
+            "tipo_status": tipo_status,
+            "observacao_limite": observacao_limite,
+            "exige_3_anos": granularidade in {"mensal", "trimestral", "anual"}
+            if granularidade
+            else False,
+            "status_cobertura_3_anos": cobertura["status_cobertura"] if cobertura else None,
+            "tipo_granularidade_temporal": granularidade,
+            "endpoint_temporal": granularidade in {"mensal", "trimestral", "anual"}
+            if granularidade
+            else False,
+            "status_publicacao": "disponivel" if aparece else tipo_status,
         }
         dados.append(EndpointMetaResponse(**payload).model_dump())
     return {"dados": dados, "meta": _meta_padrao(len(dados))}

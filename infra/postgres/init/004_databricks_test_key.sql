@@ -1,0 +1,8 @@
+-- Chave de teste Databricks
+-- Cliente existente: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa (projetosdatabricksfree@gmail.com)
+-- Plano analitico (id: 11111111-1111-1111-1111-111111111126) com endpoint_permitido = {/v1/}
+-- Chave existente: prefixo hi_prod_ex (bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb)
+--
+-- Chave raw: hi_prod_ext_4mik38f6GKjsioGU9Prz7W84Tu4JDRqD
+-- Nenhuma alteração necessária no banco — fix foi apenas no API_ALLOWED_HOSTS.
+-- Este arquivo documenta o diagnóstico do erro "Invalid host header" (sprint-43).
