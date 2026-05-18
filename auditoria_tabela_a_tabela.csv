@@ -1,0 +1,456 @@
+schema,tabela,tipo_relacao,camada_medallion,count_registros,count_tipo,status,total_bytes,data_bytes,index_bytes,num_colunas,pk_colunas,col_temporal,min_periodo,max_periodo,periodos_distintos,observacao
+api_ans,api_alteracao_rede_hospitalar,BASE TABLE,serving/API,0,real,vazia,8192,0,0,11,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+api_ans,api_beneficiario_informacao_consolidada,BASE TABLE,serving/API,0,real,vazia,8192,0,0,10,,competencia,,,0,SIB beneficiário não materializado via dbt
+api_ans,api_beneficiario_regiao_geografica,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,SIB beneficiário não materializado via dbt
+api_ans,api_bronze_cadop,VIEW,serving/API,1107,real,preenchida,0,0,0,17,,competencia,202605,202605,1,
+api_ans,api_bronze_diops,VIEW,serving/API,10232252,real,preenchida,0,0,0,21,,trimestre,1T2023,4T2025,13,
+api_ans,api_bronze_fip,VIEW,serving/API,0,real,vazia,0,0,0,19,,trimestre,,,0,Fonte FIP não carregada em bruto_ans
+api_ans,api_bronze_glosa,VIEW,serving/API,4170,real,preenchida,0,0,0,16,,competencia,202501,202501,1,
+api_ans,api_bronze_idss,VIEW,serving/API,13072,real,preenchida,0,0,0,18,,,,,0,
+api_ans,api_bronze_igr,VIEW,serving/API,150501,real,preenchida,0,0,0,19,,trimestre,201501,202604,136,
+api_ans,api_bronze_nip,VIEW,serving/API,53637,real,preenchida,0,0,0,18,,trimestre,201101,202012,120,
+api_ans,api_bronze_rede_assistencial,VIEW,serving/API,0,real,vazia,0,0,0,19,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+api_ans,api_bronze_sib_municipio,VIEW,serving/API,59892,real,preenchida,0,0,0,17,,competencia,202603,202603,1,
+api_ans,api_bronze_sib_operadora,VIEW,serving/API,803,real,preenchida,0,0,0,14,,competencia,202603,202603,1,
+api_ans,api_bronze_vda,VIEW,serving/API,0,real,vazia,0,0,0,17,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+api_ans,api_cnes_municipio,BASE TABLE,serving/API,0,real,vazia,40960,0,32768,17,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+api_ans,api_cnes_rede_gap,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,15,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+api_ans,api_faixa_preco,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_financeiro_operadora_mensal,BASE TABLE,serving/API,0,real,vazia,8192,0,0,44,,competencia,,,0,fat_vda_operadora: fonte VDA não carregada em bruto_ans
+api_ans,api_garantia_atendimento,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_glosa_operadora_mensal,BASE TABLE,serving/API,4170,real,preenchida,499712,458752,0,10,,competencia,202501,202501,1,
+api_ans,api_historico_plano,BASE TABLE,serving/API,163567,real,preenchida,14721024,14680064,0,11,,competencia,202505,202505,1,
+api_ans,api_iap,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_market_share_mensal,BASE TABLE,serving/API,59197,real,preenchida,16293888,16252928,0,20,,competencia,202603,202603,1,
+api_ans,api_ntrp_area_comercializacao,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_ntrp_vcm_faixa_etaria,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_operadora,BASE TABLE,serving/API,1107,real,preenchida,335872,262144,65536,9,,,,,0,
+api_ans,api_operadora_acreditada,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,data_acreditacao,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_operadora_cancelada,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,data_cancelamento,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_operadora_prestador_nao_hospitalar,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+api_ans,api_oportunidade_municipio_mensal,BASE TABLE,serving/API,646,real,preenchida,139264,131072,0,11,,competencia,202603,202603,1,
+api_ans,api_oportunidade_v2_municipio_mensal,BASE TABLE,serving/API,646,real,preenchida,270336,262144,0,25,,competencia,202603,202603,1,
+api_ans,api_painel_precificacao,BASE TABLE,serving/API,0,real,vazia,8192,0,0,12,,competencia,,,0,painel_precificacao: registro_ans=NULL em todos os registros brutos
+api_ans,api_penalidade_operadora,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_peona_sus,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_pfa,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_plano_servico_opcional,BASE TABLE,serving/API,0,real,vazia,24576,0,16384,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_portabilidade_operadora_mensal,BASE TABLE,serving/API,0,real,vazia,24576,0,16384,15,,competencia,,,0,Fonte portabilidade não carregada em bruto_ans
+api_ans,api_prata_cadop,BASE TABLE,serving/API,1107,real,preenchida,278528,237568,0,11,,,,,0,
+api_ans,api_prata_cnes_municipio,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,17,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+api_ans,api_prata_cnes_rede_gap,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,16,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+api_ans,api_prata_diops,BASE TABLE,serving/API,11563,real,preenchida,1499136,1458176,0,18,,trimestre,1T2023,4T2025,13,
+api_ans,api_prata_financeiro_periodo,BASE TABLE,serving/API,10978,real,preenchida,2949120,2908160,0,35,,trimestre,1T2023,4T2025,13,
+api_ans,api_prata_fip,BASE TABLE,serving/API,0,real,vazia,8192,0,0,16,,trimestre,,,0,Fonte FIP não carregada em bruto_ans
+api_ans,api_prata_glosa,BASE TABLE,serving/API,4170,real,preenchida,729088,688128,0,12,,competencia,202501,202501,1,
+api_ans,api_prata_idss,BASE TABLE,serving/API,13072,real,preenchida,2572288,2269184,262144,14,,,,,0,
+api_ans,api_prata_igr,BASE TABLE,serving/API,136908,real,preenchida,23494656,21495808,1957888,14,,trimestre,201501,202604,136,
+api_ans,api_prata_municipio_metrica,BASE TABLE,serving/API,59197,real,preenchida,8953856,8912896,0,15,,competencia,202603,202603,1,
+api_ans,api_prata_nip,BASE TABLE,serving/API,53637,real,preenchida,12386304,11534336,811008,13,,trimestre,201101,202012,120,
+api_ans,api_prata_operadora_enriquecida,BASE TABLE,serving/API,757,real,preenchida,139264,131072,0,11,,competencia,202603,202603,1,
+api_ans,api_prata_rede_assistencial,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,15,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+api_ans,api_prata_sib_municipio,BASE TABLE,serving/API,59892,real,preenchida,7905280,7864320,0,12,,competencia,202603,202603,1,
+api_ans,api_prata_sib_operadora,BASE TABLE,serving/API,803,real,preenchida,139264,131072,0,9,,competencia,202603,202603,1,
+api_ans,api_prata_tiss_procedimento,BASE TABLE,serving/API,0,real,vazia,40960,0,32768,18,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_prata_vda,BASE TABLE,serving/API,0,real,vazia,24576,0,16384,13,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+api_ans,api_premium_cnes_estabelecimento_validado,BASE TABLE,serving/API,0,real,vazia,8192,0,0,19,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+api_ans,api_premium_contrato_validado,BASE TABLE,serving/API,0,real,vazia,8192,0,0,17,,,,,0,Schema premium/MDM não implementado nesta fase
+api_ans,api_premium_mdm_operadora,BASE TABLE,serving/API,1107,real,preenchida,303104,262144,0,13,,,,,0,
+api_ans,api_premium_mdm_prestador,BASE TABLE,serving/API,0,real,vazia,8192,0,0,14,,,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+api_ans,api_premium_operadora_360_validado,BASE TABLE,serving/API,757,real,preenchida,270336,262144,0,24,,competencia,202603,202603,1,
+api_ans,api_premium_quality_dataset,BASE TABLE,serving/API,2,real,preenchida,16384,8192,0,8,,,,,0,
+api_ans,api_premium_subfatura_validada,BASE TABLE,serving/API,0,real,vazia,8192,0,0,17,,competencia,,,0,Schema premium/MDM não implementado nesta fase
+api_ans,api_premium_tiss_procedimento_tuss_validado,BASE TABLE,serving/API,0,real,vazia,8192,0,0,16,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_premium_tuss_procedimento,BASE TABLE,serving/API,3500,real,preenchida,573440,532480,0,17,,,,,0,
+api_ans,api_prestador_acreditado,BASE TABLE,serving/API,0,real,vazia,8192,0,0,11,,data_acreditacao,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+api_ans,api_produto_plano,BASE TABLE,serving/API,163661,real,preenchida,39895040,39845888,0,15,,competencia,202605,202605,1,
+api_ans,api_produto_prestador_hospitalar,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+api_ans,api_programa_qualificacao_institucional,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_promoprev,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_prudencial_operadora_trimestral,BASE TABLE,serving/API,11216,real,preenchida,1359872,1318912,0,11,,trimestre,1T2024,4T2025,10,
+api_ans,api_quadro_auxiliar_corresponsabilidade,BASE TABLE,serving/API,1032,real,preenchida,212992,172032,0,8,,competencia,202505,202505,1,
+api_ans,api_ranking_composto_mensal,BASE TABLE,serving/API,757,real,preenchida,368640,262144,98304,12,,,,,0,
+api_ans,api_ranking_crescimento,BASE TABLE,serving/API,757,real,preenchida,139264,131072,0,8,,competencia,202603,202603,1,
+api_ans,api_ranking_oportunidade,BASE TABLE,serving/API,646,real,preenchida,139264,65536,65536,6,,competencia,202603,202603,1,
+api_ans,api_ranking_score,BASE TABLE,serving/API,757,real,preenchida,139264,131072,0,8,,competencia,202603,202603,1,
+api_ans,api_reajuste_agrupamento,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_rede_assistencial,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,29,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+api_ans,api_regime_especial_operadora,BASE TABLE,serving/API,53,real,preenchida,24576,16384,0,14,,trimestre,1T2003,1T2025,15,
+api_ans,api_regime_especial_operadora_trimestral,BASE TABLE,serving/API,117,real,preenchida,40960,32768,0,17,,trimestre,1T2002,1T2025,20,
+api_ans,api_regulatorio_operadora_trimestral,BASE TABLE,serving/API,125287,real,preenchida,29024256,24117248,4866048,18,,trimestre,201101,202604,184,
+api_ans,api_ressarcimento_beneficiario_abi,BASE TABLE,serving/API,0,real,vazia,8192,0,0,10,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+api_ans,api_ressarcimento_cobranca_arrecadacao,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+api_ans,api_ressarcimento_hc,BASE TABLE,serving/API,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+api_ans,api_ressarcimento_indice_pagamento,BASE TABLE,serving/API,0,real,vazia,8192,0,0,6,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+api_ans,api_ressarcimento_sus_operadora_plano,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+api_ans,api_rn623_lista_trimestral,BASE TABLE,serving/API,0,real,vazia,8192,0,0,13,,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_rpc_operadora_mes,BASE TABLE,serving/API,0,real,vazia,8192,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_score_operadora_mensal,BASE TABLE,serving/API,757,real,preenchida,352256,262144,81920,14,,competencia,202603,202603,1,
+api_ans,api_score_regulatorio_operadora_mensal,BASE TABLE,serving/API,136032,real,preenchida,32546816,32505856,0,22,,competencia,1T2003,4T2025,207,
+api_ans,api_score_v2_operadora_mensal,BASE TABLE,serving/API,136034,real,preenchida,70803456,62390272,8364032,27,,competencia,1T2003,4T2025,207,
+api_ans,api_score_v3_operadora_mensal,BASE TABLE,serving/API,757,real,preenchida,368640,262144,98304,16,,,,,0,
+api_ans,api_sinistralidade_procedimento,BASE TABLE,serving/API,0,real,vazia,8192,0,0,19,,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_sip_assistencial_operadora,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,11,,competencia,,,0,Fonte SIB/SIP não carregada ou registro_ans=NULL no bruto
+api_ans,api_taxa_cobertura_plano,BASE TABLE,serving/API,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_taxa_resolutividade_operadora_trimestral,BASE TABLE,serving/API,26062,real,preenchida,4235264,4194304,0,10,,trimestre,201501,201910,58,
+api_ans,api_tiss_ambulatorial_operadora_mes,BASE TABLE,serving/API,0,real,vazia,8192,0,0,10,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_tiss_hospitalar_operadora_mes,BASE TABLE,serving/API,0,real,vazia,8192,0,0,11,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_tiss_operadora_trimestral,BASE TABLE,serving/API,0,real,vazia,8192,0,0,17,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_tiss_plano_mes,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+api_ans,api_tuss_procedimento_vigente,BASE TABLE,serving/API,64654,real,preenchida,11575296,11534336,0,9,,,,,0,
+api_ans,api_valor_comercial_medio_municipio,BASE TABLE,serving/API,0,real,vazia,8192,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+api_ans,api_vazio_assistencial,BASE TABLE,serving/API,0,real,vazia,32768,0,24576,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,ans_arquivo_generico,BASE TABLE,bronze,7,real,preenchida,65536,8192,49152,11,id,data_ingestao,2026-05-13 19:51:48.58963+00,2026-05-14 04:58:26.617089+00,7,
+bruto_ans,ans_linha_generica,BASE TABLE,bronze,0,real,vazia,32768,0,24576,8,id,data_ingestao,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,beneficiario_informacao_consolidada,BASE TABLE,bronze,0,real,vazia,24576,0,16384,17,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,beneficiario_regiao_geografica,BASE TABLE,bronze,0,real,vazia,16384,0,8192,15,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,cadop,BASE TABLE,bronze,1107,real,preenchida,638976,516096,81920,17,,competencia,202605,202605,1,
+bruto_ans,cadop_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,CADOP não carregado em bruto_ans
+bruto_ans,cnes_estabelecimento,BASE TABLE,bronze,0,real,vazia,0,0,0,27,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+bruto_ans,cnes_estabelecimento_default,BASE TABLE,bronze,0,real,vazia,32768,0,24576,27,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+bruto_ans,depara_sip_tuss,BASE TABLE,bronze,0,real,vazia,32768,0,24576,11,id,,,,0,Fonte SIB/SIP não carregada ou registro_ans=NULL no bruto
+bruto_ans,diops_operadora_trimestral,BASE TABLE,bronze,10232252,real,preenchida,0,0,0,21,,trimestre,1T2023,4T2025,13,
+bruto_ans,diops_operadora_trimestral_default,BASE TABLE,bronze,10191724,estimado,preenchida,3799113728,3448422400,349724672,21,,trimestre,1T2023,4T2025,13,
+bruto_ans,diops_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,faixa_preco,BASE TABLE,bronze,0,real,vazia,16384,0,8192,15,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,fip_operadora_trimestral,BASE TABLE,bronze,0,real,vazia,0,0,0,19,,trimestre,,,0,Fonte FIP não carregada em bruto_ans
+bruto_ans,fip_operadora_trimestral_default,BASE TABLE,bronze,0,real,vazia,32768,0,24576,19,,trimestre,,,0,Fonte FIP não carregada em bruto_ans
+bruto_ans,fip_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte FIP não carregada em bruto_ans
+bruto_ans,glosa_operadora_mensal,BASE TABLE,bronze,4170,real,preenchida,0,0,0,16,,competencia,202501,202501,1,
+bruto_ans,glosa_operadora_mensal_2025,BASE TABLE,bronze,4170,real,preenchida,2088960,1589248,458752,16,,competencia,202501,202501,1,
+bruto_ans,glosa_operadora_mensal_2026,BASE TABLE,bronze,0,real,vazia,40960,0,32768,16,,competencia,,,0,VDA/glosa: fonte VDA não carregada em bruto_ans
+bruto_ans,glosa_operadora_mensal_2027,BASE TABLE,bronze,0,real,vazia,40960,0,32768,16,,competencia,,,0,VDA/glosa: fonte VDA não carregada em bruto_ans
+bruto_ans,glosa_operadora_mensal_default,BASE TABLE,bronze,0,real,vazia,40960,0,32768,16,,competencia,,,0,VDA/glosa: fonte VDA não carregada em bruto_ans
+bruto_ans,glosa_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,VDA/glosa: fonte VDA não carregada em bruto_ans
+bruto_ans,historico_plano,BASE TABLE,bronze,347715,real,preenchida,114999296,99573760,15368192,18,,competencia,202505,202505,1,
+bruto_ans,iap,BASE TABLE,bronze,0,real,vazia,16384,0,8192,15,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,idss,BASE TABLE,bronze,13072,real,preenchida,6578176,5275648,1261568,18,,,,,0,
+bruto_ans,idss_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,igr_operadora_trimestral,BASE TABLE,bronze,150501,real,preenchida,69115904,58712064,10354688,19,,trimestre,201501,202604,136,
+bruto_ans,igr_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,monitoramento_garantia_atendimento,BASE TABLE,bronze,0,real,vazia,16384,0,8192,15,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,nip_operadora_trimestral,BASE TABLE,bronze,53637,real,preenchida,27254784,24444928,2768896,18,,trimestre,201101,202012,120,
+bruto_ans,nip_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,ntrp_area_comercializacao,BASE TABLE,bronze,0,real,vazia,24576,0,16384,15,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,ntrp_vcm_faixa_etaria,BASE TABLE,bronze,0,real,vazia,16384,0,8192,16,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,operadora_acreditada,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,data_validade,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,operadora_cancelada,BASE TABLE,bronze,0,real,vazia,24576,0,16384,15,,data_cancelamento,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,operadora_prestador_nao_hospitalar,BASE TABLE,bronze,31959000,estimado,preenchida,9142509568,8726937600,413179904,16,,competencia,202605,202605,1,
+bruto_ans,painel_precificacao,BASE TABLE,bronze,30149562,estimado,preenchida,8377221120,7984349184,390643712,19,,competencia,202504,202504,1,
+bruto_ans,penalidade_operadora,BASE TABLE,bronze,0,real,vazia,24576,0,16384,16,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,peona_sus,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,percentual_reajuste_agrupamento,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,pfa,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,plano_servico_opcional,BASE TABLE,bronze,32314,real,preenchida,11763712,10526720,1196032,14,,competencia,202505,202505,1,
+bruto_ans,portabilidade_operadora_mensal,BASE TABLE,bronze,0,real,vazia,0,0,0,16,,competencia,,,0,Fonte portabilidade não carregada em bruto_ans
+bruto_ans,portabilidade_operadora_mensal_default,BASE TABLE,bronze,0,real,vazia,32768,0,24576,16,,competencia,,,0,Fonte portabilidade não carregada em bruto_ans
+bruto_ans,prestador_acreditado,BASE TABLE,bronze,0,real,vazia,24576,0,16384,18,,data_validade,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+bruto_ans,prestador_cadastral,BASE TABLE,bronze,0,real,vazia,32768,0,24576,15,id,,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+bruto_ans,prestador_cadastral_snapshot_anterior,BASE TABLE,bronze,0,real,vazia,16384,0,8192,15,,,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+bruto_ans,produto_caracteristica,BASE TABLE,bronze,163969,real,preenchida,82051072,73293824,8699904,18,,competencia,202605,202605,1,
+bruto_ans,produto_prestador_hospitalar,BASE TABLE,bronze,42907740,estimado,preenchida,12272771072,11716673536,552828928,16,,competencia,202605,202605,1,
+bruto_ans,produto_tabela_auxiliar,BASE TABLE,bronze,877472,real,preenchida,373129216,360267776,12730368,15,,competencia,202505,202505,1,
+bruto_ans,programa_qualificacao_institucional,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,promoprev,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,prudencial_operadora_trimestral,BASE TABLE,bronze,11216,real,preenchida,0,0,0,17,,trimestre,1T2024,4T2025,10,
+bruto_ans,prudencial_operadora_trimestral_default,BASE TABLE,bronze,11216,real,preenchida,5316608,3997696,1277952,17,,trimestre,1T2024,4T2025,10,
+bruto_ans,quadro_auxiliar_corresponsabilidade,BASE TABLE,bronze,11081,real,preenchida,4726784,4546560,139264,15,,competencia,202505,202505,1,
+bruto_ans,qualiss,BASE TABLE,bronze,0,real,vazia,32768,0,24576,14,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,qualiss_snapshot_anterior,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,rede_assistencial_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte rede assistencial não carregada em bruto_ans
+bruto_ans,rede_prestador_municipio,BASE TABLE,bronze,0,real,vazia,0,0,0,19,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+bruto_ans,rede_prestador_municipio_default,BASE TABLE,bronze,0,real,vazia,24576,0,16384,19,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+bruto_ans,regime_especial_operadora_trimestral,BASE TABLE,bronze,118,real,preenchida,0,0,0,16,,trimestre,1T2002,1T2025,20,
+bruto_ans,regime_especial_operadora_trimestral_default,BASE TABLE,bronze,118,real,preenchida,155648,57344,65536,16,,trimestre,1T2002,1T2025,20,
+bruto_ans,ressarcimento_beneficiario_abi,BASE TABLE,bronze,0,real,vazia,24576,0,16384,17,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+bruto_ans,ressarcimento_cobranca_arrecadacao,BASE TABLE,bronze,0,real,vazia,16384,0,8192,14,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+bruto_ans,ressarcimento_hc,BASE TABLE,bronze,0,real,vazia,24576,0,16384,14,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+bruto_ans,ressarcimento_indice_pagamento,BASE TABLE,bronze,0,real,vazia,16384,0,8192,13,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+bruto_ans,ressarcimento_sus_operadora_plano,BASE TABLE,bronze,0,real,vazia,16384,0,8192,16,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+bruto_ans,rn623_lista_operadora_trimestral,BASE TABLE,bronze,0,real,vazia,24576,0,16384,20,,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,rol_procedimento,BASE TABLE,bronze,0,real,vazia,32768,0,24576,13,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,rpc,BASE TABLE,bronze,0,real,vazia,0,0,0,17,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,rpc_default,BASE TABLE,bronze,0,real,vazia,16384,0,8192,17,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,sib_beneficiario_municipio,BASE TABLE,bronze,59892,real,preenchida,0,0,0,17,,competencia,202603,202603,1,
+bruto_ans,sib_beneficiario_municipio_2025,BASE TABLE,bronze,0,real,vazia,24576,0,16384,17,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_beneficiario_municipio_2026,BASE TABLE,bronze,59892,real,preenchida,27025408,23363584,3620864,17,,competencia,202603,202603,1,
+bruto_ans,sib_beneficiario_municipio_2027,BASE TABLE,bronze,0,real,vazia,24576,0,16384,17,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_beneficiario_municipio_default,BASE TABLE,bronze,0,real,vazia,24576,0,16384,17,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_beneficiario_operadora,BASE TABLE,bronze,803,real,preenchida,0,0,0,14,,competencia,202603,202603,1,
+bruto_ans,sib_beneficiario_operadora_2025,BASE TABLE,bronze,0,real,vazia,24576,0,16384,14,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_beneficiario_operadora_2026,BASE TABLE,bronze,803,real,preenchida,417792,319488,65536,14,,competencia,202603,202603,1,
+bruto_ans,sib_beneficiario_operadora_2027,BASE TABLE,bronze,0,real,vazia,24576,0,16384,14,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_beneficiario_operadora_default,BASE TABLE,bronze,0,real,vazia,49152,8192,32768,14,,competencia,,,0,SIB beneficiário não materializado via dbt
+bruto_ans,sib_municipio_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,sib_operadora_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,sip_mapa_assistencial,BASE TABLE,bronze,133392,real,preenchida,44474368,39960576,4464640,25,,competencia,202001,202410,20,
+bruto_ans,solicitacao_alteracao_rede_hospitalar,BASE TABLE,bronze,0,real,vazia,24576,0,16384,18,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+bruto_ans,taxa_cobertura_plano,BASE TABLE,bronze,0,real,vazia,24576,0,16384,15,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,taxa_resolutividade_operadora_trimestral,BASE TABLE,bronze,63366,real,preenchida,0,0,0,16,,trimestre,201501,201910,58,
+bruto_ans,taxa_resolutividade_operadora_trimestral_default,BASE TABLE,bronze,63366,real,preenchida,29900800,23453696,6406144,16,,trimestre,201501,201910,58,
+bruto_ans,tiss_ambulatorial,BASE TABLE,bronze,0,real,vazia,0,0,0,17,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_ambulatorial_default,BASE TABLE,bronze,0,real,vazia,16384,0,8192,17,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_dados_plano,BASE TABLE,bronze,0,real,vazia,0,0,0,16,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_dados_plano_default,BASE TABLE,bronze,0,real,vazia,16384,0,8192,16,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_hospitalar,BASE TABLE,bronze,0,real,vazia,0,0,0,18,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_hospitalar_default,BASE TABLE,bronze,0,real,vazia,16384,0,8192,18,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_procedimento_trimestral,BASE TABLE,bronze,0,real,vazia,0,0,0,21,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tiss_procedimento_trimestral_default,BASE TABLE,bronze,0,real,vazia,32768,0,24576,21,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+bruto_ans,tuss_procedimento,BASE TABLE,bronze,0,real,vazia,65536,8192,49152,13,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,tuss_terminologia_oficial,BASE TABLE,bronze,129402,real,preenchida,46694400,39944192,6701056,16,,,,,0,
+bruto_ans,valor_comercial_medio_municipio,BASE TABLE,bronze,0,real,vazia,16384,0,8192,16,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+bruto_ans,vda_operadora_mensal,BASE TABLE,bronze,0,real,vazia,0,0,0,17,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+bruto_ans,vda_operadora_mensal_default,BASE TABLE,bronze,0,real,vazia,32768,0,24576,17,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+bruto_ans,vda_quarentena,BASE TABLE,bronze,0,real,vazia,16384,0,8192,7,id_quarentena,,,,0,Fonte VDA não carregada em bruto_ans
+bruto_cliente,contrato,BASE TABLE,bronze cliente,0,real,vazia,40960,0,32768,15,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+bruto_cliente,subfatura,BASE TABLE,bronze cliente,0,real,vazia,40960,0,32768,15,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_ans,consumo_beneficiarios_cobertura_municipio,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,8,,competencia,,,0,SIB beneficiário não materializado via dbt
+consumo_ans,consumo_beneficiarios_municipio_mes,BASE TABLE,serving/cliente,646,real,preenchida,139264,131072,0,10,,competencia,202603,202603,1,
+consumo_ans,consumo_beneficiarios_operadora_mes,BASE TABLE,serving/cliente,757,real,preenchida,139264,131072,0,11,,competencia,202603,202603,1,
+consumo_ans,consumo_financeiro_operadora_trimestre,BASE TABLE,serving/cliente,10978,real,preenchida,2662400,2621440,0,31,,trimestre,1T2023,4T2025,13,
+consumo_ans,consumo_glosa_operadora_mensal,BASE TABLE,serving/cliente,4170,real,preenchida,466944,425984,0,9,,competencia,202501,202501,1,
+consumo_ans,consumo_historico_plano,BASE TABLE,serving/cliente,163567,real,preenchida,14721024,14680064,0,11,,competencia,202505,202505,1,
+consumo_ans,consumo_idss,BASE TABLE,serving/cliente,13072,real,preenchida,1130496,1089536,0,10,,,,,0,
+consumo_ans,consumo_igr,BASE TABLE,serving/cliente,136908,real,preenchida,15769600,15728640,0,10,,trimestre,201501,202604,136,
+consumo_ans,consumo_nip,BASE TABLE,serving/cliente,53637,real,preenchida,5808128,5767168,0,9,,trimestre,201101,202012,120,
+consumo_ans,consumo_operadora_360,BASE TABLE,serving/cliente,757,real,preenchida,270336,262144,0,15,,competencia,202603,202603,1,
+consumo_ans,consumo_oportunidade_municipio,BASE TABLE,serving/cliente,646,real,preenchida,139264,131072,0,10,,competencia,202603,202603,1,
+consumo_ans,consumo_plano_servico_opcional,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,7,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+consumo_ans,consumo_precificacao_plano,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,12,,competencia,,,0,painel_precificacao: registro_ans=NULL em todos os registros brutos
+consumo_ans,consumo_produto_plano,BASE TABLE,serving/cliente,163661,real,preenchida,34652160,34603008,0,12,,competencia,202605,202605,1,
+consumo_ans,consumo_prudencial_operadora_trimestral,BASE TABLE,serving/cliente,11216,real,preenchida,1179648,1138688,0,10,,trimestre,1T2024,4T2025,10,
+consumo_ans,consumo_rede_acreditacao,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,9,,data_acreditacao,,,0,Fonte rede assistencial não carregada em bruto_ans
+consumo_ans,consumo_rede_assistencial_municipio,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,11,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+consumo_ans,consumo_regime_especial_operadora_trimestral,BASE TABLE,serving/cliente,117,real,preenchida,40960,32768,0,13,,trimestre,1T2002,1T2025,20,
+consumo_ans,consumo_regulatorio_complementar_operadora,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,8,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+consumo_ans,consumo_regulatorio_operadora_trimestre,BASE TABLE,serving/cliente,161173,real,preenchida,21536768,21495808,0,10,,trimestre,201101,202604,184,
+consumo_ans,consumo_ressarcimento_sus_operadora,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,6,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+consumo_ans,consumo_score_operadora_mes,BASE TABLE,serving/cliente,757,real,preenchida,139264,131072,0,12,,competencia,202603,202603,1,
+consumo_ans,consumo_sip_assistencial_operadora,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,10,,competencia,,,0,Fonte SIB/SIP não carregada ou registro_ans=NULL no bruto
+consumo_ans,consumo_taxa_resolutividade_operadora_trimestral,BASE TABLE,serving/cliente,26062,real,preenchida,3809280,3768320,0,9,,trimestre,201501,201910,58,
+consumo_ans,consumo_tiss_utilizacao_operadora_mes,BASE TABLE,serving/cliente,0,real,vazia,8192,0,0,11,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+consumo_ans,consumo_tuss_procedimento_vigente,BASE TABLE,serving/cliente,64654,real,preenchida,10526720,10485760,0,6,,,,,0,
+consumo_premium_ans,consumo_premium_cnes_estabelecimento_validado,BASE TABLE,premium,0,real,vazia,8192,0,0,27,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_contrato_inconsistencia,BASE TABLE,premium,0,real,vazia,8192,0,0,12,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_contrato_subfatura_operadora,BASE TABLE,premium,0,real,vazia,8192,0,0,32,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_contrato_validado,BASE TABLE,premium,0,real,vazia,8192,0,0,17,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_mdm_operadora,BASE TABLE,premium,1107,real,preenchida,303104,262144,0,13,,,,,0,
+consumo_premium_ans,consumo_premium_mdm_prestador,BASE TABLE,premium,0,real,vazia,8192,0,0,14,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_operadora_360_validado,BASE TABLE,premium,757,real,preenchida,270336,262144,0,30,,competencia,202603,202603,1,
+consumo_premium_ans,consumo_premium_quality_dataset,BASE TABLE,premium,2,real,preenchida,16384,8192,0,8,,,,,0,
+consumo_premium_ans,consumo_premium_subfatura_validada,BASE TABLE,premium,0,real,vazia,8192,0,0,17,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,consumo_premium_tiss_procedimento_tuss_validado,BASE TABLE,premium,0,real,vazia,8192,0,0,16,,trimestre,,,0,Schema premium/MDM/quality não implementado nesta fase
+consumo_premium_ans,xref_tiss_tuss_procedimento,BASE TABLE,premium,3500,real,preenchida,475136,434176,0,13,,,,,0,
+mdm_ans,mdm_estabelecimento_exception,BASE TABLE,MDM público,0,real,vazia,8192,0,0,6,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,mdm_estabelecimento_master,BASE TABLE,MDM público,0,real,vazia,8192,0,0,13,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,mdm_operadora_exception,BASE TABLE,MDM público,0,real,vazia,8192,0,0,6,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,mdm_operadora_master,BASE TABLE,MDM público,1107,real,preenchida,303104,262144,0,13,,,,,0,
+mdm_ans,mdm_prestador_exception,BASE TABLE,MDM público,0,real,vazia,8192,0,0,6,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,mdm_prestador_master,BASE TABLE,MDM público,0,real,vazia,8192,0,0,14,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,xref_estabelecimento_origem,BASE TABLE,MDM público,0,real,vazia,8192,0,0,4,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_ans,xref_operadora_origem,BASE TABLE,MDM público,1107,real,preenchida,139264,98304,0,4,,,,,0,
+mdm_ans,xref_prestador_origem,BASE TABLE,MDM público,0,real,vazia,8192,0,0,4,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_contrato_exception,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,10,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_contrato_master,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,17,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_operadora_contrato_exception,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,11,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_prestador_contrato_exception,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,11,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_subfatura_exception,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,11,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,mdm_subfatura_master,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,17,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,xref_contrato_origem,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,13,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+mdm_privado,xref_subfatura_origem,BASE TABLE,MDM privado,0,real,vazia,8192,0,0,14,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+nucleo_ans,dim_competencia,BASE TABLE,gold/núcleo,1,real,preenchida,16384,8192,0,5,,competencia,202603,202603,1,
+nucleo_ans,dim_localidade,BASE TABLE,gold/núcleo,646,real,preenchida,73728,65536,0,7,,,,,0,
+nucleo_ans,dim_modalidade,BASE TABLE,gold/núcleo,8,real,preenchida,16384,8192,0,4,,,,,0,
+nucleo_ans,dim_operadora_atual,BASE TABLE,gold/núcleo,1107,real,preenchida,229376,188416,0,8,,,,,0,
+nucleo_ans,dim_segmentacao,BASE TABLE,gold/núcleo,4,real,preenchida,16384,8192,0,4,,,,,0,
+nucleo_ans,dim_tipo_contratacao,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,4,,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+nucleo_ans,dim_tuss_procedimento,BASE TABLE,gold/núcleo,3500,real,preenchida,573440,532480,0,17,,,,,0,
+nucleo_ans,dim_tuss_terminologia,BASE TABLE,gold/núcleo,3500,real,preenchida,450560,409600,0,10,,,,,0,
+nucleo_ans,fat_beneficiario_localidade,BASE TABLE,gold/núcleo,59197,real,preenchida,7905280,7864320,0,11,,competencia,202603,202603,1,
+nucleo_ans,fat_beneficiario_operadora,BASE TABLE,gold/núcleo,757,real,preenchida,114688,73728,0,11,,competencia,202603,202603,1,
+nucleo_ans,fat_cnes_estabelecimento_municipio,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,16,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+nucleo_ans,fat_cnes_rede_gap_municipio,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,14,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+nucleo_ans,fat_cobertura_rede_municipio,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,20,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+nucleo_ans,fat_densidade_rede_operadora,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,12,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+nucleo_ans,fat_financeiro_operadora_trimestral,BASE TABLE,gold/núcleo,10978,real,preenchida,5799936,5758976,0,36,,trimestre,1T2023,4T2025,13,
+nucleo_ans,fat_glosa_operadora_mensal,BASE TABLE,gold/núcleo,4083,real,preenchida,2260992,2220032,0,18,,competencia,202501,202501,1,
+nucleo_ans,fat_idss_operadora,BASE TABLE,gold/núcleo,10409,real,preenchida,1400832,1359872,0,15,,,,,0,
+nucleo_ans,fat_market_share_mensal,BASE TABLE,gold/núcleo,59197,real,preenchida,16547840,15204352,1302528,19,,competencia,202603,202603,1,
+nucleo_ans,fat_monitoramento_regulatorio_trimestral,BASE TABLE,gold/núcleo,161173,real,preenchida,39714816,39665664,0,17,,trimestre,201101,202604,184,
+nucleo_ans,fat_oportunidade_municipio_mensal,BASE TABLE,gold/núcleo,646,real,preenchida,188416,131072,49152,10,,competencia,202603,202603,1,
+nucleo_ans,fat_oportunidade_v2_municipio_mensal,BASE TABLE,gold/núcleo,646,real,preenchida,335872,262144,65536,25,,competencia,202603,202603,1,
+nucleo_ans,fat_ranking_composto_mensal,BASE TABLE,gold/núcleo,757,real,preenchida,270336,262144,0,13,,,,,0,
+nucleo_ans,fat_reclamacao_operadora,BASE TABLE,gold/núcleo,368,real,preenchida,114688,73728,0,9,,trimestre,202012,202012,1,
+nucleo_ans,fat_regime_especial_historico,BASE TABLE,gold/núcleo,53,real,preenchida,49152,16384,0,15,,data_fim,,,0,
+nucleo_ans,fat_score_operadora_mensal,BASE TABLE,gold/núcleo,757,real,preenchida,188416,147456,0,10,,competencia,202603,202603,1,
+nucleo_ans,fat_score_regulatorio_operadora_mensal,BASE TABLE,gold/núcleo,136032,real,preenchida,32546816,32505856,0,22,,competencia,1T2003,4T2025,207,
+nucleo_ans,fat_score_v2_operadora_mensal,BASE TABLE,gold/núcleo,136034,real,preenchida,33071104,33030144,0,26,,competencia,1T2003,4T2025,207,
+nucleo_ans,fat_score_v3_operadora_mensal,BASE TABLE,gold/núcleo,757,real,preenchida,270336,262144,0,16,,,,,0,
+nucleo_ans,fat_sinistralidade_procedimento,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,19,,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+nucleo_ans,fat_tiss_procedimento_operadora,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,17,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+nucleo_ans,fat_vazio_assistencial_municipio,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,14,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+nucleo_ans,fat_vda_operadora_mensal,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,19,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+nucleo_ans,mart_mercado_municipio,BASE TABLE,gold/núcleo,646,real,preenchida,139264,131072,0,10,,competencia,202603,202603,1,
+nucleo_ans,mart_operadora_360,BASE TABLE,gold/núcleo,757,real,preenchida,270336,262144,0,15,,competencia,202603,202603,1,
+nucleo_ans,mart_rede_assistencial,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,11,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+nucleo_ans,mart_regulatorio_operadora,BASE TABLE,gold/núcleo,161173,real,preenchida,21536768,21495808,0,10,,trimestre,201101,202604,184,
+nucleo_ans,mart_score_operadora,BASE TABLE,gold/núcleo,757,real,preenchida,139264,131072,0,12,,competencia,202603,202603,1,
+nucleo_ans,mart_tiss_procedimento,BASE TABLE,gold/núcleo,0,real,vazia,8192,0,0,11,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+nucleo_ans,snap_operadora,BASE TABLE,gold/núcleo,1107,real,preenchida,335872,294912,0,14,,,,,0,
+plataforma,arquivo_fonte_ans,BASE TABLE,governança,364,real,preenchida,499712,327680,131072,16,id,dataset_codigo,beneficiario_regiao_geografica,valor_comercial_medio_municipio,45,
+plataforma,arquivo_quarentena,BASE TABLE,governança,56,real,preenchida,81920,32768,16384,8,id,dataset,beneficiario_regiao_geografica,valor_comercial_medio_municipio,23,
+plataforma,auditoria_cobranca,BASE TABLE,governança,0,real,vazia,24576,0,16384,8,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,backup_alerta,BASE TABLE,governança,0,real,vazia,24576,0,16384,5,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,backup_execucao,BASE TABLE,governança,9,real,preenchida,49152,8192,32768,13,id,,,,0,
+plataforma,chave_api,BASE TABLE,governança,3,real,preenchida,81920,8192,65536,8,id,,,,0,
+plataforma,ciclo_faturamento,BASE TABLE,governança,0,real,vazia,32768,0,24576,11,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,cliente,BASE TABLE,governança,3,real,preenchida,49152,8192,32768,8,id,,,,0,
+plataforma,cliente_dataset_acesso,BASE TABLE,governança,0,real,vazia,32768,0,24576,13,id,dataset_codigo,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,controle_reprocessamento,BASE TABLE,governança,0,real,vazia,16384,0,8192,8,id,dataset,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,dataset_layout_ativo,BASE TABLE,governança,0,real,vazia,16384,0,8192,4,dataset,dataset,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,erro_parse,BASE TABLE,governança,0,real,vazia,16384,0,8192,9,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,execucao_layout,BASE TABLE,governança,10,real,preenchida,32768,8192,16384,10,id,dataset,cadop,tuss_oficial,10,
+plataforma,fatura_consumo,BASE TABLE,governança,0,real,vazia,32768,0,24576,19,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,fonte_dado_ans,BASE TABLE,governança,14637,real,preenchida,7012352,4620288,2351104,16,id,dataset_codigo,caderno_ss_generico,tiss_hospitalar,12,
+plataforma,historico_plano,BASE TABLE,governança,0,real,vazia,24576,0,16384,10,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,ingestao_janela_decisao,BASE TABLE,governança,85,real,preenchida,114688,16384,65536,9,id,competencia,201901,202701,15,
+plataforma,job,BASE TABLE,governança,194,real,preenchida,114688,65536,16384,13,id,,,,0,
+plataforma,log_uso,BASE TABLE,governança,400,real,preenchida,0,0,0,13,"id, timestamp_req",,,,0,
+plataforma,log_uso_default,BASE TABLE,governança,400,real,preenchida,253952,98304,122880,13,"id, timestamp_req",,,,0,
+plataforma,lote_ingestao,BASE TABLE,governança,157,real,preenchida,155648,57344,65536,19,id,competencia,202001,202605,41,
+plataforma,mapa_layout_resolvido,BASE TABLE,governança,133,real,preenchida,73728,24576,16384,8,id,,,,0,
+plataforma,plano,BASE TABLE,governança,13,real,preenchida,49152,8192,32768,16,id,,,,0,
+plataforma,politica_dataset,BASE TABLE,governança,28,real,preenchida,65536,8192,49152,15,dataset_codigo,dataset_codigo,ans_arquivo_generico,vda,28,
+plataforma,publicacao_financeira,BASE TABLE,governança,0,real,vazia,32768,0,24576,8,id,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,publicacao_financeira_v2,BASE TABLE,governança,0,real,vazia,32768,0,24576,8,id,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,publicacao_rede,BASE TABLE,governança,0,real,vazia,16384,0,8192,7,"dataset, competencia, versao_publicacao",competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+plataforma,publicacao_regulatoria,BASE TABLE,governança,0,real,vazia,32768,0,24576,13,id,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,reclassificacao_dataset_pendente,BASE TABLE,governança,0,real,vazia,32768,0,24576,11,id,dataset_codigo,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,retencao_particao_log,BASE TABLE,governança,126,real,preenchida,98304,32768,32768,10,id,,,,0,
+plataforma,solicitacao_historico,BASE TABLE,governança,0,real,vazia,65536,8192,49152,13,id,dataset_codigo,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,tentativa_carga_ans,BASE TABLE,governança,108,real,preenchida,196608,57344,98304,30,id,competencia,202001,202605,22,
+plataforma,versao_dataset,BASE TABLE,governança,10,real,preenchida,32768,8192,16384,10,id,competencia,202410,202605,4,
+plataforma,versao_dataset_vigente,BASE TABLE,governança,0,real,vazia,81920,8192,65536,10,id,dataset_codigo,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+plataforma,vw_ingestao_janela_resumo,VIEW,governança,6,real,preenchida,0,0,0,7,,dataset_codigo,glosa,sib_operadora,3,
+plataforma,vw_resumo_quarentena,VIEW,governança,27,real,preenchida,0,0,0,8,,competencia,202605,desconhecida,2,
+plataforma,vw_tamanho_dataset,VIEW,governança,28,real,preenchida,0,0,0,8,,dataset_codigo,ans_arquivo_generico,vda,28,
+plataforma,vw_versao_vigente,VIEW,governança,8,real,preenchida,0,0,0,12,,dataset_codigo,cnes_estabelecimento,tuss_procedimento,8,
+public,ab_permission,BASE TABLE,sistema,5,real,preenchida,40960,8192,32768,2,id,,,,0,
+public,ab_permission_view,BASE TABLE,sistema,212,real,preenchida,73728,16384,32768,3,id,,,,0,
+public,ab_permission_view_role,BASE TABLE,sistema,228,real,preenchida,73728,16384,32768,3,id,,,,0,
+public,ab_register_user,BASE TABLE,sistema,0,real,vazia,32768,0,24576,8,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,ab_role,BASE TABLE,sistema,5,real,preenchida,40960,8192,32768,2,id,,,,0,
+public,ab_user,BASE TABLE,sistema,1,real,preenchida,81920,8192,65536,14,id,,,,0,
+public,ab_user_role,BASE TABLE,sistema,1,real,preenchida,40960,8192,32768,3,id,,,,0,
+public,ab_view_menu,BASE TABLE,sistema,93,real,preenchida,40960,8192,32768,2,id,,,,0,
+public,alembic_version,BASE TABLE,sistema,1,real,preenchida,24576,8192,16384,1,version_num,,,,0,
+public,callback_request,BASE TABLE,sistema,0,real,vazia,16384,0,8192,6,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,connection,BASE TABLE,sistema,0,real,vazia,24576,0,16384,12,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dag,BASE TABLE,sistema,40,real,preenchida,499712,278528,180224,28,dag_id,dataset_expression,,,0,
+public,dag_code,BASE TABLE,sistema,40,real,preenchida,155648,90112,16384,4,fileloc_hash,,,,0,
+public,dag_owner_attributes,BASE TABLE,sistema,0,real,vazia,16384,0,8192,3,"dag_id, owner",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dag_pickle,BASE TABLE,sistema,0,real,vazia,16384,0,8192,4,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dag_run,BASE TABLE,sistema,215,real,preenchida,2744320,1753088,950272,19,id,data_interval_start,2025-01-01 00:00:00+00,2026-05-16 00:00:00+00,74,
+public,dag_run_note,BASE TABLE,sistema,0,real,vazia,16384,0,8192,5,dag_run_id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dag_schedule_dataset_reference,BASE TABLE,sistema,0,real,vazia,8192,0,8192,4,"dataset_id, dag_id",dataset_id,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dag_tag,BASE TABLE,sistema,133,real,preenchida,57344,16384,16384,2,"name, dag_id",,,,0,
+public,dag_warning,BASE TABLE,sistema,0,real,vazia,16384,0,8192,4,"dag_id, warning_type",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dagrun_dataset_event,BASE TABLE,sistema,0,real,vazia,24576,0,24576,2,"dag_run_id, event_id",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dataset,BASE TABLE,sistema,0,real,vazia,24576,0,16384,6,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dataset_dag_run_queue,BASE TABLE,sistema,0,real,vazia,8192,0,8192,3,"dataset_id, target_dag_id",dataset_id,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,dataset_event,BASE TABLE,sistema,0,real,vazia,24576,0,16384,8,id,dataset_id,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,import_error,BASE TABLE,sistema,0,real,vazia,32768,8192,16384,5,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,job,BASE TABLE,sistema,545,real,preenchida,786432,303104,442368,10,id,,,,0,
+public,log,BASE TABLE,sistema,12019,real,preenchida,4046848,3178496,827392,11,id,,,,0,
+public,log_template,BASE TABLE,sistema,2,real,preenchida,32768,8192,16384,4,id,,,,0,
+public,rendered_task_instance_fields,BASE TABLE,sistema,514,real,preenchida,409600,278528,98304,6,"dag_id, task_id, run_id, map_index",,,,0,
+public,serialized_dag,BASE TABLE,sistema,40,real,preenchida,278528,73728,32768,8,dag_id,data_compressed,,,0,
+public,session,BASE TABLE,sistema,1444,real,preenchida,540672,327680,180224,4,id,data,,,0,
+public,sla_miss,BASE TABLE,sistema,0,real,vazia,24576,0,16384,7,"task_id, dag_id, execution_date",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,slot_pool,BASE TABLE,sistema,1,real,preenchida,49152,8192,32768,5,id,,,,0,
+public,task_fail,BASE TABLE,sistema,322,real,preenchida,172032,57344,81920,8,id,,,,0,
+public,task_instance,BASE TABLE,sistema,644,real,preenchida,778240,221184,516096,31,"dag_id, task_id, run_id, map_index",,,,0,
+public,task_instance_note,BASE TABLE,sistema,0,real,vazia,16384,0,8192,8,"task_id, dag_id, run_id, map_index",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,task_map,BASE TABLE,sistema,0,real,vazia,16384,0,8192,6,"dag_id, task_id, run_id, map_index",,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,task_outlet_dataset_reference,BASE TABLE,sistema,0,real,vazia,16384,0,8192,5,"dataset_id, dag_id, task_id",dataset_id,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,task_reschedule,BASE TABLE,sistema,0,real,vazia,32768,0,24576,10,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,trigger,BASE TABLE,sistema,0,real,vazia,16384,0,8192,5,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,variable,BASE TABLE,sistema,0,real,vazia,24576,0,16384,5,id,,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+public,xcom,BASE TABLE,sistema,220,real,preenchida,188416,49152,106496,8,"dag_run_id, task_id, map_index, key",,,,0,
+quality_ans,audit_operadora_razao_social_divergente_cadop,BASE TABLE,qualidade,0,real,vazia,8192,0,0,6,,,,,0,Schema premium/MDM/quality não implementado nesta fase
+quality_ans,dq_cadop_documento,BASE TABLE,qualidade,1107,real,preenchida,286720,245760,0,16,,,,,0,
+quality_ans,dq_cnes_documento,BASE TABLE,qualidade,0,real,vazia,8192,0,0,27,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+quality_ans,dq_operadora_documento,BASE TABLE,qualidade,1107,real,preenchida,253952,212992,0,14,,,,,0,
+quality_ans,dq_prestador_documento,BASE TABLE,qualidade,0,real,vazia,8192,0,0,26,,competencia,,,0,Schema premium/MDM/quality não implementado nesta fase
+ref_ans,ref_competencia,BASE TABLE,referência,192,real,preenchida,40960,16384,0,3,,competencia,201501,203012,192,
+ref_ans,ref_indicador_financeiro,BASE TABLE,referência,4,real,preenchida,16384,8192,0,6,,,,,0,
+ref_ans,ref_modalidade,BASE TABLE,referência,8,real,preenchida,16384,8192,0,2,,,,,0,
+ref_ans,ref_municipio_ibge,BASE TABLE,referência,5571,real,preenchida,376832,335872,0,4,,,,,0,
+ref_ans,ref_parametro_rede,BASE TABLE,referência,6,real,preenchida,16384,8192,0,4,,,,,0,
+ref_ans,ref_parto_cesareo,BASE TABLE,referência,16,real,preenchida,16384,8192,0,3,,trimestre,2024T1,2025T4,8,
+ref_ans,ref_populacao_municipio,BASE TABLE,referência,3,real,preenchida,16384,8192,0,5,,,,,0,
+ref_ans,ref_rol_procedimento,BASE TABLE,referência,3500,real,preenchida,311296,270336,0,8,,,,,0,
+ref_ans,ref_tuss,BASE TABLE,referência,3500,real,preenchida,376832,335872,0,7,,,,,0,
+ref_ans,ref_uf,BASE TABLE,referência,27,real,preenchida,16384,8192,0,2,,,,,0,
+ref_ans,score_pesos,BASE TABLE,referência,4,real,preenchida,16384,8192,0,6,,,,,0,
+stg_ans,stg_ans_arquivo_generico,VIEW,staging,7,real,preenchida,0,0,0,10,,data_ingestao,2026-05-13 19:51:48.58963+00,2026-05-14 04:58:26.617089+00,7,
+stg_ans,stg_ans_linha_generica,VIEW,staging,0,real,vazia,0,0,0,7,,data_ingestao,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_beneficiario_informacao_consolidada,VIEW,staging,0,real,vazia,0,0,0,12,,competencia,,,0,SIB beneficiário não materializado via dbt
+stg_ans,stg_beneficiario_regiao_geografica,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,SIB beneficiário não materializado via dbt
+stg_ans,stg_cadop,VIEW,staging,1107,real,preenchida,0,0,0,10,,,,,0,
+stg_ans,stg_cnes_estabelecimento,VIEW,staging,0,real,vazia,0,0,0,27,,competencia,,,0,Fonte CNES não carregada em bruto_ans
+stg_ans,stg_diops,VIEW,staging,11563,real,preenchida,0,0,0,17,,trimestre,1T2023,4T2025,13,
+stg_ans,stg_faixa_preco,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_fip,VIEW,staging,0,real,vazia,0,0,0,15,,trimestre,,,0,Fonte FIP não carregada em bruto_ans
+stg_ans,stg_glosa,VIEW,staging,4170,real,preenchida,0,0,0,11,,competencia,202501,202501,1,
+stg_ans,stg_historico_plano,VIEW,staging,163567,real,preenchida,0,0,0,13,,competencia,202505,202505,1,
+stg_ans,stg_iap,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_idss,VIEW,staging,13072,real,preenchida,0,0,0,13,,,,,0,
+stg_ans,stg_igr,VIEW,staging,136908,real,preenchida,0,0,0,13,,trimestre,201501,202604,136,
+stg_ans,stg_monitoramento_garantia_atendimento,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_nip,VIEW,staging,53637,real,preenchida,0,0,0,12,,trimestre,201101,202012,120,
+stg_ans,stg_ntrp_area_comercializacao,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_ntrp_vcm_faixa_etaria,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_operadora_acreditada,VIEW,staging,0,real,vazia,0,0,0,10,,data_validade,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_operadora_cancelada,VIEW,staging,0,real,vazia,0,0,0,11,,data_cancelamento,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_operadora_prestador_nao_hospitalar,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+stg_ans,stg_painel_precificacao,VIEW,staging,0,real,vazia,0,0,0,14,,competencia,,,0,painel_precificacao: registro_ans=NULL em todos os registros brutos
+stg_ans,stg_penalidade_operadora,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_peona_sus,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_percentual_reajuste_agrupamento,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_pfa,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_plano_servico_opcional,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_portabilidade,VIEW,staging,0,real,vazia,0,0,0,13,,competencia,,,0,Fonte portabilidade não carregada em bruto_ans
+stg_ans,stg_prestador_acreditado,VIEW,staging,0,real,vazia,0,0,0,14,,data_validade,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+stg_ans,stg_produto_caracteristica,VIEW,staging,163661,real,preenchida,0,0,0,13,,competencia,202605,202605,1,
+stg_ans,stg_produto_prestador_hospitalar,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,produto_prestador: registro_ans=NULL em todos os registros brutos
+stg_ans,stg_produto_tabela_auxiliar,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_programa_qualificacao_institucional,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_promoprev,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_prudencial,VIEW,staging,11216,real,preenchida,0,0,0,12,,trimestre,1T2024,4T2025,10,
+stg_ans,stg_quadro_auxiliar_corresponsabilidade,VIEW,staging,1032,real,preenchida,0,0,0,10,,competencia,202505,202505,1,
+stg_ans,stg_rede_assistencial,VIEW,staging,0,real,vazia,0,0,0,14,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+stg_ans,stg_regime_especial,VIEW,staging,117,real,preenchida,0,0,0,11,,trimestre,1T2002,1T2025,20,
+stg_ans,stg_ressarcimento_beneficiario_abi,VIEW,staging,0,real,vazia,0,0,0,12,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+stg_ans,stg_ressarcimento_cobranca_arrecadacao,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+stg_ans,stg_ressarcimento_hc,VIEW,staging,0,real,vazia,0,0,0,9,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+stg_ans,stg_ressarcimento_indice_pagamento,VIEW,staging,0,real,vazia,0,0,0,8,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+stg_ans,stg_ressarcimento_sus_operadora_plano,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,Fonte ressarcimento não carregada em bruto_ans
+stg_ans,stg_rn623_lista,VIEW,staging,0,real,vazia,0,0,0,14,,trimestre,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_rpc,VIEW,staging,0,real,vazia,0,0,0,12,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_sib_municipio,VIEW,staging,59892,real,preenchida,0,0,0,11,,competencia,202603,202603,1,
+stg_ans,stg_sib_operadora,VIEW,staging,803,real,preenchida,0,0,0,8,,competencia,202603,202603,1,
+stg_ans,stg_sip_mapa_assistencial,VIEW,staging,0,real,vazia,0,0,0,13,,competencia,,,0,Fonte SIB/SIP não carregada ou registro_ans=NULL no bruto
+stg_ans,stg_solicitacao_alteracao_rede_hospitalar,VIEW,staging,0,real,vazia,0,0,0,13,,competencia,,,0,Fonte rede assistencial não carregada em bruto_ans
+stg_ans,stg_taxa_cobertura_plano,VIEW,staging,0,real,vazia,0,0,0,10,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_taxa_resolutividade,VIEW,staging,26062,real,preenchida,0,0,0,11,,trimestre,201501,201910,58,
+stg_ans,stg_tiss_ambulatorial,VIEW,staging,0,real,vazia,0,0,0,12,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+stg_ans,stg_tiss_dados_plano,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+stg_ans,stg_tiss_hospitalar,VIEW,staging,0,real,vazia,0,0,0,13,,competencia,,,0,Fonte TISS não carregada em bruto_ans
+stg_ans,stg_tiss_procedimento,VIEW,staging,0,real,vazia,0,0,0,20,,trimestre,,,0,Fonte TISS não carregada em bruto_ans
+stg_ans,stg_tuss_terminologia,VIEW,staging,3500,real,preenchida,0,0,0,8,,,,,0,
+stg_ans,stg_tuss_terminologia_oficial,VIEW,staging,64660,real,preenchida,0,0,0,11,,,,,0,
+stg_ans,stg_valor_comercial_medio_municipio,VIEW,staging,0,real,vazia,0,0,0,11,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_ans,stg_vda,VIEW,staging,0,real,vazia,0,0,0,12,,competencia,,,0,Fonte VDA não carregada em bruto_ans
+stg_cliente,stg_cliente_contrato,VIEW,staging cliente,0,real,vazia,0,0,0,18,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado
+stg_cliente,stg_cliente_subfatura,VIEW,staging cliente,0,real,vazia,0,0,0,16,,competencia,,,0,Fonte bruta ausente ou dbt model dependente de dado não carregado

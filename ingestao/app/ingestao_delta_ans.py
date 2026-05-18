@@ -678,17 +678,25 @@ def _tuss(row: dict[str, str], competencia: str, arquivo_origem: str) -> dict[st
 
 
 def _sip(row: dict[str, str], competencia: str, _: str) -> dict[str, str]:
+    # SIP mapa assistencial is aggregate data (by modality/coverage) without operator ID
     return {
         "competencia": _inteiro(_competencia_iso(row.get("ID_TRIMESTRE") or competencia)),
-        "registro_ans": row.get("REGISTRO_ANS") or row.get("CD_OPERADORA") or None,
-        "cd_municipio": row.get("CD_MUNICIPIO") or None,
-        "nm_municipio": row.get("NM_MUNICIPIO") or None,
-        "sg_uf": row.get("SG_UF") or None,
-        "nm_regiao": row.get("NM_REGIAO") or None,
+        "registro_ans": None,  # not in source; SIP is market-level aggregate
+        "cd_municipio": None,
+        "nm_municipio": None,
+        "sg_uf": None,
+        "nm_regiao": None,
         "tipo_assistencial": row.get("DE_ITEM_ASST") or row.get("ID_ITEM_ASST") or "",
         "qt_beneficiarios": _inteiro(row.get("QT_BENEF_FORA_CARENCIA")),
         "qt_eventos": _inteiro(row.get("QT_EVENTOS")),
         "indicador_cobertura": None,
+        "porte_operadora": row.get("PORTE_OPERADORA") or None,
+        "gr_modalidade": row.get("GR_MODALIDADE") or None,
+        "cobertura": row.get("COBERTURA") or None,
+        "contratacao": row.get("CONTRATACAO") or None,
+        "id_item_asst": row.get("ID_ITEM_ASST") or None,
+        "vl_despesa_asst_liq": _decimal(row.get("VL_DESPESA_ASST_LIQ")),
+        "dt_corte": _data_iso(row.get("DT_CORTE")),
     }
 
 
@@ -732,6 +740,55 @@ def _tiss_plano(row: dict[str, str], competencia: str, arquivo_origem: str) -> d
     }
 
 
+def _produto_prestador_hospitalar(
+    row: dict[str, str], competencia: str, _: str
+) -> dict[str, str]:
+    return {
+        "competencia": _inteiro(_competencia_iso(competencia)),
+        "registro_ans": row.get("CD_OPERADORA") or row.get("REGISTRO_OPERADORA") or None,
+        "codigo_produto": row.get("CD_PLANO") or row.get("ID_PLANO") or None,
+        "cnes": row.get("CD_CNES") or None,
+        "nm_prestador": row.get("NM_ESTABELECIMENTO_SAUDE") or None,
+        "cd_municipio": row.get("CD_MUNICIPIO") or None,
+        "sg_uf": row.get("SG_UF") or None,
+        "tipo_vinculo": row.get("DE_TIPO_CONTRATO") or row.get("CONTRATACAO") or None,
+    }
+
+
+def _operadora_prestador_nao_hospitalar(
+    row: dict[str, str], competencia: str, _: str
+) -> dict[str, str]:
+    return {
+        "competencia": _inteiro(_competencia_iso(competencia)),
+        "registro_ans": row.get("REGISTRO_OPERADORA") or row.get("CD_OPERADORA") or None,
+        "cnes": row.get("CD_CNES") or None,
+        "nm_prestador": row.get("NM_ESTABELECIMENTO_SAUDE") or None,
+        "cd_municipio": row.get("CD_MUNICIPIO") or None,
+        "sg_uf": row.get("SG_UF") or None,
+        "tipo_servico": row.get("DE_CLAS_ESTB_SAUDE") or row.get("DE_TIPO_PRESTADOR") or None,
+        "tipo_vinculo": row.get("DE_TIPO_CONTRATO") or row.get("DE_DISPONIBILIDADE") or None,
+    }
+
+
+def _painel_precificacao(
+    row: dict[str, str], competencia: str, _: str
+) -> dict[str, str | None]:
+    # ANS PDA-053 does not include registro_ans; data is at market/plan level without operator ID
+    return {
+        "competencia": _inteiro(_competencia_iso(row.get("ANO_MES") or competencia)),
+        "registro_ans": None,
+        "codigo_plano": row.get("ID_PLANO") or None,
+        "segmentacao": row.get("NT_TIPO") or None,
+        "faixa_etaria": row.get("CD_FAIXA_ETARIA") or None,
+        "sg_uf": None,
+        "tipo_contratacao": None,
+        "vl_mensalidade_media": _decimal(row.get("VCM")),
+        "vl_mensalidade_min": None,
+        "vl_mensalidade_max": None,
+        "qt_beneficiarios": None,
+    }
+
+
 _NORMALIZADORES: dict[str, Callable[[dict[str, str], str, str], dict[str, str]]] = {
     "produto_caracteristica": _produto_caracteristica,
     "produto_tabela_auxiliar": _produto_tabela_auxiliar,
@@ -743,6 +800,9 @@ _NORMALIZADORES: dict[str, Callable[[dict[str, str], str, str], dict[str, str]]]
     "tiss_ambulatorial": _tiss_amb,
     "tiss_hospitalar": _tiss_hosp,
     "tiss_dados_plano": _tiss_plano,
+    "produto_prestador_hospitalar": _produto_prestador_hospitalar,
+    "operadora_prestador_nao_hospitalar": _operadora_prestador_nao_hospitalar,
+    "painel_precificacao": _painel_precificacao,
 }
 
 

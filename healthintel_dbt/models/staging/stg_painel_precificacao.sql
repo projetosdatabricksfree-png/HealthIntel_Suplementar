@@ -28,7 +28,7 @@ with base as (
         _arquivo_origem,
         _lote_id
     from {{ source('bruto_ans', 'painel_precificacao') }}
-    where trim(coalesce(registro_ans, '')) != ''
+    -- registro_ans is NULL for ANS PDA-053 source (market-level data without operator ID)
 )
 
 select *

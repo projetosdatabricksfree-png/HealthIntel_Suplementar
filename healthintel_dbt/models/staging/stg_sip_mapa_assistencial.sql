@@ -25,7 +25,7 @@ with base as (
         _arquivo_origem,
         _lote_id
     from {{ source('bruto_ans', 'sip_mapa_assistencial') }}
-    where trim(coalesce(registro_ans, '')) != ''
+    -- registro_ans is NULL; SIP is market-level aggregate (by modality/coverage, not per-operator)
 )
 
 select *
