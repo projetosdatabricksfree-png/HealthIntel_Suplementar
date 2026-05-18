@@ -1,15 +1,16 @@
 import { Section, SectionHeader } from '../../components/marketing/Section';
 import { Pricing } from '../../components/marketing/Pricing';
 import { FAQ } from '../../components/marketing/FAQ';
+import { CTA } from '../../components/marketing/CTA';
 
 export function PricingPage() {
   return (
     <>
-      <Section id="planos-top" label="planos">
+      <Section id="planos-top" surface="default" label="planos">
         <SectionHeader
           eyebrow="Planos"
-          title="Sandbox, Piloto Assistido e Core API"
-          description="Três níveis sobre a mesma API versionada. Sandbox para validar integração, Piloto para validar caso de uso comercial, Core para produção recorrente."
+          title="Comece grátis. Suba quando o uso crescer."
+          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, vai para Enterprise."
           align="center"
         />
         <div className="section__body">
@@ -28,6 +29,8 @@ export function PricingPage() {
           <FAQ />
         </div>
       </Section>
+
+      <CTA />
     </>
   );
 }

@@ -16,7 +16,7 @@ import { PortalLayout } from './layouts/PortalLayout';
 import { HomePage } from './pages/public/HomePage';
 import { ProductPage } from './pages/public/ProductPage';
 import { PricingPage } from './pages/public/PricingPage';
-import { PublicDocsPage } from './pages/public/PublicDocsPage';
+import { QuemSomosPage } from './pages/public/QuemSomosPage';
 import { SecurityPage } from './pages/public/SecurityPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { LoginPage } from './pages/public/LoginPage';
@@ -47,12 +47,13 @@ export function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/produto" element={<ProductPage />} />
               <Route path="/precos" element={<PricingPage />} />
-              <Route path="/documentacao" element={<PublicDocsPage />} />
+              <Route path="/quem-somos" element={<QuemSomosPage />} />
               <Route path="/seguranca" element={<SecurityPage />} />
               <Route path="/contato" element={<ContactPage />} />
-              <Route path="/login" element={<LoginPage />} />
               <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
             </Route>
+
+            <Route path="/login" element={<LoginPage />} />
 
             <Route path="/app" element={<PortalLayout />}>
               <Route index element={<DashboardPage />} />

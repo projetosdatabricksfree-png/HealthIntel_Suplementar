@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '#datasets', label: 'Datasets', anchor: true },
   { href: '#planos', label: 'Preços', anchor: true },
   { href: '#seguranca', label: 'Segurança', anchor: true },
+  { href: '/quem-somos', label: 'Quem somos' },
 ];
 
 export function PublicLayout() {
@@ -110,8 +111,8 @@ export function PublicLayout() {
                 </Link>
               )
             )}
-            <Link to="/documentacao" onClick={() => setMobileOpen(false)}>
-              Documentação
+            <Link to="/quem-somos" onClick={() => setMobileOpen(false)}>
+              Quem somos
             </Link>
             <Link to="/contato" onClick={() => setMobileOpen(false)}>
               Contato
@@ -159,12 +160,12 @@ export function PublicLayout() {
               <a href="/#como-funciona">Como funciona</a>
               <a href="/#datasets">Datasets</a>
               <a href="/#planos">Preços</a>
-              <Link to="/documentacao">Documentação</Link>
             </div>
             <div>
               <p className="footer__col-title">Empresa</p>
               <Link to="/seguranca">Segurança</Link>
               <Link to="/contato">Contato</Link>
+              <Link to="/quem-somos">Quem somos</Link>
               <Link to="/login">Portal</Link>
             </div>
             <div>

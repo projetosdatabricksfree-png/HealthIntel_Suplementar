@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Hero } from '../../components/marketing/Hero';
 import { StatsStrip } from '../../components/marketing/StatsStrip';
 import { Section, SectionHeader } from '../../components/marketing/Section';
@@ -46,10 +47,10 @@ export function HomePage() {
           title="Cobrimos todas as tabelas publicadas pela ANS"
           description="CADOP, SIB, CNES, DIOPS, IDSS, NIP, Reajustes, Rol/TUSS, Garantias Financeiras, Mercado e Score — todos versionados e datados por competência. TISS e SIB nível beneficiário individual são liberados sob solicitação."
           action={
-            <a href="/documentacao" className="btn btn--ghost btn--sm">
-              Catálogo completo
+            <Link to="/quem-somos" className="btn btn--ghost btn--sm">
+              Quem somos
               <ArrowUpRight size={14} />
-            </a>
+            </Link>
           }
         />
         <div className="section__body">
@@ -57,7 +58,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="seguranca" surface="soft" label="seguranca">
+      <Section id="seguranca" surface="default" label="seguranca">
         <SectionHeader
           eyebrow="Segurança e governança"
           title="API key, rate limit, logs e versionamento"
@@ -68,7 +69,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="planos" surface="default" label="planos">
+      <Section id="planos" surface="soft" label="planos">
         <SectionHeader
           eyebrow="Planos"
           title="Comece grátis. Suba quando o uso crescer."
@@ -80,7 +81,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="escopo" surface="soft" label="escopo">
+      <Section id="escopo" surface="default" label="escopo">
         <SectionHeader
           eyebrow="Cobertura"
           title="Todas as tabelas ANS — com escopo controlado para dados sensíveis"
@@ -91,7 +92,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="faq" surface="default" label="faq">
+      <Section id="faq" surface="soft" label="faq">
         <SectionHeader
           eyebrow="FAQ"
           title="Perguntas frequentes"

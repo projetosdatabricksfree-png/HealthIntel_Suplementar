@@ -1,12 +1,12 @@
 import { Section, SectionHeader } from '../../components/marketing/Section';
 import { SecurityStrip } from '../../components/marketing/SecurityStrip';
-import { CurlExample } from '../../components/marketing/CurlExample';
 import { Coverage } from '../../components/marketing/Coverage';
+import { CTA } from '../../components/marketing/CTA';
 
 export function SecurityPage() {
   return (
     <>
-      <Section id="seguranca-top" label="seguranca">
+      <Section id="seguranca-top" surface="default" label="seguranca">
         <SectionHeader
           eyebrow="Segurança e governança"
           title="API key, rate limit, logs e versionamento"
@@ -17,18 +17,7 @@ export function SecurityPage() {
         </div>
       </Section>
 
-      <Section id="exemplo" surface="soft" label="exemplo">
-        <SectionHeader
-          eyebrow="Chamada autenticada"
-          title="Exemplo de requisição com X-API-Key"
-          description="Toda chamada autenticada inclui o header X-API-Key. O rate limit é aplicado por chave e por plano."
-        />
-        <div className="section__body">
-          <CurlExample />
-        </div>
-      </Section>
-
-      <Section id="protecao" label="protecao">
+      <Section id="protecao" surface="soft" label="protecao">
         <SectionHeader
           eyebrow="Proteção comercial"
           title="Sem extração integral, sem redistribuição"
@@ -38,6 +27,8 @@ export function SecurityPage() {
           <Coverage />
         </div>
       </Section>
+
+      <CTA />
     </>
   );
 }
