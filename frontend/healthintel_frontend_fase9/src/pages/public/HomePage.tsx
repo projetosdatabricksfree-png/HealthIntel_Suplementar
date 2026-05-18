@@ -1,76 +1,109 @@
-import { ArrowRight, BarChart3, DatabaseZap, KeyRound, ShieldCheck, Stethoscope, TrendingUp } from 'lucide-react';
-import { LinkButton } from '../../components/Button';
-import { Card } from '../../components/Card';
-import { plans } from '../../data/plans';
-import { PlanCard } from '../../components/PlanCard';
+import { ArrowUpRight } from 'lucide-react';
+import { Hero } from '../../components/marketing/Hero';
+import { StatsStrip } from '../../components/marketing/StatsStrip';
+import { Section, SectionHeader } from '../../components/marketing/Section';
+import { ProductSection } from '../../components/marketing/ProductSection';
+import { CustomerJourney } from '../../components/marketing/CustomerJourney';
+import { DatasetsGrid } from '../../components/marketing/DatasetsGrid';
+import { SecurityStrip } from '../../components/marketing/SecurityStrip';
+import { Pricing } from '../../components/marketing/Pricing';
+import { Coverage } from '../../components/marketing/Coverage';
+import { FAQ } from '../../components/marketing/FAQ';
+import { CTA } from '../../components/marketing/CTA';
 
 export function HomePage() {
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">DaaS/API para saúde suplementar</p>
-          <h1>Dados da ANS tratados, versionados e prontos para consumir.</h1>
-          <p>
-            API para análise de operadoras, beneficiários, rede CNES, mercado, rankings,
-            score, financeiro e risco regulatório — sem sua equipe montar pipeline próprio.
-          </p>
-          <div className="hero-actions">
-            <LinkButton to="/contato?origem=hero&plano=Piloto%20Assistido">Solicitar piloto <ArrowRight size={18} /></LinkButton>
-            <LinkButton to="/documentacao" variant="secondary">Ver documentação</LinkButton>
-          </div>
-          <div className="trust-strip">
-            <span>API-first</span>
-            <span>Dados validados</span>
-            <span>Rate limit</span>
-            <span>Governança ANS</span>
-          </div>
-        </div>
+      <Hero variant="split" showWidget />
 
-      </section>
+      <StatsStrip />
 
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">Produto comercial</p>
-          <h2>Inteligência ANS pronta para uso</h2>
-          <p>
-            Uma solução robusta, estável e de alto impacto para transformar dados regulatórios
-            em decisão comercial sem exigir infraestrutura própria do cliente.
-          </p>
+      <Section id="produto" surface="default" label="produto">
+        <SectionHeader
+          eyebrow="Por que HealthIntel"
+          title="O time da ANS terceirizado. Você só chama a API."
+          description="Quatro motivos pelos quais healthtechs, operadoras e consultorias preferem comprar pipeline da ANS pronto a montar e manter o seu próprio."
+        />
+        <div className="section__body">
+          <ProductSection />
         </div>
-        <div className="feature-grid">
-          {[
-            { icon: Stethoscope, title: 'Operadoras 360', desc: 'Cadastro, modalidade, situação, UF, score e sinais de risco.' },
-            { icon: TrendingUp, title: 'Mercado e beneficiários', desc: 'Visão por operadora, município e competência com janela controlada.' },
-            { icon: DatabaseZap, title: 'Rede CNES', desc: 'Estabelecimentos de saúde por município e UF para leitura regional de cobertura.' },
-            { icon: BarChart3, title: 'Rankings e score', desc: 'Rankings de crescimento, oportunidade e score composto.' },
-            { icon: DatabaseZap, title: 'Dados curados', desc: 'API pronta para consumo, sem expor bases internas ao cliente.' },
-            { icon: KeyRound, title: 'Acesso por API key', desc: 'Planos, rate limit, paginação e logs de consumo por cliente.' },
-            { icon: ShieldCheck, title: 'Consumo controlado', desc: 'Paginação, limites por plano e controle de uso por API key.' }
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <Card key={item.title} className="feature-card">
-                <Icon size={30} />
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
+      </Section>
 
-      <section className="section section-soft">
-        <div className="section-soft-inner">
-          <div className="section-heading">
-            <p className="eyebrow">Planos</p>
-            <h2>Comece com piloto, evolua para API recorrente</h2>
-          </div>
-          <div className="plans-grid">
-            {plans.slice(0, 3).map((plan) => <PlanCard key={plan.nome} plan={plan} />)}
-          </div>
+      <Section id="como-funciona" surface="soft" label="como-funciona">
+        <SectionHeader
+          eyebrow="Como funciona"
+          title="Do checkout à sua primeira requisição em 3 passos"
+          description="Self-service total. Pague no Stripe, entre com Google e a API key aparece na sua área do cliente, pronta pra uso. Sem ticket, sem onboarding obrigatório."
+        />
+        <div className="section__body">
+          <CustomerJourney />
         </div>
-      </section>
+      </Section>
+
+      <Section id="datasets" surface="default" label="datasets">
+        <SectionHeader
+          eyebrow="Datasets"
+          title="Cobrimos todas as tabelas publicadas pela ANS"
+          description="CADOP, SIB, CNES, DIOPS, IDSS, NIP, Reajustes, Rol/TUSS, Garantias Financeiras, Mercado e Score — todos versionados e datados por competência. TISS e SIB nível beneficiário individual são liberados sob solicitação."
+          action={
+            <a href="/documentacao" className="btn btn--ghost btn--sm">
+              Catálogo completo
+              <ArrowUpRight size={14} />
+            </a>
+          }
+        />
+        <div className="section__body">
+          <DatasetsGrid />
+        </div>
+      </Section>
+
+      <Section id="seguranca" surface="soft" label="seguranca">
+        <SectionHeader
+          eyebrow="Segurança e governança"
+          title="API key, rate limit, logs e versionamento"
+          description="Operação previsível, com chave por cliente, limites por plano, trilha auditável e contratos versionados."
+        />
+        <div className="section__body">
+          <SecurityStrip />
+        </div>
+      </Section>
+
+      <Section id="planos" surface="default" label="planos">
+        <SectionHeader
+          eyebrow="Planos"
+          title="Comece grátis. Suba quando o uso crescer."
+          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, Enterprise sob contrato."
+          align="center"
+        />
+        <div className="section__body">
+          <Pricing />
+        </div>
+      </Section>
+
+      <Section id="escopo" surface="soft" label="escopo">
+        <SectionHeader
+          eyebrow="Cobertura"
+          title="Todas as tabelas ANS — com escopo controlado para dados sensíveis"
+          description="Cobertura honesta: o release atual já inclui as famílias completas. TISS e SIB nível beneficiário individual passam por análise comercial antes da liberação."
+        />
+        <div className="section__body">
+          <Coverage />
+        </div>
+      </Section>
+
+      <Section id="faq" surface="default" label="faq">
+        <SectionHeader
+          eyebrow="FAQ"
+          title="Perguntas frequentes"
+          description="Respostas diretas para times técnicos e comerciais avaliando a API."
+          align="center"
+        />
+        <div className="section__body section__body--narrow">
+          <FAQ />
+        </div>
+      </Section>
+
+      <CTA />
     </>
   );
 }

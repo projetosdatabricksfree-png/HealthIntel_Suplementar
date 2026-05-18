@@ -1,50 +1,48 @@
 import { test, expect } from '@playwright/test';
 
-const PLANO_SLUGS = ['sandbox', 'piloto', 'core', 'enterprise'];
+const PLANO_CTA = [
+  { label: 'Começar sandbox', plano: 'sandbox' },
+  { label: 'Solicitar piloto', plano: 'piloto' },
+  { label: 'Falar com vendas', plano: 'core' }
+];
 
 test.describe('CTAs de planos', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('**/v1/checkout/sessao', async (route) => {
+      const body = route.request().postDataJSON() as { plano: string };
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          dados: {
+            checkout_url: `http://localhost:5173/checkout/sucesso?mock_plano=${body.plano}`,
+            session_id: `cs_test_${body.plano}`,
+            plano: body.plano
+          }
+        })
+      });
+    });
     await page.goto('/precos');
   });
 
-  test('todos os botões "Solicitar acesso" usam slugs canônicos', async ({ page }) => {
-    const links = await page.locator('a:has-text("Solicitar acesso")').all();
-    expect(links.length).toBeGreaterThan(0);
+  for (const { label, plano } of PLANO_CTA) {
+    test(`CTA ${label} cria checkout Stripe para ${plano}`, async ({ page }) => {
+      const requestPromise = page.waitForRequest((request) => (
+        request.url().includes('/v1/checkout/sessao')
+        && request.method() === 'POST'
+        && request.postDataJSON().plano === plano
+      ));
 
-    for (const link of links) {
-      const href = await link.getAttribute('href');
-      expect(href).toContain('/contato?plano=');
-      const slug = new URL(href!, 'http://localhost').searchParams.get('plano');
-      expect(PLANO_SLUGS).toContain(slug);
-    }
-  });
+      await page.getByRole('button', { name: label }).click();
+      await requestPromise;
+      await expect(page).toHaveURL(new RegExp(`/checkout/sucesso\\?mock_plano=${plano}`));
+    });
+  }
 
-  test('CTA Sandbox Técnico usa slug "sandbox"', async ({ page }) => {
-    const link = page.locator('a[href*="plano=sandbox"]').first();
-    const isVisible = await link.isVisible().catch(() => false);
-    if (isVisible) {
-      await expect(link).toHaveAttribute('href', /plano=sandbox/);
-    }
-  });
-
-  test('CTA Piloto Assistido usa slug "piloto"', async ({ page }) => {
-    const link = page.locator('a[href*="plano=piloto"]').first();
-    await expect(link).toHaveAttribute('href', /plano=piloto/);
-  });
-
-  test('CTA Core API usa slug "core"', async ({ page }) => {
-    const link = page.locator('a[href*="plano=core"]').first();
-    await expect(link).toHaveAttribute('href', /plano=core/);
-  });
-
-  test('CTA Enterprise usa slug "enterprise"', async ({ page }) => {
-    const link = page.locator('a[href*="plano=enterprise"]').first();
-    await expect(link).toHaveAttribute('href', /plano=enterprise/);
-  });
-
-  test('clicar em "Solicitar acesso" abre formulário de contato com plano pré-selecionado', async ({ page }) => {
-    await page.locator('a[href*="plano=piloto"]').first().click();
-    await expect(page).toHaveURL(/\/contato\?plano=piloto/);
-    await expect(page.locator('select[value="piloto"], option[value="piloto"]')).toBeTruthy();
+  test('página de sucesso não exibe API key no navegador', async ({ page }) => {
+    await page.goto('/checkout/sucesso?session_id=cs_test_sandbox');
+    await expect(page.getByRole('heading', { name: 'Estamos liberando seu acesso' })).toBeVisible();
+    await expect(page.getByText('API key está pronta')).toHaveCount(0);
+    await expect(page.getByText('Copiar')).toHaveCount(0);
   });
 });

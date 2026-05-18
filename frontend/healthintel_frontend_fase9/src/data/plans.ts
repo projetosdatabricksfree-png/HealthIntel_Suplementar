@@ -32,7 +32,8 @@ export const plans: ApiPlan[] = [
       'Sem suporte dedicado'
     ],
     stripePaymentLink: STRIPE_PAYMENT_LINK_SANDBOX,
-    planoBd: 'starter_local'
+    planoBd: 'starter_local',
+    checkoutSlug: 'sandbox'
   },
   {
     nome: 'Piloto Assistido',
@@ -52,7 +53,8 @@ export const plans: ApiPlan[] = [
       'Sem SLA enterprise'
     ],
     stripePaymentLink: STRIPE_PAYMENT_LINK_PILOTO,
-    planoBd: 'piloto'
+    planoBd: 'piloto',
+    checkoutSlug: 'piloto'
   },
   {
     nome: 'Core API',
@@ -76,7 +78,8 @@ export const plans: ApiPlan[] = [
       'Logs de consumo'
     ],
     stripePaymentLink: STRIPE_PAYMENT_LINK_CORE_API,
-    planoBd: 'essencial'
+    planoBd: 'essencial',
+    checkoutSlug: 'core'
   },
   {
     nome: 'Core Pro',

@@ -54,6 +54,7 @@ select = ["E", "F", "I", "B"]
 "scripts/materializar_regulatorio_generico.py" = ["E501"]
 "api/tests/integration/test_premium.py" = ["E501"]
 "testes/regressao/test_endpoints_fase5.py" = ["E501"]
+"api/app/services/email_service.py" = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"

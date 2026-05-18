@@ -1,6 +1,8 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export type EndpointTier = 'core' | 'premium' | 'admin' | 'interno' | 'sob_demanda';
+export type DeliveryStatus = 'pronto' | 'parcial' | 'premium' | 'roadmap' | 'sem_dados';
+export type EndpointAvailability = 'disponivel' | 'parcial' | 'premium' | 'roadmap' | 'sem_dados';
 
 export interface ApiEndpoint {
   id: string;
@@ -10,6 +12,7 @@ export interface ApiEndpoint {
   description: string;
   group: string;
   tier: EndpointTier;
+  availability?: EndpointAvailability;
   authRequired: boolean;
   exampleQuery?: Record<string, string | number>;
 }
@@ -17,10 +20,18 @@ export interface ApiEndpoint {
 export interface DatasetStatus {
   codigo: string;
   nome: string;
-  camada: 'api' | 'consumo' | 'interno';
-  status: 'ativo' | 'em_validacao' | 'sob_demanda';
+  dominio: string;
+  schema: 'consumo_ans' | 'consumo_premium_ans' | 'api_ans' | 'nucleo_ans' | 'meta';
+  tabela: string;
+  camada: 'api' | 'consumo' | 'premium' | 'interno';
+  status: DeliveryStatus;
+  linhas: string;
+  periodos: string;
+  janela: string;
   atualizacao: string;
-  retencao: string;
+  grao: string;
+  extracao: string;
+  usoComercial: string;
   descricao: string;
 }
 
@@ -41,6 +52,7 @@ export interface ApiPlan {
   limits: string[];
   stripePaymentLink?: string;
   planoBd?: string;
+  checkoutSlug?: 'sandbox' | 'piloto' | 'core';
 }
 
 export interface PortalUser {

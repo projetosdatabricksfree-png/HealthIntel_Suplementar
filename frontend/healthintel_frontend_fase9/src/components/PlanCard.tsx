@@ -2,8 +2,22 @@ import type { ApiPlan } from '../types/domain';
 import { CheckCircle2 } from 'lucide-react';
 import { ExternalLinkButton, LinkButton } from './Button';
 import { cn } from '../utils/format';
+import { criarCheckoutSessao } from '../services/checkoutApi';
+import { useNotification } from './NotificationProvider';
 
 export function PlanCard({ plan }: { plan: ApiPlan }) {
+  const { error } = useNotification();
+
+  async function startCheckout() {
+    if (!plan.checkoutSlug) return;
+    try {
+      const checkoutUrl = await criarCheckoutSessao(plan.checkoutSlug);
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Falha ao iniciar pagamento.');
+    }
+  }
+
   return (
     <article className={cn('plan-card', plan.destaque && 'plan-card-featured')}>
       {plan.destaque && <span className="plan-ribbon">Recomendado</span>}
@@ -18,8 +32,19 @@ export function PlanCard({ plan }: { plan: ApiPlan }) {
       <div className="plan-limits">
         {plan.limits.map((item) => <small key={item}>{item}</small>)}
       </div>
-      {plan.stripePaymentLink ? (
-        <ExternalLinkButton href={plan.stripePaymentLink} variant={plan.destaque ? 'primary' : 'secondary'}>
+      {plan.checkoutSlug ? (
+        <button
+          type="button"
+          className={cn('btn', plan.destaque ? 'btn-primary' : 'btn-secondary')}
+          onClick={startCheckout}
+        >
+          Contratar agora
+        </button>
+      ) : plan.stripePaymentLink ? (
+        <ExternalLinkButton
+          href={plan.stripePaymentLink}
+          variant={plan.destaque ? 'primary' : 'secondary'}
+        >
           Contratar agora
         </ExternalLinkButton>
       ) : (

@@ -1,26 +1,30 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button } from '../../components/Button';
-import { Card } from '../../components/Card';
+import { ArrowRight, Mail } from 'lucide-react';
+import { Section, SectionHeader } from '../../components/marketing/Section';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent, addLead } from '../../services/localPortalStore';
+import { enviarLead } from '../../services/contatoApi';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ContactPage() {
   const [searchParams] = useSearchParams();
   const { success, error } = useNotification();
-  const initialPlan = useMemo(() => searchParams.get('plano') || '', [searchParams]);
-  const origem = searchParams.get('origem') || 'site_publico';
+  const initialPlan = useMemo(() => searchParams.get('plano') || 'piloto', [searchParams]);
+  const origem = searchParams.get('origem') || 'contato_page';
+
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [empresa, setEmpresa] = useState('');
   const [perfil, setPerfil] = useState('Corretora / consultoria');
   const [plano, setPlano] = useState(initialPlan);
   const [mensagem, setMensagem] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!nome.trim() || !email.trim() || !empresa.trim() || !mensagem.trim()) {
       error('Preencha nome, e-mail, empresa e mensagem.');
@@ -30,7 +34,9 @@ export function ContactPage() {
       error('Informe um e-mail válido.');
       return;
     }
+    if (honeypot) return;
 
+    setEnviando(true);
     addLead({
       nome: nome.trim(),
       email: email.trim(),
@@ -38,72 +44,139 @@ export function ContactPage() {
       perfil,
       plano: plano.trim() || undefined,
       origem,
-      mensagem: mensagem.trim()
+      mensagem: mensagem.trim(),
     });
-    addAuditEvent({
-      tipo: 'contato_enviado',
-      usuario: email.trim(),
-      detalhe: `Lead salvo localmente. Plano: ${plano || 'nao informado'}. Origem: ${origem}.`,
-      status: 'sucesso'
-    });
-    success('Solicitação registrada localmente para homologação. Nenhum e-mail externo foi enviado.');
-    setMensagem('');
+    try {
+      const resp = await enviarLead({
+        nome: nome.trim(),
+        email: email.trim(),
+        empresa: empresa.trim(),
+        perfil,
+        plano: plano.trim() || undefined,
+        mensagem: mensagem.trim(),
+        origem,
+        honeypot,
+      });
+      if (resp.ok) {
+        success('Solicitação enviada. Retornaremos em até 1 dia útil.');
+        addAuditEvent({
+          tipo: 'contato_enviado',
+          usuario: email.trim(),
+          detalhe: `Lead enviado. Plano: ${plano || 'nao informado'}. Status email: ${resp.email_status || 'desconhecido'}.`,
+          status: 'sucesso',
+        });
+        setMensagem('');
+      } else {
+        error(resp.detalhe || 'Falha no envio. Tente novamente ou escreva direto para projetosdatabricksfree@gmail.com.');
+        addAuditEvent({
+          tipo: 'contato_enviado',
+          usuario: email.trim(),
+          detalhe: `Falha: ${resp.detalhe || 'erro desconhecido'}`,
+          status: 'erro',
+        });
+      }
+    } catch (e) {
+      error('Falha de conexão. Tente novamente ou escreva para projetosdatabricksfree@gmail.com.');
+      addAuditEvent({
+        tipo: 'contato_enviado',
+        usuario: email.trim(),
+        detalhe: `Exception: ${(e as Error).message}`,
+        status: 'erro',
+      });
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
-    <section className="page section">
-      <div className="section-heading">
-        <p className="eyebrow">Contato</p>
-        <h1>Solicitar piloto HealthIntel Core ANS</h1>
-        <p>Registre interesse comercial para Sandbox Técnico, Piloto Assistido, Core API ou pacote sob contrato.</p>
-      </div>
-
-      <Card className="contact-card">
-        <form className="form-grid" onSubmit={submit}>
-          <label>
-            Nome
-            <input value={nome} onChange={(event) => setNome(event.target.value)} placeholder="Seu nome" />
-          </label>
-          <label>
-            E-mail
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="voce@empresa.com.br" />
-          </label>
-          <label>
-            Empresa
-            <input value={empresa} onChange={(event) => setEmpresa(event.target.value)} placeholder="Nome da empresa" />
-          </label>
-          <label>
-            Perfil
-            <select value={perfil} onChange={(event) => setPerfil(event.target.value)}>
-              <option>Corretora / consultoria</option>
-              <option>Healthtech</option>
-              <option>Operadora</option>
-              <option>BI / analytics</option>
-              <option>Hospital / rede</option>
-            </select>
-          </label>
-          <label>
-            Plano de interesse
-            <select value={plano} onChange={(event) => setPlano(event.target.value)}>
-              <option value="">Selecione um plano...</option>
-              <option value="sandbox">Sandbox Técnico</option>
-              <option value="piloto">Piloto Assistido</option>
-              <option value="core">Core API / Core Pro</option>
-              <option value="enterprise">Enterprise</option>
-            </select>
-          </label>
-          <label className="full">
-            Mensagem
-            <textarea
-              rows={5}
-              value={mensagem}
-              onChange={(event) => setMensagem(event.target.value)}
-              placeholder="Conte qual análise de ANS você precisa resolver."
+    <Section id="contato-top" label="contato">
+      <SectionHeader
+        eyebrow="Contato"
+        title="Solicitar acesso ou piloto"
+        description="Registre interesse comercial para Sandbox Técnico, Piloto Assistido ou Core API. Retornamos com onboarding e geração de chave."
+        align="center"
+      />
+      <div className="section__body">
+        <div className="contact-page-card">
+          <form className="contact-page-form" onSubmit={submit}>
+            <label>
+              Nome
+              <input
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Seu nome"
+                autoComplete="name"
+              />
+            </label>
+            <label>
+              E-mail
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@empresa.com.br"
+                autoComplete="email"
+              />
+            </label>
+            <label>
+              Empresa
+              <input
+                value={empresa}
+                onChange={(e) => setEmpresa(e.target.value)}
+                placeholder="Nome da empresa"
+                autoComplete="organization"
+              />
+            </label>
+            <label>
+              Perfil
+              <select value={perfil} onChange={(e) => setPerfil(e.target.value)}>
+                <option>Corretora / consultoria</option>
+                <option>Healthtech</option>
+                <option>Operadora</option>
+                <option>BI / analytics</option>
+                <option>Hospital / rede</option>
+              </select>
+            </label>
+            <label className="full">
+              Plano de interesse
+              <select value={plano} onChange={(e) => setPlano(e.target.value)}>
+                <option value="">Selecione um plano...</option>
+                <option value="sandbox">Sandbox Técnico</option>
+                <option value="piloto">Piloto Assistido</option>
+                <option value="core">Core API</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
+            </label>
+            <label className="full">
+              Mensagem
+              <textarea
+                rows={5}
+                value={mensagem}
+                onChange={(e) => setMensagem(e.target.value)}
+                placeholder="Conte qual análise de ANS você precisa resolver."
+              />
+            </label>
+            <input
+              type="text"
+              style={{ position: 'absolute', left: -9999, opacity: 0 }}
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
             />
-          </label>
-          <Button type="submit">Solicitar demonstração</Button>
-        </form>
-      </Card>
-    </section>
+            <div className="full" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, alignItems: 'center' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }} className="mono">
+                <Mail size={12} /> projetosdatabricksfree@gmail.com
+              </span>
+              <button type="submit" className="btn btn--primary btn--lg" disabled={enviando}>
+                {enviando ? 'Enviando...' : 'Enviar solicitação'}
+                {!enviando && <ArrowRight size={16} />}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Section>
   );
 }

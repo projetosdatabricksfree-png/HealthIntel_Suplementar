@@ -1,45 +1,43 @@
-import { Card, CardHeader } from '../../components/Card';
-import { CodeBlock } from '../../components/CodeBlock';
+import { Section, SectionHeader } from '../../components/marketing/Section';
+import { SecurityStrip } from '../../components/marketing/SecurityStrip';
+import { CurlExample } from '../../components/marketing/CurlExample';
+import { Coverage } from '../../components/marketing/Coverage';
 
 export function SecurityPage() {
   return (
-    <section className="page section">
-      <div className="section-heading align-left">
-        <p className="eyebrow">Segurança</p>
-        <h1>Segurança técnica e proteção comercial</h1>
-        <p>
-          O produto protege a API e garante consumo controlado, paginado e aderente ao contrato.
-        </p>
-      </div>
+    <>
+      <Section id="seguranca-top" label="seguranca">
+        <SectionHeader
+          eyebrow="Segurança e governança"
+          title="API key, rate limit, logs e versionamento"
+          description="Operação previsível, com chave por cliente, limites por plano, trilha auditável e contratos versionados. Dados públicos da ANS tratados conforme LGPD."
+        />
+        <div className="section__body">
+          <SecurityStrip />
+        </div>
+      </Section>
 
-      <div className="split-grid">
-        <Card>
-          <CardHeader title="Segurança técnica" description="Controle operacional da API." />
-          <ul className="check-list">
-            <li>API key obrigatória nos endpoints protegidos.</li>
-            <li>Rate limit por plano.</li>
-            <li>Trusted hosts e CORS restrito por ambiente.</li>
-            <li>Logs por chave, cliente, endpoint, status e latência.</li>
-            <li>Headers de hardening no Nginx/frontend.</li>
-          </ul>
-        </Card>
-        <Card>
-          <CardHeader title="Proteção comercial" description="Evitar extração integral e redistribuição." />
-          <ul className="check-list">
-            <li>Sem exportação integral em lote.</li>
-            <li>Paginação obrigatória.</li>
-            <li>Limite máximo por página.</li>
-            <li>Detecção de consumo anômalo.</li>
-            <li>Contrato proibindo redistribuição/scraping.</li>
-          </ul>
-        </Card>
-      </div>
+      <Section id="exemplo" surface="soft" label="exemplo">
+        <SectionHeader
+          eyebrow="Chamada autenticada"
+          title="Exemplo de requisição com X-API-Key"
+          description="Toda chamada autenticada inclui o header X-API-Key. O rate limit é aplicado por chave e por plano."
+        />
+        <div className="section__body">
+          <CurlExample />
+        </div>
+      </Section>
 
-      <Card>
-        <CardHeader title="Exemplo de chamada segura" description="O cliente usa chave própria e limites do plano." />
-        <CodeBlock code={`curl -X GET "https://api.healthintel.com.br/v1/rankings/operadora/score?limite=20" \
-  -H "X-API-Key: hi_live_xxxxxxxxx"`} />
-      </Card>
-    </section>
+      <Section id="protecao" label="protecao">
+        <SectionHeader
+          eyebrow="Proteção comercial"
+          title="Sem extração integral, sem redistribuição"
+          description="Paginação obrigatória, limite máximo por página, detecção de consumo anômalo e contrato proibindo redistribuição/scraping."
+        />
+        <div className="section__body">
+          <Coverage />
+        </div>
+      </Section>
+    </>
   );
 }

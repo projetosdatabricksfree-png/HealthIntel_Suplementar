@@ -4,6 +4,7 @@ import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
 import { coreEndpoints } from '../../data/endpoints';
+import { datasetStats } from '../../data/datasets';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -20,9 +21,9 @@ export function DashboardPage() {
 
       <div className="metrics-grid">
         <MetricCard label="Plano atual" value={user?.plano || 'Core API'} detail="Rate limit conforme contrato" />
-        <MetricCard label="Endpoints Core" value={String(coreEndpoints.length)} detail="Rotas públicas recomendadas" />
-        <MetricCard label="Uso no mês" value="6.430" detail="requisições demonstrativas" />
-        <MetricCard label="Disponibilidade" value="99,9%" detail="métrica demonstrativa" />
+        <MetricCard label="Endpoints Core" value={String(coreEndpoints.length)} detail="disponíveis e parciais" />
+        <MetricCard label="Tabelas prontas" value={String(datasetStats.readyTables)} detail="vendáveis hoje" />
+        <MetricCard label="Tabelas Premium" value={String(datasetStats.premiumTables)} detail="MDM e qualidade" />
       </div>
 
       <div className="action-grid">
@@ -43,12 +44,11 @@ export function DashboardPage() {
           <div className="status-list">
             <div><Activity /> API online</div>
             <div><KeyRound /> API key obrigatória</div>
-            <div><ShieldCheck /> Rate limit ativo</div>
-            <div><Database /> Consumo controlado</div>
+            <div><ShieldCheck /> Status honesto por dataset</div>
+            <div><Database /> Parcial e roadmap separados do Core pronto</div>
           </div>
         </Card>
       </div>
     </div>
   );
 }
-

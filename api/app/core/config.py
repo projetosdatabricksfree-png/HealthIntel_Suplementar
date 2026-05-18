@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     sentry_dsn: str | None = Field(default=None, alias="SENTRY_DSN")
     stripe_secret_key: str | None = Field(default=None, alias="STRIPE_SECRET_KEY")
+    stripe_webhook_secret: str | None = Field(default=None, alias="STRIPE_WEBHOOK_SECRET")
+    stripe_price_sandbox: str | None = Field(default=None, alias="STRIPE_PRICE_SANDBOX")
+    stripe_price_piloto: str | None = Field(default=None, alias="STRIPE_PRICE_PILOTO")
+    stripe_price_core_api: str | None = Field(default=None, alias="STRIPE_PRICE_CORE_API")
+    frontend_public_url: str = Field(default="http://localhost:5173", alias="FRONTEND_PUBLIC_URL")
 
     @property
     def postgres_dsn(self) -> str:

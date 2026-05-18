@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { endpointCatalog } from '../../data/endpoints';
 import { EndpointCard } from '../../components/EndpointCard';
-import type { EndpointTier } from '../../types/domain';
+import type { EndpointAvailability, EndpointTier } from '../../types/domain';
 
 const tiers: Array<'todos' | EndpointTier> = ['todos', 'core', 'premium', 'admin', 'sob_demanda'];
+const statuses: Array<'todos' | EndpointAvailability> = ['todos', 'disponivel', 'parcial', 'premium', 'roadmap', 'sem_dados'];
 
 const tierLabel: Record<'todos' | EndpointTier, string> = {
   todos: 'Todos',
@@ -15,16 +16,28 @@ const tierLabel: Record<'todos' | EndpointTier, string> = {
   sob_demanda: 'Sob demanda'
 };
 
+const statusLabel = {
+  todos: 'Todos',
+  disponivel: 'Disponível',
+  parcial: 'Parcial',
+  premium: 'Premium',
+  roadmap: 'Roadmap',
+  sem_dados: 'Sem dados'
+} as const;
+
 export function EndpointsPage() {
   const navigate = useNavigate();
   const [tier, setTier] = useState<'todos' | EndpointTier>('core');
+  const [status, setStatus] = useState<(typeof statuses)[number]>('todos');
   const [search, setSearch] = useState('');
 
   const endpoints = useMemo(() => endpointCatalog.filter((endpoint) => {
     const matchesTier = tier === 'todos' || endpoint.tier === tier;
-    const normalized = `${endpoint.path} ${endpoint.title} ${endpoint.description} ${endpoint.group}`.toLowerCase();
-    return matchesTier && normalized.includes(search.toLowerCase());
-  }), [tier, search]);
+    const availability = endpoint.availability || 'disponivel';
+    const matchesStatus = status === 'todos' || availability === status;
+    const normalized = `${endpoint.path} ${endpoint.title} ${endpoint.description} ${endpoint.group} ${availability}`.toLowerCase();
+    return matchesTier && matchesStatus && normalized.includes(search.toLowerCase());
+  }), [tier, status, search]);
 
   return (
     <div className="portal-page">
@@ -32,7 +45,7 @@ export function EndpointsPage() {
         <div>
           <p className="eyebrow">Endpoints</p>
           <h1>Catálogo da API</h1>
-          <p>Rotas disponíveis no plano Core e módulos adicionais disponíveis por contratação específica.</p>
+          <p>Rotas disponíveis, parciais, premium e roadmap, alinhadas ao smoke de 3 anos.</p>
         </div>
       </div>
 
@@ -42,6 +55,13 @@ export function EndpointsPage() {
           {tiers.map((item) => (
             <button type="button" key={item} className={item === tier ? 'chip chip-active' : 'chip'} onClick={() => setTier(item)}>
               {tierLabel[item]}
+            </button>
+          ))}
+        </div>
+        <div className="filter-row">
+          {statuses.map((item) => (
+            <button type="button" key={item} className={item === status ? 'chip chip-active' : 'chip'} onClick={() => setStatus(item)}>
+              {statusLabel[item]}
             </button>
           ))}
         </div>
