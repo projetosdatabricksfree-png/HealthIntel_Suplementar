@@ -61,5 +61,6 @@ export interface PortalUser {
   empresa: string;
   cargo: string;
   plano: string;
+  role?: 'admin' | 'member';
   apiKey?: string;
 }

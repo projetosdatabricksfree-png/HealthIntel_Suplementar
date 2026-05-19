@@ -48,16 +48,20 @@ export function PortalLayout() {
               </NavLink>
             );
           })}
-          <div className="sidebar-section">Admin interno</div>
-          {adminLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink key={item.to} to={item.to}>
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
+          {user?.role === 'admin' && (
+            <>
+              <div className="sidebar-section">Admin interno</div>
+              {adminLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink key={item.to} to={item.to}>
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </>
+          )}
         </nav>
 
         <button className="logout-button" onClick={logout}>

@@ -75,6 +75,11 @@ export function ApiKeysPage() {
       <div className="split-grid">
         <Card>
           <CardHeader title="Chave ativa" description="Use uma chave real do banco `plataforma.chave_api` em homologação/produção." />
+          {!apiKey && (
+            <div className="empty-state-inline">
+              Nenhuma chave configurada. Cole sua API key abaixo para começar. Novas chaves são fornecidas pelo time HealthIntel após contratar um plano.
+            </div>
+          )}
           <label className="field-label">
             API key
             <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} />

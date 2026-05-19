@@ -26,6 +26,13 @@ const availabilityTone = {
   premium: 'blue'
 } as const;
 
+function renderInlineCode(text: string) {
+  const parts = text.split(/`([^`]+)`/);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <code key={i}>{part}</code> : part
+  );
+}
+
 export function EndpointCard({ endpoint, onSelect }: { endpoint: ApiEndpoint; onSelect?: (endpoint: ApiEndpoint) => void }) {
   const availability = endpoint.availability || 'disponivel';
   return (
@@ -37,7 +44,7 @@ export function EndpointCard({ endpoint, onSelect }: { endpoint: ApiEndpoint; on
       </div>
       <h3>{endpoint.title}</h3>
       <code>{endpoint.path}</code>
-      <p>{endpoint.description}</p>
+      <p>{renderInlineCode(endpoint.description)}</p>
       {onSelect && (
         <button className="text-button" onClick={() => onSelect(endpoint)}>
           Testar endpoint

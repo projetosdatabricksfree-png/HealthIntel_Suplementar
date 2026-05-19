@@ -5,7 +5,8 @@ export const demoUser: PortalUser = {
   email: 'cliente@healthintel.local',
   empresa: 'Cliente Demonstração',
   cargo: 'Analytics / BI',
-  plano: 'Core API',
+  plano: 'Free',
+  role: 'member',
   apiKey: 'hi_local_dev_2026_api_key'
 };
 

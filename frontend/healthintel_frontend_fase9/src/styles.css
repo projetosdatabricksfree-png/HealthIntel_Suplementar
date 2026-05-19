@@ -879,6 +879,16 @@ small { color: var(--color-muted); }
 .response-meta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; }
 .response-meta span { padding: 0.45rem 0.7rem; border-radius: 999px; background: var(--color-surface-soft); color: var(--color-muted); font-size: 0.86rem; }
 .modal-card { border-color: oklch(from var(--primary) l c h / 0.36); background: oklch(1 0 0); }
+
+.plan-gate { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 2rem; text-align: center; color: var(--color-muted); }
+.plan-gate h2 { font-size: 1.25rem; color: var(--color-text, #111); margin: 0; }
+.plan-gate p { margin: 0; }
+.plan-gate svg { color: var(--color-muted); }
+
+.explorer-no-key { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem; text-align: center; border: 1px dashed var(--color-line); border-radius: var(--radius-md); margin-bottom: 1.5rem; }
+.explorer-no-key p { margin: 0; color: var(--color-muted); }
+
+.empty-state-inline { padding: 0.75rem 1rem; background: var(--color-surface-soft); border-radius: var(--radius-sm, 6px); margin-bottom: 1rem; font-size: 0.875rem; color: var(--color-muted); }
 .toolbar { display: grid; gap: 0.8rem; }
 .chip { cursor: pointer; border-radius: 999px; padding: 0.45rem 0.75rem; border: 1px solid var(--color-line); background: oklch(1 0 0 / 0.8); color: var(--color-muted); font-size: 0.82rem; font-weight: 700; }
 .chip-active { background: var(--color-primary); border-color: var(--color-primary); color: white; }

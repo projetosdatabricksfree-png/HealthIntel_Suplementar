@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { liveTesterEndpoints } from '../../data/endpoints';
 import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
@@ -41,6 +41,10 @@ export function ExplorerPage() {
   const normalizedPorPagina = Math.min(Math.max(Number.parseInt(porPagina, 10) || 20, 1), 100);
 
   async function run() {
+    if (!getApiKey()?.trim()) {
+      error('Configure uma API key em "API Keys" para testar endpoints.');
+      return;
+    }
     setLoading(true);
     const response = await requestApi(resolvedPath, {
       method: endpoint.method,
@@ -78,6 +82,13 @@ export function ExplorerPage() {
           <p>Escolha um endpoint, preencha variáveis e execute com sua API key.</p>
         </div>
       </div>
+
+      {!getApiKey() && (
+        <div className="explorer-no-key">
+          <p>Configure uma <strong>API key</strong> para usar o Live Tester.</p>
+          <Link to="/app/api-keys" className="btn btn--primary btn--sm">Ir para API Keys</Link>
+        </div>
+      )}
 
       <div className="split-grid split-grid-wide">
         <Card>

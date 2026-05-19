@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { Card, CardHeader } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent, getAuditEvents, getSecuritySettings, saveSecuritySettings } from '../../services/localPortalStore';
 import { useAuth } from '../../hooks/useAuth';
+
+const PLANOS_COM_SEGURANCA = new Set(['STARTER', 'Starter', 'PRO', 'Pro', 'MAX', 'Max', 'ENTERPRISE', 'Enterprise']);
 
 function validList(value: string): boolean {
   if (!value.trim()) return true;
@@ -18,6 +22,17 @@ export function PortalSecurityPage() {
   const [ips, setIps] = useState(initial.ips);
   const [twoFactorStatus, setTwoFactorStatus] = useState(initial.twoFactorStatus);
   const [audit, setAudit] = useState(getAuditEvents());
+
+  if (!PLANOS_COM_SEGURANCA.has(user?.plano || '')) {
+    return (
+      <div className="plan-gate">
+        <Lock size={32} />
+        <h2>Disponível a partir do plano Starter</h2>
+        <p>2FA, IP allowlist e trilha de auditoria de acesso.</p>
+        <Link to="/app/billing" className="btn btn--primary">Ver planos</Link>
+      </div>
+    );
+  }
 
   function refreshAudit() {
     setAudit(getAuditEvents());

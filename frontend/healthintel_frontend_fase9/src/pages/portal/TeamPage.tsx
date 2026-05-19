@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent, addTeamInvite, getTeamInvites, updateTeamInvites, type TeamInvite } from '../../services/localPortalStore';
 import { useAuth } from '../../hooks/useAuth';
+
+const PLANOS_COM_EQUIPE = new Set(['PRO', 'Pro', 'MAX', 'Max', 'ENTERPRISE', 'Enterprise']);
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,6 +18,17 @@ export function TeamPage() {
   const [email, setEmail] = useState('');
   const [papel, setPapel] = useState<TeamInvite['papel']>('Leitor');
   const [invites, setInvites] = useState(getTeamInvites());
+
+  if (!PLANOS_COM_EQUIPE.has(user?.plano || '')) {
+    return (
+      <div className="plan-gate">
+        <Lock size={32} />
+        <h2>Disponível a partir do plano PRO</h2>
+        <p>Colabore com sua equipe, convide membros e defina papéis de acesso.</p>
+        <Link to="/app/billing" className="btn btn--primary">Ver planos</Link>
+      </div>
+    );
+  }
 
   function invite() {
     if (!emailRegex.test(email.trim())) {

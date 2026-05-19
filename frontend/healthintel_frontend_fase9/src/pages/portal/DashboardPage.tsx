@@ -20,7 +20,7 @@ export function DashboardPage() {
       </div>
 
       <div className="metrics-grid">
-        <MetricCard label="Plano atual" value={user?.plano || 'Core API'} detail="Rate limit conforme contrato" />
+        <MetricCard label="Plano atual" value={user?.plano || 'Free'} detail="Rate limit conforme contrato" />
         <MetricCard label="Endpoints Core" value={String(coreEndpoints.length)} detail="disponíveis e parciais" />
         <MetricCard label="Tabelas prontas" value={String(datasetStats.readyTables)} detail="vendáveis hoje" />
         <MetricCard label="Tabelas Premium" value={String(datasetStats.premiumTables)} detail="MDM e qualidade" />
