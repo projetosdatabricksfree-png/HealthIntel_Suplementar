@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Ambiente de trabalho — VPS de Produção
+
+**`/opt/healthintel` É O AMBIENTE DE PRODUÇÃO.** Não existe ambiente local separado — esta sessão roda diretamente na VPS. Toda alteração de código seguida de rebuild do container entra em produção imediatamente.
+
+**Fluxo de deploy do frontend:**
+```bash
+# 1. Fazer as alterações no código
+# 2. Rebuild da imagem
+docker compose --env-file /opt/healthintel/.env -f /opt/healthintel/infra/docker-compose.yml build frontend
+# 3. Recriar o container (obrigatório para aplicar novo build)
+docker compose --env-file /opt/healthintel/.env -f /opt/healthintel/infra/docker-compose.yml up -d --force-recreate frontend
+```
+
+**Regra:** `docker compose restart frontend` NÃO aplica novo build — usar sempre `build` + `up --force-recreate`.
+
+**URLs de produção:**
+- Frontend: `https://www.healthintel.com.br` (container porta 5173→80, via Caddy)
+- API: `https://api.healthintel.com.br` (container porta 8080, via Caddy)
+- `app.healthintel.com.br` → 301 → `www.healthintel.com.br`
+
 ## Skills Obrigatórios
 
 - → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
