@@ -24,9 +24,9 @@ endpoints:
     coluna_temporal: competencia
     granularidade_temporal: mensal
     regra_3_anos: "minimo 36 competencias distintas"
-    status_publicacao: parcial
-    exige_backfill: true
-    observacao: "Publicar como disponivel somente apos cobertura mensal real."
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Backfill concluido com cobertura de 37 competencias (mai 2023 a mai 2026)."
   - endpoint: /v1/historico-planos
     nome_dataset: historico_plano
     schema_origem: consumo_ans
@@ -34,9 +34,9 @@ endpoints:
     coluna_temporal: competencia
     granularidade_temporal: mensal
     regra_3_anos: "minimo 36 competencias distintas"
-    status_publicacao: parcial
-    exige_backfill: true
-    observacao: "Publicar como disponivel somente apos cobertura mensal real."
+    status_publicacao: disponivel
+    exige_backfill: false
+    observacao: "Backfill concluido com cobertura de 37 competencias (mai 2023 a mai 2026)."
   - endpoint: /v1/regulatorio
     nome_dataset: regulatorio_operadora
     schema_origem: consumo_ans
