@@ -5,7 +5,7 @@ import { cn } from '../utils/format';
 import { criarCheckoutSessao } from '../services/checkoutApi';
 import { useNotification } from './NotificationProvider';
 
-export function PlanCard({ plan }: { plan: ApiPlan }) {
+export function PlanCard({ plan, isCurrent }: { plan: ApiPlan; isCurrent?: boolean }) {
   const { error } = useNotification();
 
   async function startCheckout() {
@@ -19,8 +19,9 @@ export function PlanCard({ plan }: { plan: ApiPlan }) {
   }
 
   return (
-    <article className={cn('plan-card', plan.destaque && 'plan-card-featured')}>
-      {plan.destaque && <span className="plan-ribbon">Recomendado</span>}
+    <article className={cn('plan-card', plan.destaque && 'plan-card-featured', isCurrent && 'plan-card--current')}>
+      {isCurrent && <span className="plan-ribbon plan-ribbon--current">Seu plano</span>}
+      {!isCurrent && plan.destaque && <span className="plan-ribbon">Recomendado</span>}
       <h3>{plan.nome}</h3>
       <strong>{plan.preco}</strong>
       <p>{plan.descricao}</p>

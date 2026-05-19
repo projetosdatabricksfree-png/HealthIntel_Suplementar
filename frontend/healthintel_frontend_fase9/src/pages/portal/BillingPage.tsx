@@ -15,6 +15,17 @@ export function BillingPage() {
   const [justificativa, setJustificativa] = useState('');
   const [requests, setRequests] = useState(getUpgradeRequests());
 
+  const currentPlan = plans.find((p) => p.nome === user?.plano || p.planoBd === user?.plano);
+
+  function handleUpgradeClick() {
+    const plan = plans.find((p) => p.nome === selectedPlan);
+    if (plan?.stripePaymentLink) {
+      window.open(plan.stripePaymentLink, '_blank', 'noopener');
+      return;
+    }
+    setShowModal(true);
+  }
+
   function submitUpgrade() {
     if (!selectedPlan.trim() || !justificativa.trim()) {
       error('Informe plano e justificativa para registrar a solicitação.');
@@ -44,17 +55,17 @@ export function BillingPage() {
       </div>
 
       <div className="metrics-grid">
-        <MetricCard label="Plano" value="Core API" detail="ativo" />
-        <MetricCard label="Valor base" value="R$ 4.900" detail="mensal" />
-        <MetricCard label="Consumo" value="6.430" detail="requisições" />
-        <MetricCard label="Próximo ciclo" value="30/05" detail="demonstração" />
+        <MetricCard label="Plano" value={user?.plano || 'Free'} detail="ativo" />
+        <MetricCard label="Valor base" value={currentPlan?.preco ?? '—'} detail="mensal" />
+        <MetricCard label="Consumo" value="—" detail="dados via API em breve" />
+        <MetricCard label="Próximo ciclo" value="—" detail="faturamento sob contrato" />
       </div>
 
       <Card>
         <div className="button-row">
-          <Button onClick={() => setShowModal(true)}>Solicitar upgrade</Button>
-          <Button variant="secondary" onClick={() => info('Plano atual: Core API. Limites contratuais controlados por API key.')}>Ver plano atual</Button>
-          <Button variant="secondary" onClick={() => info('Limites locais: rate limit por plano, paginação obrigatória e sem exportação integral.')}>Ver limites</Button>
+          <Button onClick={handleUpgradeClick}>Solicitar upgrade</Button>
+          <Button variant="secondary" onClick={() => info(`Plano atual: ${user?.plano || 'Free'}. Limites contratuais controlados por API key.`)}>Ver plano atual</Button>
+          <Button variant="secondary" onClick={() => info('Limites: rate limit por plano, paginação obrigatória e sem exportação integral.')}>Ver limites</Button>
           <Button variant="ghost" onClick={() => setShowModal(true)}>Registrar solicitação</Button>
         </div>
       </Card>
@@ -105,7 +116,13 @@ export function BillingPage() {
       <Card>
         <CardHeader title="Planos disponíveis" description="O upgrade deve acionar `/admin/billing/upgrade` em fluxo administrativo." />
         <div className="plans-grid plans-grid-five">
-          {plans.map((plan) => <PlanCard key={plan.nome} plan={plan} />)}
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan.nome}
+              plan={plan}
+              isCurrent={plan.nome === user?.plano || plan.planoBd === user?.plano}
+            />
+          ))}
         </div>
       </Card>
     </div>

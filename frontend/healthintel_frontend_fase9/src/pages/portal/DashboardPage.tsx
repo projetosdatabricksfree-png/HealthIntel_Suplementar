@@ -1,13 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
+import { Activity, AlertCircle, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
 import { coreEndpoints } from '../../data/endpoints';
 import { datasetStats } from '../../data/datasets';
+import { requestApi } from '../../services/apiClient';
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
+  useEffect(() => {
+    requestApi('/saude', { apiKey: '' }).then((res) => setApiStatus(res.ok ? 'ok' : 'error'));
+  }, []);
 
   return (
     <div className="portal-page">
@@ -28,7 +34,7 @@ export function DashboardPage() {
 
       <div className="action-grid">
         <Link to="/app/endpoints" className="action-card"><BookOpen size={22} /> <span>Endpoints</span><small>Consultar catálogo e testar rotas</small></Link>
-        <Link to="/app/uso" className="action-card"><BarChart3 size={22} /> <span>Uso</span><small>Ver consumo demonstrativo</small></Link>
+        <Link to="/app/uso" className="action-card"><BarChart3 size={22} /> <span>Uso</span><small>Ver consumo da API</small></Link>
         <Link to="/app/api-keys" className="action-card"><KeyRound size={22} /> <span>API keys</span><small>Salvar, testar e copiar chave</small></Link>
         <Link to="/app/datasets" className="action-card"><Database size={22} /> <span>Datasets</span><small>Ver escopo publicado</small></Link>
         <Link to="/app/billing" className="action-card"><CreditCard size={22} /> <span>Billing</span><small>Solicitar upgrade controlado</small></Link>
@@ -42,7 +48,10 @@ export function DashboardPage() {
         <Card>
           <CardHeader title="Checklist de go-live" description="Itens críticos para vender com segurança." />
           <div className="status-list">
-            <div><Activity /> API online</div>
+            <div className={`status-item status-item--${apiStatus}`}>
+                {apiStatus === 'error' ? <AlertCircle size={16} /> : <Activity size={16} />}
+                {apiStatus === 'loading' ? 'Verificando API…' : apiStatus === 'ok' ? 'API online' : 'API indisponível'}
+              </div>
             <div><KeyRound /> API key obrigatória</div>
             <div><ShieldCheck /> Status honesto por dataset</div>
             <div><Database /> Parcial e roadmap separados do Core pronto</div>

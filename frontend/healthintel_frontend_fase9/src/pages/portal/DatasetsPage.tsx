@@ -9,12 +9,19 @@ const statusOptions: Array<'todos' | DeliveryStatus> = ['todos', 'pronto', 'parc
 export function DatasetsPage() {
   const [status, setStatus] = useState<'todos' | DeliveryStatus>('todos');
   const [search, setSearch] = useState('');
+  const [dominio, setDominio] = useState<string>('Todos');
+
+  const dominios = useMemo(
+    () => ['Todos', ...Array.from(new Set(datasets.map((d) => d.dominio))).sort()],
+    []
+  );
 
   const filtered = useMemo(() => datasets.filter((dataset) => {
     const matchesStatus = status === 'todos' || dataset.status === status;
+    const matchesDominio = dominio === 'Todos' || dataset.dominio === dominio;
     const normalized = `${dataset.nome} ${dataset.codigo} ${dataset.dominio} ${dataset.schema} ${dataset.tabela} ${dataset.descricao} ${dataset.extracao}`.toLowerCase();
-    return matchesStatus && normalized.includes(search.toLowerCase());
-  }), [search, status]);
+    return matchesStatus && matchesDominio && normalized.includes(search.toLowerCase());
+  }), [search, status, dominio]);
 
   return (
     <div className="portal-page">
@@ -41,6 +48,16 @@ export function DatasetsPage() {
               {item === 'todos' ? 'Todos' : statusLabel[item]}
             </button>
           ))}
+        </div>
+        <div className="filter-row">
+          {dominios.map((d) => {
+            const count = d === 'Todos' ? datasets.length : datasets.filter((ds) => ds.dominio === d).length;
+            return (
+              <button type="button" key={d} className={d === dominio ? 'chip chip-active' : 'chip'} onClick={() => setDominio(d)}>
+                {d} <span className="chip-count">{count}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -22,6 +22,7 @@ from api.app.routers import (
     comercial,
     contato,
     financeiro,
+    me,
     mercado,
     meta,
     operadora,
@@ -111,6 +112,7 @@ app.include_router(premium.router, prefix=settings.app_prefixo)
 app.include_router(cnes.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(tiss.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(comercial.router, prefix=settings.app_prefixo)
+app.include_router(me.router, prefix=settings.app_prefixo)
 app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(contato.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)

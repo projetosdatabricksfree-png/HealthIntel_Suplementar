@@ -55,6 +55,21 @@ export interface ApiPlan {
   checkoutSlug?: 'sandbox' | 'piloto' | 'core';
 }
 
+export interface UsageDia {
+  dia: string;
+  requisicoes: number;
+  erros: number;
+  latencia_ms: number;
+}
+
+export interface UsageRealData {
+  total_requisicoes: number;
+  total_erros: number;
+  latencia_media_ms: number;
+  serie_diaria: UsageDia[];
+  por_endpoint: Array<{ endpoint: string; requisicoes: number; erros: number }>;
+}
+
 export interface PortalUser {
   nome: string;
   email: string;
