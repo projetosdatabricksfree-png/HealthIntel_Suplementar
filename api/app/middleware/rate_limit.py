@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import HTTPException, Request, status
 
 from api.app.core.config import get_settings
@@ -13,6 +15,30 @@ async def aplicar_rate_limit(request: Request) -> None:
         getattr(request.state, "chave_api", "anonimo"),
     )
     limite_rpm = getattr(request.state, "limite_rpm", settings.app_rate_limit_rpm)
+    limite_req_dia = getattr(request.state, "limite_req_dia", 0)
+    chave_api_id = getattr(request.state, "chave_api_id", None)
+
+    if limite_req_dia > 0 and chave_api_id:
+        hoje = datetime.now(timezone.utc).strftime("%Y%m%d")
+        dia_key = f"rate_limit_day:{chave_api_id}:{hoje}"
+        try:
+            dia_total = await redis_client.incr(dia_key)
+            if dia_total == 1:
+                await redis_client.expire(dia_key, 172800)
+            if dia_total > limite_req_dia:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail={
+                        "codigo": "LIMITE_DIARIO_EXCEDIDO",
+                        "mensagem": f"Limite diário de {limite_req_dia} requisições atingido. Faça upgrade do plano para continuar.",
+                    },
+                    headers={"Retry-After": "86400"},
+                )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
     rota = request.url.path
     if rota.startswith("/v1/bronze"):
         peso = 3

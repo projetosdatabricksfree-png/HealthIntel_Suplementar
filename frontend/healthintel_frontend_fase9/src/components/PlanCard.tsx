@@ -33,7 +33,14 @@ export function PlanCard({ plan, isCurrent }: { plan: ApiPlan; isCurrent?: boole
       <div className="plan-limits">
         {plan.limits.map((item) => <small key={item}>{item}</small>)}
       </div>
-      {plan.checkoutSlug ? (
+      {plan.stripePaymentLink ? (
+        <ExternalLinkButton
+          href={plan.stripePaymentLink}
+          variant={plan.destaque ? 'primary' : 'secondary'}
+        >
+          Contratar agora
+        </ExternalLinkButton>
+      ) : plan.checkoutSlug ? (
         <button
           type="button"
           className={cn('btn', plan.destaque ? 'btn-primary' : 'btn-secondary')}
@@ -41,13 +48,6 @@ export function PlanCard({ plan, isCurrent }: { plan: ApiPlan; isCurrent?: boole
         >
           Contratar agora
         </button>
-      ) : plan.stripePaymentLink ? (
-        <ExternalLinkButton
-          href={plan.stripePaymentLink}
-          variant={plan.destaque ? 'primary' : 'secondary'}
-        >
-          Contratar agora
-        </ExternalLinkButton>
       ) : (
         <LinkButton
           to={`/contato?plano=${encodeURIComponent(plan.slug)}`}

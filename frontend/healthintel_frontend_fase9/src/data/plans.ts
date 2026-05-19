@@ -1,125 +1,122 @@
-import type { ApiPlan } from '../types/domain';
-
-const STRIPE_PAYMENT_LINK_SANDBOX = String(
-  import.meta.env.VITE_STRIPE_PAYMENT_LINK_SANDBOX ?? ''
-).trim();
-const STRIPE_PAYMENT_LINK_PILOTO = String(
-  import.meta.env.VITE_STRIPE_PAYMENT_LINK_PILOTO ?? ''
-).trim();
-const STRIPE_PAYMENT_LINK_CORE_API = String(
-  import.meta.env.VITE_STRIPE_PAYMENT_LINK_CORE_API ?? ''
-).trim();
-const STRIPE_PAYMENT_LINK_CORE_PRO = String(
-  import.meta.env.VITE_STRIPE_PAYMENT_LINK_CORE_PRO ?? ''
-).trim();
+import type { ApiPlan, PlanSlug } from '../types/domain';
+import { commercialLinks } from '../config/commercialLinks';
 
 export const plans: ApiPlan[] = [
   {
-    nome: 'Sandbox Técnico',
-    slug: 'sandbox',
-    preco: 'R$ 99,99/mês',
-    descricao: 'Teste de integração para validar autenticação, formato das respostas e consumo inicial.',
+    nome: 'FREE',
+    slug: 'free',
+    preco: 'R$ 0',
+    descricao: 'Ambiente gratuito para avaliacao tecnica sem cartao.',
+    limiteDiario: '100 req/dia',
+    keyLimit: 1,
+    teamLimit: 0,
     features: [
-      '100 requisições por mês',
-      '1 API key',
-      'Endpoints Core selecionados',
-      'Snapshot histórico controlado',
-      'Exemplos cURL e Swagger'
+      'Endpoints Core em leitura',
+      '1 API key de teste',
+      'Ambiente test/free',
+      'Login com Google',
+      'Quickstart com cURL'
     ],
     limits: [
       'Sem uso comercial',
-      'Sem SLA',
-      'Sem suporte dedicado'
+      'Sem equipe',
+      'Sem logs exportaveis'
     ],
-    stripePaymentLink: STRIPE_PAYMENT_LINK_SANDBOX,
-    planoBd: 'starter_local',
-    checkoutSlug: 'sandbox'
+    planoBd: 'free'
   },
   {
-    nome: 'Piloto Assistido',
-    slug: 'piloto',
-    preco: 'R$ 2.500',
-    descricao: 'Validação técnica e comercial com acompanhamento para empresas do setor.',
+    nome: 'STARTER',
+    slug: 'starter',
+    preco: 'R$ 99,99/mês',
+    descricao: 'Integracao inicial para validar consumo recorrente da API.',
+    limiteDiario: '30.000 req/dia',
+    keyLimit: 1,
+    teamLimit: 0,
     features: [
-      '1 API key',
-      'Endpoints Core',
-      'Swagger e Postman',
-      'Onboarding técnico',
-      'Suporte assíncrono'
+      'Core + derivados publicados',
+      '1 API key live/test',
+      '2FA pessoal',
+      'Logs basicos no portal',
+      'Suporte por e-mail async'
     ],
     limits: [
-      'Sem extração integral',
-      'Limite controlado de requisições',
-      'Sem SLA enterprise'
+      'Sem equipe',
+      'Sem IP allowlist',
+      'Sem exportacao de logs'
     ],
-    stripePaymentLink: STRIPE_PAYMENT_LINK_PILOTO,
-    planoBd: 'piloto',
-    checkoutSlug: 'piloto'
+    planoBd: 'starter',
+    checkoutSlug: 'starter',
+    stripePaymentLink: commercialLinks.stripe.starter || undefined,
   },
   {
-    nome: 'Core API',
-    slug: 'core',
-    preco: 'R$ 4.900/mês',
-    descricao: 'Produto principal para consumo recorrente de dados ANS tratados via API.',
+    nome: 'PRO',
+    slug: 'pro',
+    preco: 'R$ 499/mês',
+    descricao: 'Producao padrao para BI, dados e produtos digitais.',
     destaque: true,
+    limiteDiario: '150.000 req/dia',
+    keyLimit: 3,
+    teamLimit: 3,
     features: [
-      'Operadoras 360',
-      'Beneficiários',
-      'Rankings',
-      'Score',
-      'Financeiro',
-      'Regulatório',
-      'Mercado por município',
-      'CNES agregado'
+      'Todos os datasets publicados',
+      '3 API keys live/test',
+      'Equipe com ate 3 usuarios',
+      'Logs exportaveis CSV/JSON',
+      'IP allowlist'
     ],
     limits: [
-      '1 a 3 API keys',
-      'Rate limit por plano',
-      'Logs de consumo'
+      'Sem SSO/SAML',
+      'Sem SLA contratual'
     ],
-    stripePaymentLink: STRIPE_PAYMENT_LINK_CORE_API,
-    planoBd: 'essencial',
-    checkoutSlug: 'core'
+    planoBd: 'pro',
+    checkoutSlug: 'pro',
+    stripePaymentLink: commercialLinks.stripe.pro || undefined,
   },
   {
-    nome: 'Core Pro',
-    slug: 'core',
-    preco: 'R$ 9.900/mês',
-    descricao: 'Para times que precisam acelerar integração, consumo analítico e operação interna.',
+    nome: 'MAX',
+    slug: 'max',
+    preco: 'R$ 1.499/mês',
+    descricao: 'Alto volume para healthtechs, operadoras e times de produto.',
+    limiteDiario: '500.000 req/dia',
+    keyLimit: 5,
+    teamLimit: 10,
     features: [
-      'Tudo do Core API',
-      'Maior volume de requisições',
-      'Mais API keys',
-      'Apoio técnico de integração',
-      'Exemplos para Power BI e notebooks',
-      'Onboarding avançado',
-      'Revisão mensal de consumo'
+      'Tudo do PRO',
+      '5 API keys',
+      'Equipe com ate 10 usuarios',
+      'Webhooks de uso',
+      'Suporte com SLA de resposta'
     ],
     limits: [
-      'Sem acesso a camadas internas',
-      'Uso conforme contrato',
-      'Escopo técnico combinado'
+      'SSO/SAML somente Enterprise',
+      'Premium MDM por opt-in'
     ],
-    stripePaymentLink: STRIPE_PAYMENT_LINK_CORE_PRO,
-    planoBd: 'plus'
+    planoBd: 'max',
+    checkoutSlug: 'max',
+    stripePaymentLink: commercialLinks.stripe.max || undefined,
   },
   {
-    nome: 'Enterprise',
+    nome: 'ENTERPRISE',
     slug: 'enterprise',
     preco: 'Sob contrato',
-    descricao: 'Ambiente dedicado, histórico ampliado e datasets adicionais.',
+    descricao: 'Volume contratual, SLA dedicado, SSO/SAML e requisitos customizados.',
+    limiteDiario: 'Contratual',
+    keyLimit: 'ilimitado',
+    teamLimit: 'ilimitado',
     features: [
-      'Histórico sob demanda',
-      'Ambiente dedicado',
-      'SLA customizado',
-      'Módulos avançados sob contrato',
-      'Integrações específicas',
-      'Suporte prioritário'
+      'Limites e SLA sob contrato',
+      'SSO/SAML',
+      'IP allowlist com CIDR',
+      'Retencao customizada',
+      'Premium MDM incluso quando contratado'
     ],
     limits: [
-      'Contrato mínimo',
-      'Política anti redistribuição',
-      'Auditoria de uso'
-    ]
+      'Negociado off-checkout'
+    ],
+    planoBd: 'enterprise'
   }
 ];
+
+export function getPlanBySlug(slug: PlanSlug): ApiPlan {
+  return plans.find((plan) => plan.slug === slug) || plans[0];
+}

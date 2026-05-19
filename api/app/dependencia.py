@@ -63,9 +63,9 @@ def _normalizar_camadas(camadas: Iterable[str] | None, plano_nome: str | None = 
             return normalizadas
 
     nome = (plano_nome or "").strip().lower()
-    if nome in {"piloto", "essencial", "starter_local"}:
+    if nome in {"free", "starter", "piloto", "essencial", "starter_local"}:
         return ["ouro"]
-    if nome in {"plus", "tecnico", "analitico", "growth_local", "pro_local"}:
+    if nome in {"pro", "max", "plus", "tecnico", "analitico", "growth_local", "pro_local"}:
         return ["ouro", "prata"]
     if nome in {"enterprise", "enterprise_tecnico", "enterprise_local", "admin_interno"}:
         return ["ouro", "prata", "bronze"]
@@ -110,6 +110,7 @@ async def validar_chave(
                         chave.status as status_chave,
                         cliente.status as status_cliente,
                         plano.limite_rpm,
+                        plano.limite_req_dia,
                         plano.endpoint_permitido,
                         plano.camadas_permitidas,
                         plano.nome as plano_nome
@@ -138,6 +139,7 @@ async def validar_chave(
                 "status_chave": str(row["status_chave"]),
                 "status_cliente": str(row["status_cliente"]),
                 "limite_rpm": int(row["limite_rpm"]),
+                "limite_req_dia": int(row["limite_req_dia"]),
                 "endpoint_permitido": list(row["endpoint_permitido"] or []),
                 "camadas_permitidas": _normalizar_camadas(
                     row["camadas_permitidas"], row["plano_nome"]
@@ -164,6 +166,7 @@ async def validar_chave(
     request.state.cliente_id = str(row["cliente_id"])
     request.state.plano_id = str(row["plano_id"])
     request.state.limite_rpm = int(row["limite_rpm"])
+    request.state.limite_req_dia = int(row.get("limite_req_dia", 0))
     request.state.endpoint_permitido = endpoints_permitidos
     request.state.camadas_permitidas = list(row.get("camadas_permitidas") or [])
     request.state.plano_nome = plano_nome
