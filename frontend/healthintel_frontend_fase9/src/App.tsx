@@ -17,9 +17,12 @@ import { HomePage } from './pages/public/HomePage';
 import { ProductPage } from './pages/public/ProductPage';
 import { PricingPage } from './pages/public/PricingPage';
 import { QuemSomosPage } from './pages/public/QuemSomosPage';
+import { DocumentacaoPage } from './pages/public/DocumentacaoPage';
 import { SecurityPage } from './pages/public/SecurityPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { LoginPage } from './pages/public/LoginPage';
+import { VerificarEmailPage } from './pages/public/VerificarEmailPage';
+import { ResetSenhaPage } from './pages/public/ResetSenhaPage';
 import { CheckoutSuccessPage } from './pages/public/CheckoutSuccessPage';
 import { DashboardPage } from './pages/portal/DashboardPage';
 import { EndpointsPage } from './pages/portal/EndpointsPage';
@@ -48,12 +51,15 @@ export function App() {
               <Route path="/produto" element={<ProductPage />} />
               <Route path="/precos" element={<PricingPage />} />
               <Route path="/quem-somos" element={<QuemSomosPage />} />
+              <Route path="/documentacao" element={<DocumentacaoPage />} />
               <Route path="/seguranca" element={<SecurityPage />} />
               <Route path="/contato" element={<ContactPage />} />
               <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
             </Route>
 
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/verificar-email" element={<VerificarEmailPage />} />
+            <Route path="/reset-senha" element={<ResetSenhaPage />} />
 
             <Route path="/app" element={<PortalLayout />}>
               <Route index element={<DashboardPage />} />

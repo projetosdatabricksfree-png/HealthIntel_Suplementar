@@ -1,6 +1,7 @@
 import type { ApiEndpoint } from '../types/domain';
 import { Badge } from './Badge';
 import { endpointStatusLabel } from '../data/endpoints';
+import { buildUrl } from '../services/apiClient';
 
 const tierTone = {
   core: 'green',
@@ -45,11 +46,16 @@ export function EndpointCard({ endpoint, onSelect }: { endpoint: ApiEndpoint; on
       <h3>{endpoint.title}</h3>
       <code>{endpoint.path}</code>
       <p>{renderInlineCode(endpoint.description)}</p>
-      {onSelect && (
-        <button className="text-button" onClick={() => onSelect(endpoint)}>
-          Testar endpoint
-        </button>
-      )}
+      <div className="button-row">
+        {onSelect && (
+          <button className="text-button" onClick={() => onSelect(endpoint)}>
+            Testar
+          </button>
+        )}
+        <a className="text-button" href={buildUrl('/docs')} target="_blank" rel="noopener noreferrer">
+          Ver doc
+        </a>
+      </div>
     </article>
   );
 }

@@ -1,36 +1,28 @@
-import type { PortalUser } from '../types/domain';
-
-const USER_KEY = 'healthintel.portal.user';
+const ACCESS_TOKEN_KEY = 'healthintel.auth.access_token';
+const REFRESH_TOKEN_KEY = 'healthintel.auth.refresh_token';
 const API_KEY_KEY = 'healthintel.portal.api_key';
 
-export function saveUser(user: PortalUser): void {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-  if (user.apiKey) {
-    localStorage.setItem(API_KEY_KEY, user.apiKey);
-  }
+export function saveTokens(accessToken: string, refreshToken: string): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 }
 
-export function getUser(): PortalUser | null {
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as PortalUser;
-  } catch {
-    return null;
-  }
+export function getAccessToken(): string | null {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
-export function clearUser(): void {
-  localStorage.removeItem(USER_KEY);
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export function clearTokens(): void {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(API_KEY_KEY);
 }
 
 export function saveApiKey(apiKey: string): void {
   localStorage.setItem(API_KEY_KEY, apiKey);
-  const user = getUser();
-  if (user) {
-    saveUser({ ...user, apiKey });
-  }
 }
 
 export function getApiKey(): string {
@@ -39,8 +31,4 @@ export function getApiKey(): string {
 
 export function clearApiKey(): void {
   localStorage.removeItem(API_KEY_KEY);
-  const user = getUser();
-  if (user) {
-    saveUser({ ...user, apiKey: '' });
-  }
 }

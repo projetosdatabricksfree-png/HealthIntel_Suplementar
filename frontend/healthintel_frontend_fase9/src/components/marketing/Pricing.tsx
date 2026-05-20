@@ -99,9 +99,10 @@ function PlanCTA({ plan }: { plan: Plan }) {
 
   if (stripeUnconfigured) {
     return (
-      <button type="button" className={btnClass} disabled title="Checkout em configuração">
-        Checkout em configuração
-      </button>
+      <Link to="/contato" className={btnClass}>
+        <span>Falar com comercial</span>
+        <ArrowRight size={14} />
+      </Link>
     );
   }
   if (isFree) {
@@ -154,7 +155,7 @@ export function Pricing() {
             <PlanCTA plan={p} />
             <p className="pricing-card__cta-meta mono">
               {p.kind === 'buy'
-                ? 'Checkout via Stripe · cartão ou Pix'
+                ? (p.href ? 'Checkout via Stripe · cartão ou Pix' : 'Entre em contato para contratar')
                 : p.kind === 'free'
                 ? 'Sem cartão · login com Google'
                 : 'Resposta comercial em 1 dia útil'}

@@ -1,65 +1,114 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { CodeBlock } from '../../components/CodeBlock';
 import { useNotification } from '../../components/NotificationProvider';
 import { buildCurl, buildUrl, maskApiKey, requestApi, type ApiResult } from '../../services/apiClient';
-import { clearApiKey, getApiKey, saveApiKey } from '../../services/storage';
+import { clearApiKey, getAccessToken, getApiKey, saveApiKey } from '../../services/storage';
 import { useAuth } from '../../hooks/useAuth';
-import { addAuditEvent } from '../../services/localPortalStore';
+import { getCurrentPlan } from '../../data/planRules';
+import type { PortalApiKey } from '../../types/domain';
+
+async function apiFetch<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+  const at = getAccessToken();
+  const res = await fetch(buildUrl(path), {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(at ? { Authorization: `Bearer ${at}` } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = (json as { detail?: { mensagem?: string } }).detail?.mensagem || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return json as T;
+}
 
 export function ApiKeysPage() {
-  const { user, updateUser } = useAuth();
-  const { success, error, info } = useNotification();
-  const [apiKey, setApiKey] = useState(getApiKey());
+  const { user } = useAuth();
+  const { success, error } = useNotification();
+  const [keys, setKeys] = useState<PortalApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeApiKey, setActiveApiKey] = useState(getApiKey());
   const [testResult, setTestResult] = useState<ApiResult | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('Produção principal');
+  const [newKeyAmbiente, setNewKeyAmbiente] = useState<'sandbox' | 'producao'>('sandbox');
+  const [oneTimeSecret, setOneTimeSecret] = useState('');
+  const [creating, setCreating] = useState(false);
+  const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
 
-  function save() {
-    const normalized = apiKey.trim();
-    if (!normalized) {
-      error('Informe uma API key antes de salvar.');
-      return;
+  const loadKeys = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ dados: PortalApiKey[] }>('/v1/portal/api-keys');
+      setKeys(data.dados);
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao carregar chaves.');
+    } finally {
+      setLoading(false);
     }
-    saveApiKey(normalized);
-    if (user) updateUser({ ...user, apiKey: normalized });
-    addAuditEvent({
-      tipo: 'salvar_api_key',
-      usuario: user?.email || 'portal_local',
-      detalhe: `Chave salva localmente: ${maskApiKey(normalized)}.`,
-      status: 'sucesso'
-    });
-    success('API key salva localmente.');
+  }, [error]);
+
+  useEffect(() => { void loadKeys(); }, [loadKeys]);
+
+  async function createKey() {
+    if (!newKeyName.trim()) { error('Informe um nome para a chave.'); return; }
+    setCreating(true);
+    try {
+      const data = await apiFetch<{ dados: { id: string; chave_plain: string; prefixo: string; nome: string; ambiente: string; criado_em: string } }>(
+        '/v1/portal/api-keys', 'POST', { nome: newKeyName.trim(), ambiente: newKeyAmbiente }
+      );
+      setOneTimeSecret(data.dados.chave_plain);
+      saveApiKey(data.dados.chave_plain);
+      setActiveApiKey(data.dados.chave_plain);
+      setShowCreate(false);
+      setNewKeyName('Produção principal');
+      await loadKeys();
+      success('Chave criada. Copie agora — ela não será exibida novamente.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao criar chave.');
+    } finally {
+      setCreating(false);
+    }
   }
 
-  function clear() {
-    clearApiKey();
-    setApiKey('');
-    if (user) updateUser({ ...user, apiKey: '' });
-    addAuditEvent({
-      tipo: 'limpar_api_key',
-      usuario: user?.email || 'portal_local',
-      detalhe: 'API key removida do localStorage.',
-      status: 'sucesso'
-    });
-    info('API key local removida.');
+  async function revokeKey(id: string) {
+    try {
+      await apiFetch(`/v1/portal/api-keys/${id}/revogar`, 'POST');
+      await loadKeys();
+      success('Chave revogada.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao revogar.');
+    }
+  }
+
+  async function rotateKey(id: string) {
+    try {
+      const data = await apiFetch<{ dados: { chave_plain: string } }>(`/v1/portal/api-keys/${id}/rotacionar`, 'POST');
+      setOneTimeSecret(data.dados.chave_plain);
+      saveApiKey(data.dados.chave_plain);
+      setActiveApiKey(data.dados.chave_plain);
+      await loadKeys();
+      success('Chave rotacionada. Copie a nova chave agora.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao rotacionar.');
+    }
   }
 
   async function test() {
-    const response = await requestApi('/v1/meta/endpoints', { apiKey: apiKey.trim() });
+    const response = await requestApi('/v1/meta/endpoints', { apiKey: activeApiKey.trim() });
     setTestResult(response);
-    addAuditEvent({
-      tipo: 'testar_api_key',
-      usuario: user?.email || 'portal_local',
-      detalhe: `/v1/meta/endpoints retornou status ${response.status}.`,
-      status: response.ok ? 'sucesso' : 'erro'
-    });
     if (response.ok) success('Chave válida para chamada de teste.');
     else error(response.status === 401 ? 'Chave inválida.' : response.status === 403 ? 'Chave sem permissão.' : 'API indisponível ou retornou erro.');
   }
 
-  async function copyMasked() {
-    await navigator.clipboard.writeText(maskApiKey(apiKey.trim()));
-    success('Chave mascarada copiada.');
+  async function copyOneTimeSecret() {
+    await navigator.clipboard.writeText(oneTimeSecret);
+    success('Chave completa copiada.');
   }
 
   return (
@@ -67,41 +116,105 @@ export function ApiKeysPage() {
       <div className="portal-title">
         <div>
           <p className="eyebrow">API keys</p>
-          <h1>Gerencie sua chave de API</h1>
-          <p>Na API atual, o acesso é feito via header `X-API-Key`.</p>
+          <h1>Gerencie suas chaves de API</h1>
+          <p>Use as chaves somente no header <code>X-API-Key</code>. Elas não fazem login no portal.</p>
         </div>
       </div>
 
+      {oneTimeSecret && (
+        <Card>
+          <CardHeader title="Copie sua chave agora" description="A chave completa aparece somente uma vez." />
+          <CodeBlock code={oneTimeSecret} />
+          <div className="button-row">
+            <Button onClick={() => void copyOneTimeSecret()}>Copiar chave completa</Button>
+            <Button variant="secondary" onClick={() => setOneTimeSecret('')}>Já copiei</Button>
+          </div>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader title="Chaves do cliente" description={`Plano ${currentPlan.nome}: limite de ${currentPlan.keyLimit} chave(s) ativa(s).`} />
+        {loading ? (
+          <div className="empty-state-inline">Carregando chaves…</div>
+        ) : keys.length === 0 ? (
+          <div className="empty-state-inline">Nenhuma chave criada. Crie sua primeira API key para testar endpoints reais.</div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>Prefixo</th><th>Ambiente</th><th>Criada em</th><th>Último uso</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody>
+                {keys.map((key) => (
+                  <tr key={key.id}>
+                    <td>{key.nome || '—'}</td>
+                    <td><code>{key.prefixo}</code></td>
+                    <td>{key.ambiente}</td>
+                    <td>{new Date(key.criado_em).toLocaleDateString('pt-BR')}</td>
+                    <td>{key.ultimo_uso_em ? new Date(key.ultimo_uso_em).toLocaleString('pt-BR') : 'Nunca'}</td>
+                    <td>{key.status}</td>
+                    <td>
+                      <div className="button-row">
+                        {key.status === 'ativo' && <Button variant="secondary" onClick={() => void revokeKey(key.id)}>Revogar</Button>}
+                        {key.status === 'ativo' && <Button variant="ghost" onClick={() => void rotateKey(key.id)}>Rotacionar</Button>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="button-row">
+          <Button onClick={() => setShowCreate(true)}>Criar nova chave</Button>
+          <Button variant="secondary" onClick={() => void loadKeys()}>Atualizar</Button>
+        </div>
+      </Card>
+
+      {showCreate && (
+        <Card className="modal-card">
+          <CardHeader title="Criar nova chave" description="A chave completa será exibida apenas uma vez após a criação." />
+          <div className="form-grid single">
+            <label>Nome<input value={newKeyName} onChange={(event) => setNewKeyName(event.target.value)} /></label>
+            <label>
+              Ambiente
+              <select value={newKeyAmbiente} onChange={(event) => setNewKeyAmbiente(event.target.value as 'sandbox' | 'producao')}>
+                <option value="sandbox">sandbox</option>
+                <option value="producao" disabled={currentPlan.slug === 'free'}>producao{currentPlan.slug === 'free' ? ' (requer plano pago)' : ''}</option>
+              </select>
+            </label>
+            <div className="button-row">
+              <Button onClick={() => void createKey()} disabled={creating}>{creating ? 'Criando…' : 'Criar chave'}</Button>
+              <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancelar</Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="split-grid">
         <Card>
-          <CardHeader title="Chave ativa" description="Use uma chave real do banco `plataforma.chave_api` em homologação/produção." />
-          {!apiKey && (
-            <div className="empty-state-inline">
-              Nenhuma chave configurada. Cole sua API key abaixo para começar. Novas chaves são fornecidas pelo time HealthIntel após contratar um plano.
-            </div>
-          )}
+          <CardHeader title="Teste rápido" description="Executa uma chamada real contra /v1/meta/endpoints." />
           <label className="field-label">
-            API key
-            <input value={apiKey} onChange={(event) => setApiKey(event.target.value)} />
+            Chave ativa no navegador
+            <input value={activeApiKey} onChange={(event) => setActiveApiKey(event.target.value)} />
           </label>
           <div className="button-row">
-            <Button onClick={save}>Salvar chave local</Button>
-            <Button variant="secondary" onClick={clear}>Limpar chave</Button>
-            <Button variant="secondary" onClick={test}>Testar chave</Button>
-            <Button variant="ghost" onClick={copyMasked}>Copiar chave mascarada</Button>
+            <Button onClick={() => { saveApiKey(activeApiKey.trim()); success('Chave ativa salva.'); }}>Salvar chave ativa</Button>
+            <Button variant="secondary" onClick={() => void test()} disabled={!activeApiKey.trim()}>Testar chave</Button>
+            <Button variant="ghost" onClick={() => { clearApiKey(); setActiveApiKey(''); }}>Limpar</Button>
           </div>
-          <CodeBlock code={buildCurl('GET', buildUrl('/v1/meta/endpoints'), apiKey.trim())} />
+          <CodeBlock code={buildCurl('GET', buildUrl('/v1/meta/endpoints'), activeApiKey.trim())} />
           {testResult && <CodeBlock code={JSON.stringify(testResult, null, 2)} />}
         </Card>
 
         <Card>
-          <CardHeader title="Controles recomendados" description="Preparado para a gestão comercial do DaaS." />
+          <CardHeader title="Boas práticas" description="Aplique estas regras fora do navegador." />
           <ul className="check-list">
-            <li>Uma chave por cliente/projeto.</li>
-            <li>Whitelist de domínio ou IP por plano.</li>
-            <li>Rotação de chave.</li>
-            <li>Revogação imediata em caso de abuso.</li>
-            <li>Limite por minuto e por mês.</li>
+            <li>Nunca use API key para login no portal.</li>
+            <li>Use <code>hi_test_</code> em sandbox e <code>hi_live_</code> em produção.</li>
+            <li>Revogue chaves vazadas imediatamente.</li>
+            <li>Rotacione periodicamente chaves de produção.</li>
+            <li>Chave ativa atual: {maskApiKey(activeApiKey)}</li>
           </ul>
         </Card>
       </div>

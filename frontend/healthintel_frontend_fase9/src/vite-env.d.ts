@@ -5,10 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_ENABLE_DEMO_FALLBACK?: string;
   readonly VITE_APP_NAME?: string;
   readonly VITE_GOOGLE_CLIENT_ID?: string;
-  readonly VITE_STRIPE_PAYMENT_LINK_SANDBOX?: string;
-  readonly VITE_STRIPE_PAYMENT_LINK_PILOTO: string;
-  readonly VITE_STRIPE_PAYMENT_LINK_CORE_API: string;
-  readonly VITE_STRIPE_PAYMENT_LINK_CORE_PRO: string;
+  readonly VITE_STRIPE_CHECKOUT_STARTER_URL?: string;
+  readonly VITE_STRIPE_CHECKOUT_PRO_URL?: string;
+  readonly VITE_STRIPE_CHECKOUT_MAX_URL?: string;
   readonly MODE: string;
 }
 

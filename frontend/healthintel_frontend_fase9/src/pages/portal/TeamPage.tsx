@@ -1,64 +1,112 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
-import { addAuditEvent, addTeamInvite, getTeamInvites, updateTeamInvites, type TeamInvite } from '../../services/localPortalStore';
 import { useAuth } from '../../hooks/useAuth';
-
-const PLANOS_COM_EQUIPE = new Set(['PRO', 'Pro', 'MAX', 'Max', 'ENTERPRISE', 'Enterprise']);
+import { canAccessFeature, getCurrentPlan } from '../../data/planRules';
+import { buildUrl } from '../../services/apiClient';
+import { getAccessToken } from '../../services/storage';
+import type { TeamMember } from '../../types/domain';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const ROLES = ['owner', 'admin', 'developer', 'billing', 'viewer'] as const;
+
+async function apiFetch<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+  const at = getAccessToken();
+  const res = await fetch(buildUrl(path), {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(at ? { Authorization: `Bearer ${at}` } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = (json as { detail?: { mensagem?: string } }).detail?.mensagem || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return json as T;
+}
+
 export function TeamPage() {
   const { user } = useAuth();
-  const { success, error, info } = useNotification();
+  const { success, error } = useNotification();
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [email, setEmail] = useState('');
-  const [papel, setPapel] = useState<TeamInvite['papel']>('Leitor');
-  const [invites, setInvites] = useState(getTeamInvites());
+  const [role, setRole] = useState<typeof ROLES[number]>('viewer');
+  const [inviting, setInviting] = useState(false);
+  const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
+  const podeAcessar = canAccessFeature(user?.tenant_ativo?.plano_nome, 'team');
 
-  if (!PLANOS_COM_EQUIPE.has(user?.plano || '')) {
+  const loadMembers = useCallback(async () => {
+    if (!podeAcessar) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ dados: TeamMember[] }>('/v1/portal/team');
+      setMembers(data.dados);
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao carregar equipe.');
+    } finally {
+      setLoading(false);
+    }
+  }, [error, podeAcessar]);
+
+  useEffect(() => { void loadMembers(); }, [loadMembers]);
+
+  if (!podeAcessar) {
     return (
       <div className="plan-gate">
         <Lock size={32} />
         <h2>Disponível a partir do plano PRO</h2>
-        <p>Colabore com sua equipe, convide membros e defina papéis de acesso.</p>
+        <p>Seu plano atual é {currentPlan.nome}. Colabore com sua equipe, convide membros e defina papéis a partir do PRO.</p>
         <Link to="/app/billing" className="btn btn--primary">Ver planos</Link>
       </div>
     );
   }
 
-  function invite() {
-    if (!emailRegex.test(email.trim())) {
-      error('Informe um e-mail válido.');
-      return;
+  async function invite() {
+    if (!emailRegex.test(email.trim())) { error('Informe um e-mail válido.'); return; }
+    setInviting(true);
+    try {
+      await apiFetch('/v1/portal/team/convite', 'POST', { email: email.trim(), role });
+      setEmail('');
+      setShowInvite(false);
+      await loadMembers();
+      success('Convite enviado. O membro aparecerá na lista após aceitar.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao convidar membro.');
+    } finally {
+      setInviting(false);
     }
-    const next = addTeamInvite({ email: email.trim(), papel });
-    setInvites((current) => [next, ...current]);
-    addAuditEvent({
-      tipo: 'membro_convidado',
-      usuario: user?.email || 'portal_local',
-      detalhe: `Convite local enviado para ${email.trim()} com papel ${papel}.`,
-      status: 'sucesso'
-    });
-    setEmail('');
-    setShowInvite(false);
-    success('Convite salvo localmente para homologação.');
   }
 
-  function setInviteStatus(id: string, status: TeamInvite['status']) {
-    const next = invites.map((inviteItem) => inviteItem.id === id ? { ...inviteItem, status } : inviteItem);
-    setInvites(next);
-    updateTeamInvites(next);
-    addAuditEvent({
-      tipo: status === 'cancelado' ? 'convite_cancelado' : 'membro_removido',
-      usuario: user?.email || 'portal_local',
-      detalhe: `Registro ${id} atualizado para ${status}.`,
-      status: 'sucesso'
-    });
-    success('Registro de equipe atualizado localmente.');
+  async function changeRole(userId: string, newRole: string) {
+    try {
+      await apiFetch(`/v1/portal/team/${userId}`, 'PATCH', { role: newRole });
+      await loadMembers();
+      success('Papel atualizado.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao alterar papel.');
+    }
+  }
+
+  async function removeMember(userId: string) {
+    try {
+      await apiFetch(`/v1/portal/team/${userId}`, 'DELETE');
+      await loadMembers();
+      success('Membro removido.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erro ao remover membro.');
+    }
   }
 
   return (
@@ -67,24 +115,40 @@ export function TeamPage() {
         <div>
           <p className="eyebrow">Equipe</p>
           <h1>Usuários e permissões</h1>
-          <p>Tela preparada para multiusuário por cliente.</p>
+          <p>Gerencie membros e papéis da sua organização.</p>
         </div>
       </div>
 
       <Card>
-        <CardHeader title="Membros" description="Em produção, cada usuário deve ter papel e trilha de auditoria." />
+        <CardHeader title="Membros" description="Usuários com acesso ao portal desta organização." />
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Status</th></tr></thead>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Status</th><th>Último login</th><th>Ações</th></tr></thead>
             <tbody>
-              <tr><td>Diego Costa</td><td>cliente@healthintel.local</td><td>Owner</td><td>Ativo</td></tr>
-              <tr><td>Analista BI</td><td>bi@empresa.com.br</td><td>Leitor</td><td>Convite pendente</td></tr>
-              {invites.map((inviteItem) => (
-                <tr key={inviteItem.id}>
-                  <td>Convite local</td>
-                  <td>{inviteItem.email}</td>
-                  <td>{inviteItem.papel}</td>
-                  <td>{inviteItem.status}</td>
+              {loading ? (
+                <tr><td colSpan={6} style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '1rem' }}>Carregando…</td></tr>
+              ) : members.length === 0 ? (
+                <tr><td colSpan={6} style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '1rem' }}>Nenhum membro encontrado.</td></tr>
+              ) : members.map((m) => (
+                <tr key={m.id}>
+                  <td>{m.nome}</td>
+                  <td>{m.email}</td>
+                  <td>
+                    {m.role === 'owner' ? (
+                      <span>{m.role}</span>
+                    ) : (
+                      <select value={m.role} onChange={(e) => void changeRole(m.id, e.target.value)}>
+                        {ROLES.filter(r => r !== 'owner').map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    )}
+                  </td>
+                  <td>{m.status}</td>
+                  <td>{m.ultimo_login_em ? new Date(m.ultimo_login_em).toLocaleDateString('pt-BR') : '—'}</td>
+                  <td>
+                    {m.role !== 'owner' && m.id !== user?.id && (
+                      <Button variant="danger" onClick={() => void removeMember(m.id)}>Remover</Button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -92,28 +156,23 @@ export function TeamPage() {
         </div>
         <div className="button-row">
           <Button onClick={() => setShowInvite(true)}>Convidar membro</Button>
-          <Button variant="secondary" onClick={() => info('Papéis disponíveis nesta homologação: Owner, Admin, Leitor e Billing.')}>Configurar papéis</Button>
-          {invites[0] && <Button variant="secondary" onClick={() => setInviteStatus(invites[0].id, 'cancelado')}>Cancelar convite</Button>}
-          {invites[0] && <Button variant="danger" onClick={() => setInviteStatus(invites[0].id, 'removido')}>Remover membro local/demo</Button>}
+          <Button variant="secondary" onClick={() => void loadMembers()}>Atualizar</Button>
         </div>
       </Card>
 
       {showInvite && (
         <Card className="modal-card">
-          <CardHeader title="Convidar membro" description="Convite local para homologação. Envio real depende de backend de usuários." />
+          <CardHeader title="Convidar membro" description="Um e-mail de convite será enviado com link de acesso." />
           <div className="form-grid single">
             <label>E-mail<input value={email} onChange={(event) => setEmail(event.target.value)} /></label>
             <label>
               Papel
-              <select value={papel} onChange={(event) => setPapel(event.target.value as TeamInvite['papel'])}>
-                <option>Owner</option>
-                <option>Admin</option>
-                <option>Leitor</option>
-                <option>Billing</option>
+              <select value={role} onChange={(event) => setRole(event.target.value as typeof ROLES[number])}>
+                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </label>
             <div className="button-row">
-              <Button onClick={invite}>Salvar convite local</Button>
+              <Button onClick={() => void invite()} disabled={inviting}>{inviting ? 'Enviando…' : 'Enviar convite'}</Button>
               <Button variant="secondary" onClick={() => setShowInvite(false)}>Cancelar</Button>
             </div>
           </div>

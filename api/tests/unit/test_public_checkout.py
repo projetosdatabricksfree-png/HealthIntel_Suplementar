@@ -13,6 +13,9 @@ def _settings(**overrides):
     base = {
         "stripe_secret_key": "sk_test",
         "stripe_webhook_secret": "whsec_test",
+        "stripe_price_starter": "price_starter",
+        "stripe_price_pro": "price_pro",
+        "stripe_price_max": "price_max",
         "stripe_price_sandbox": "price_sandbox",
         "stripe_price_piloto": "price_piloto",
         "stripe_price_core_api": "price_core",
@@ -36,11 +39,15 @@ async def test_criar_sessao_checkout_usa_price_e_metadata(monkeypatch: pytest.Mo
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
     monkeypatch.setattr(public_checkout, "get_settings", lambda: _settings())
 
-    result = await public_checkout.criar_sessao_checkout("sandbox")
+    result = await public_checkout.criar_sessao_checkout("starter")
 
     assert result["dados"]["checkout_url"] == "https://checkout.stripe.test/session"
-    assert captured["line_items"] == [{"price": "price_sandbox", "quantity": 1}]
-    assert captured["metadata"] == {"plano": "sandbox", "plano_bd": "starter_local"}
+    assert captured["mode"] == "subscription"
+    assert captured["line_items"] == [{"price": "price_starter", "quantity": 1}]
+    assert captured["metadata"] == {"plano": "starter", "plano_bd": "starter"}
+    assert captured["subscription_data"] == {
+        "metadata": {"plano": "starter", "plano_bd": "starter"}
+    }
     assert captured["success_url"].startswith("https://app.healthintel.test/checkout/sucesso")
     assert captured["cancel_url"] == "https://app.healthintel.test/precos"
 

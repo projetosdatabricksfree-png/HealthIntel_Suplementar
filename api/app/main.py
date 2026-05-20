@@ -17,6 +17,7 @@ from api.app.routers import (
     admin_billing,
     admin_debug,
     admin_layout,
+    auth,
     bronze,
     cnes,
     comercial,
@@ -26,6 +27,9 @@ from api.app.routers import (
     mercado,
     meta,
     operadora,
+    portal_api_keys,
+    portal_billing,
+    portal_team,
     prata,
     premium,
     produto,
@@ -81,8 +85,9 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allowed_origins,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.middleware("http")(aplicar_hardening_http)
@@ -97,6 +102,7 @@ import os
 
 _HIDE_EMPTY = os.getenv("HEALTHINTEL_RELEASE_0_9_HIDE_EMPTY", "1") == "1"
 
+app.include_router(auth.router, prefix=settings.app_prefixo)
 app.include_router(meta.router, prefix=settings.app_prefixo)
 app.include_router(operadora.router, prefix=settings.app_prefixo)
 app.include_router(produto.router, prefix=settings.app_prefixo)
@@ -113,6 +119,9 @@ app.include_router(cnes.router, prefix=settings.app_prefixo, include_in_schema=n
 app.include_router(tiss.router, prefix=settings.app_prefixo, include_in_schema=not _HIDE_EMPTY)
 app.include_router(comercial.router, prefix=settings.app_prefixo)
 app.include_router(me.router, prefix=settings.app_prefixo)
+app.include_router(portal_api_keys.router, prefix=settings.app_prefixo)
+app.include_router(portal_billing.router, prefix=settings.app_prefixo)
+app.include_router(portal_team.router, prefix=settings.app_prefixo)
 app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(contato.router, prefix=settings.app_prefixo)
 app.include_router(admin_billing.router)

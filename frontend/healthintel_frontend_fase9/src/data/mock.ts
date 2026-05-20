@@ -1,14 +1,17 @@
-import type { UsagePoint, PortalUser } from '../types/domain';
+import type { UsagePoint } from '../types/domain';
 
-export const demoUser: PortalUser = {
-  nome: 'Diego Costa',
-  email: 'cliente@healthintel.local',
-  empresa: 'Cliente Demonstração',
-  cargo: 'Analytics / BI',
-  plano: 'Free',
-  role: 'member',
-  apiKey: 'hi_local_dev_2026_api_key'
-};
+// ATENÇÃO: este arquivo contém apenas dados de demonstração para fallback em
+// ambientes de desenvolvimento/homologação. Nunca deve ser usado em produção.
+// O fallback é gated por VITE_ENABLE_DEMO_FALLBACK + import.meta.env.MODE !== 'production'
+// em src/services/apiClient.ts. Em produção, falhas de rede propagam normalmente
+// (sem maquiar erro como sucesso).
+if (typeof window !== 'undefined' && import.meta.env.MODE === 'production' &&
+    String(import.meta.env.VITE_ENABLE_DEMO_FALLBACK ?? 'false') === 'true') {
+  console.error(
+    '[HealthIntel] CRÍTICO: VITE_ENABLE_DEMO_FALLBACK=true em build de produção. ' +
+      'Mocks comerciais não devem ser exibidos. Verifique seu .env de build.'
+  );
+}
 
 export const usageSeries: UsagePoint[] = [
   { dia: '01/05', requisicoes: 420, erros: 2, latenciaMs: 91 },

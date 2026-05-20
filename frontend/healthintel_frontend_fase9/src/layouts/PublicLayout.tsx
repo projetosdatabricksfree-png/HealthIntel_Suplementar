@@ -10,10 +10,9 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '#produto', label: 'Produto', anchor: true },
-  { href: '#como-funciona', label: 'Como funciona', anchor: true },
   { href: '#datasets', label: 'Datasets', anchor: true },
+  { href: '/documentacao', label: 'Documentação' },
   { href: '#planos', label: 'Preços', anchor: true },
-  { href: '#seguranca', label: 'Segurança', anchor: true },
   { href: '/quem-somos', label: 'Quem somos' },
 ];
 
@@ -157,7 +156,7 @@ export function PublicLayout() {
             <div>
               <p className="footer__col-title">Produto</p>
               <a href="/#produto">Para quem é</a>
-              <a href="/#como-funciona">Como funciona</a>
+              <Link to="/documentacao">Documentação</Link>
               <a href="/#datasets">Datasets</a>
               <a href="/#planos">Preços</a>
             </div>

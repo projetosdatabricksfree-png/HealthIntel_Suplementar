@@ -10,7 +10,7 @@ test.describe('Menu mobile', () => {
   test('menu hamburger abre ao clicar', async ({ page }) => {
     const trigger = page.locator('button[aria-label], button:has(svg)').first();
     await trigger.click();
-    const mobileNav = page.locator('nav a, .mobile-menu a').first();
+    const mobileNav = page.locator('.site-header__mobile.is-open a').first();
     await expect(mobileNav).toBeVisible();
   });
 
@@ -21,11 +21,13 @@ test.describe('Menu mobile', () => {
     const precoLink = page.getByRole('link', { name: 'Preços' }).first();
     await expect(precoLink).toBeVisible();
     await precoLink.click();
-    await expect(page).toHaveURL('/precos');
+    await expect(page).toHaveURL('/#planos');
   });
 
   test('botão "Entrar" visível em mobile', async ({ page }) => {
-    const entrarLink = page.getByRole('link', { name: 'Entrar' }).first();
+    const trigger = page.locator('button:has(svg)').first();
+    await trigger.click();
+    const entrarLink = page.locator('.site-header__mobile.is-open').getByRole('link', { name: 'Entrar' });
     await expect(entrarLink).toBeVisible();
   });
 

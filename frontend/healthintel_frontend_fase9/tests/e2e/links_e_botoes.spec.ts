@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 const NAV_LINKS = [
-  { label: 'Produto', url: '/produto' },
+  { label: 'Produto', url: '/#produto' },
   { label: 'Documentação', url: '/documentacao' },
-  { label: 'Preços', url: '/precos' },
-  { label: 'Segurança', url: '/seguranca' },
+  { label: 'Preços', url: '/#planos' },
+  { label: 'Quem somos', url: '/quem-somos' },
   { label: 'Contato', url: '/contato' },
 ];
 
@@ -20,7 +20,7 @@ test.describe('Navbar e links principais', () => {
 
   for (const link of NAV_LINKS) {
     test(`link "${link.label}" navega para ${link.url}`, async ({ page }) => {
-      await page.getByRole('link', { name: link.label }).first().click();
+      await page.locator(`a[href="${link.url.replace('/', '')}"]:visible, a[href="${link.url}"]:visible`).first().click();
       await expect(page).toHaveURL(link.url);
     });
   }

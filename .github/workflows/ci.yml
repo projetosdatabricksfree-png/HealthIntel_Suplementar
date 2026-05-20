@@ -112,3 +112,71 @@ jobs:
         run: |
           cd healthintel_dbt
           DBT_LOG_PATH=/tmp/healthintel_dbt_logs DBT_TARGET_PATH=/tmp/healthintel_dbt_target dbt build
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_DB: healthintel
+      POSTGRES_USER: healthintel
+      POSTGRES_PASSWORD: healthintel
+      MONGO_DB: healthintel_layout
+      MONGO_INITDB_ROOT_USERNAME: healthintel
+      MONGO_INITDB_ROOT_PASSWORD: healthintel
+      API_ENV: ci
+      API_ALLOWED_HOSTS: localhost,127.0.0.1,testserver,api,healthintel_api
+      API_CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      API_JWT_ADMIN_SECRET: ci_admin_secret_healthintel
+      API_MAX_REQUEST_SIZE_BYTES: 1048576
+      LAYOUT_SERVICE_ENV: ci
+      LAYOUT_SERVICE_ALLOWED_HOSTS: localhost,127.0.0.1,testserver,mongo_layout_service,healthintel_layout_service
+      LAYOUT_SERVICE_MAX_REQUEST_SIZE_BYTES: 1048576
+      LAYOUT_SERVICE_TOKEN: ci_layout_service_token_healthintel
+      API_INTERNAL_TOKEN: ci_internal_token_healthintel
+      VITE_API_BASE_URL: http://localhost:8080
+      VITE_ENABLE_DEMO_FALLBACK: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/healthintel_frontend_fase9/package-lock.json
+
+      - name: Instalar dependências frontend
+        run: npm ci
+        working-directory: frontend/healthintel_frontend_fase9
+
+      - name: Lint frontend
+        run: npm run lint
+        working-directory: frontend/healthintel_frontend_fase9
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend/healthintel_frontend_fase9
+
+      - name: Subir backend e frontend
+        run: docker compose -f infra/docker-compose.yml up -d api frontend
+
+      - name: Aguardar frontend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:5173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f infra/docker-compose.yml ps
+          docker compose -f infra/docker-compose.yml logs --tail=100 frontend api
+          exit 1
+
+      - name: Instalar Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend/healthintel_frontend_fase9
+
+      - name: E2E frontend
+        run: npm run test:e2e -- --project=chromium
+        working-directory: frontend/healthintel_frontend_fase9
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173

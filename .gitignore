@@ -30,6 +30,8 @@ healthintel_dbt/logs/
 healthintel_dbt/package-lock.yml
 docs/dbt_*
 frontend/**/node_modules/
+frontend/**/playwright-report/
+frontend/**/test-results/
 testes/load/resultados/
 tmp/
 ci_log.txt

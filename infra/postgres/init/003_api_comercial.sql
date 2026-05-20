@@ -64,9 +64,9 @@ insert into plataforma.plano (
 )
 values (
     '11111111-1111-1111-1111-111111111111',
-    'starter_local',
-    120,
-    array['/v1/operadoras'],
+    'free',
+    10,
+    array['/v1/meta', '/v1/operadoras'],
     'ativo'
 )
 on conflict (id) do update set

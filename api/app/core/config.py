@@ -62,10 +62,26 @@ class Settings(BaseSettings):
     internal_token: str = Field(
         default="healthintel_internal_local_token", alias="API_INTERNAL_TOKEN"
     )
+
+    # Auth JWT (sessões portal)
+    auth_jwt_secret: str = Field(default="trocar_em_producao_auth", alias="AUTH_JWT_SECRET")
+    auth_jwt_algo: str = Field(default="HS256", alias="AUTH_JWT_ALGO")
+    auth_jwt_access_ttl_min: int = Field(default=15, alias="AUTH_JWT_ACCESS_TTL_MIN")
+    auth_jwt_refresh_ttl_days: int = Field(default=30, alias="AUTH_JWT_REFRESH_TTL_DAYS")
+    auth_bcrypt_rounds: int = Field(default=12, alias="AUTH_BCRYPT_ROUNDS")
+    auth_login_lockout_max: int = Field(default=5, alias="AUTH_LOGIN_LOCKOUT_MAX")
+    auth_login_lockout_min: int = Field(default=15, alias="AUTH_LOGIN_LOCKOUT_MIN")
+    auth_email_verification_ttl_hours: int = Field(default=24, alias="AUTH_EMAIL_VERIFICATION_TTL_HOURS")
+    auth_password_reset_ttl_min: int = Field(default=30, alias="AUTH_PASSWORD_RESET_TTL_MIN")
+    google_oauth_client_id: str = Field(default="", alias="VITE_GOOGLE_CLIENT_ID")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     sentry_dsn: str | None = Field(default=None, alias="SENTRY_DSN")
     stripe_secret_key: str | None = Field(default=None, alias="STRIPE_SECRET_KEY")
+    stripe_restricted_key: str | None = Field(default=None, alias="STRIPE_RESTRICTED_KEY")
     stripe_webhook_secret: str | None = Field(default=None, alias="STRIPE_WEBHOOK_SECRET")
+    stripe_price_starter: str | None = Field(default=None, alias="STRIPE_PRICE_STARTER")
+    stripe_price_pro: str | None = Field(default=None, alias="STRIPE_PRICE_PRO")
+    stripe_price_max: str | None = Field(default=None, alias="STRIPE_PRICE_MAX")
     stripe_price_sandbox: str | None = Field(default=None, alias="STRIPE_PRICE_SANDBOX")
     stripe_price_piloto: str | None = Field(default=None, alias="STRIPE_PRICE_PILOTO")
     stripe_price_core_api: str | None = Field(default=None, alias="STRIPE_PRICE_CORE_API")
@@ -107,6 +123,9 @@ class Settings(BaseSettings):
     _SECRETS_INVALIDOS_PRODUCAO = {
         "API_JWT_ADMIN_SECRET": (
             lambda s: s.api_jwt_admin_secret in {"trocar_em_producao", ""}
+        ),
+        "AUTH_JWT_SECRET": (
+            lambda s: s.auth_jwt_secret in {"trocar_em_producao_auth", ""}
         ),
         "LAYOUT_SERVICE_TOKEN": (
             lambda s: s.layout_service_token == DEFAULT_LAYOUT_SERVICE_TOKEN

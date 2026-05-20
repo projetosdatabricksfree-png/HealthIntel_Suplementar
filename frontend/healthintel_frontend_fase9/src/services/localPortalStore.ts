@@ -48,6 +48,17 @@ export interface SecuritySettings {
   twoFactorStatus: 'desativado' | 'pendente';
 }
 
+export interface ManagedApiKey {
+  id: string;
+  nome: string;
+  prefixo: string;
+  ambiente: 'test' | 'live';
+  criadaEm: string;
+  ultimoUsoEm?: string;
+  status: 'ativa' | 'revogada';
+  escopo: string;
+}
+
 function key(name: string): string {
   return `${PREFIX}${name}`;
 }
@@ -135,6 +146,20 @@ export function getSecuritySettings(): SecuritySettings {
 
 export function saveSecuritySettings(settings: SecuritySettings): void {
   write('security', settings);
+}
+
+export function getManagedApiKeys(): ManagedApiKey[] {
+  return safeRead<ManagedApiKey[]>('api_keys', []);
+}
+
+export function saveManagedApiKeys(keys: ManagedApiKey[]): void {
+  write('api_keys', keys);
+}
+
+export function upsertManagedApiKey(keyRecord: ManagedApiKey): void {
+  const keys = getManagedApiKeys();
+  const exists = keys.some((item) => item.id === keyRecord.id);
+  write('api_keys', exists ? keys.map((item) => item.id === keyRecord.id ? keyRecord : item) : [keyRecord, ...keys]);
 }
 
 export function getUsageData(): UsagePoint[] {

@@ -6,8 +6,7 @@ import { Button } from '../../components/Button';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent, getAuditEvents, getSecuritySettings, saveSecuritySettings } from '../../services/localPortalStore';
 import { useAuth } from '../../hooks/useAuth';
-
-const PLANOS_COM_SEGURANCA = new Set(['STARTER', 'Starter', 'PRO', 'Pro', 'MAX', 'Max', 'ENTERPRISE', 'Enterprise']);
+import { canAccessFeature, getCurrentPlan } from '../../data/planRules';
 
 function validList(value: string): boolean {
   if (!value.trim()) return true;
@@ -22,13 +21,16 @@ export function PortalSecurityPage() {
   const [ips, setIps] = useState(initial.ips);
   const [twoFactorStatus, setTwoFactorStatus] = useState(initial.twoFactorStatus);
   const [audit, setAudit] = useState(getAuditEvents());
+  const planoNome = user?.tenant_ativo?.plano_nome;
+  const currentPlan = getCurrentPlan(planoNome);
+  const hasAdvancedSecurity = canAccessFeature(planoNome, 'advancedSecurity');
 
-  if (!PLANOS_COM_SEGURANCA.has(user?.plano || '')) {
+  if (!canAccessFeature(planoNome, 'security')) {
     return (
       <div className="plan-gate">
         <Lock size={32} />
         <h2>Disponível a partir do plano Starter</h2>
-        <p>2FA, IP allowlist e trilha de auditoria de acesso.</p>
+        <p>Seu plano atual é {currentPlan.nome}. 2FA pessoal começa no STARTER; IP allowlist e auditoria exportável começam no PRO.</p>
         <Link to="/app/billing" className="btn btn--primary">Ver planos</Link>
       </div>
     );
@@ -106,12 +108,17 @@ export function PortalSecurityPage() {
 
         <Card>
           <CardHeader title="Proteção da API key" description="Whitelists reduzem vazamento e uso indevido." />
+          {!hasAdvancedSecurity && (
+            <div className="empty-state-inline">
+              IP allowlist e domínios permitidos ficam disponíveis a partir do PRO.
+            </div>
+          )}
           <div className="form-grid single">
-            <label>Domínios permitidos<input value={domains} onChange={(event) => setDomains(event.target.value)} placeholder="app.empresa.com.br,bi.empresa.com.br" /></label>
-            <label>IPs permitidos<input value={ips} onChange={(event) => setIps(event.target.value)} placeholder="200.100.10.20/32" /></label>
+            <label>Domínios permitidos<input disabled={!hasAdvancedSecurity} value={domains} onChange={(event) => setDomains(event.target.value)} placeholder="app.empresa.com.br,bi.empresa.com.br" /></label>
+            <label>IPs permitidos<input disabled={!hasAdvancedSecurity} value={ips} onChange={(event) => setIps(event.target.value)} placeholder="200.100.10.20/32" /></label>
             <div className="button-row">
-              <Button onClick={saveAllowlist}>Salvar allowlist</Button>
-              <Button variant="secondary" onClick={clearAllowlist}>Limpar allowlist</Button>
+              <Button onClick={saveAllowlist} disabled={!hasAdvancedSecurity}>Salvar allowlist</Button>
+              <Button variant="secondary" onClick={clearAllowlist} disabled={!hasAdvancedSecurity}>Limpar allowlist</Button>
               <Button variant="ghost" onClick={refreshAudit}>Ver auditoria</Button>
             </div>
           </div>

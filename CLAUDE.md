@@ -22,6 +22,12 @@ docker compose --env-file /opt/healthintel/.env -f /opt/healthintel/infra/docker
 - API: `https://api.healthintel.com.br` (container porta 8080, via Caddy)
 - `app.healthintel.com.br` → 301 → `www.healthintel.com.br`
 
+**Ambientes — não confundir:**
+- **Produção**: domínio + Caddy (acima). `make up` / `docker compose -f infra/docker-compose.yml`.
+- **Homologação**: VPS por IP (`5.189.160.27:8080`), Fase 10. `make up-hml` / `scripts/vps/deploy_hml_ip.sh`. Usar apenas para validar antes de produção.
+
+**Memória persistente do agente:** comportamentos cross-sessão ficam em `/root/.claude/projects/-opt-healthintel/memory/` (ex.: regras de versionamento, contexto VPS). Consultar antes de assumir convenções não documentadas aqui.
+
 ## Skills Obrigatórios
 
 - → **token-economy** (`skills/token-economy/SKILL.md`) — gestão de tokens, seleção de modelo, uso de `/compact`, `/clear`, Plan Mode. **Aplicar automaticamente em toda sessão.**
@@ -54,11 +60,11 @@ Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest
 
 **HealthIntel Suplementar** — plataforma medallion de dados ANS (regulador brasileiro). Cinco componentes:
 
-- **`api/`**: FastAPI. Lê exclusivamente `api_ans`. X-API-Key + Redis (auth cache 60s; prata 300s). Envelope: `{dados: [...], meta: {...}}`.
+- **`api/`**: FastAPI. Routers de dados (`bronze`, `prata`, `comercial`, `financeiro`, `mercado`, `operadora`, `ranking`, `regulatorio`, `rede`, `cnes`, `tiss`, `premium`, `produto`) leem exclusivamente `api_ans`. Routers operacionais (`admin_billing`, `admin_debug`, `admin_layout`, `public_checkout`, `contato`, `me`, `status_page`, `meta`) tocam `plataforma.*` e fluxos de billing/checkout. X-API-Key + Redis (auth cache 60s; prata 300s). Envelope: `{dados: [...], meta: {...}}`.
 - **`mongo_layout_service/`**: Governança MongoDB. Metadados de layout, versionamento. Auth por token.
 - **`ingestao/`**: Airflow DAGs. Download ANS → validação layout → `bruto_ans` → `plataforma.job`.
 - **`healthintel_dbt/`**: dbt. Fluxo: `bruto_ans` → `stg_ans` → `int_ans` → `nucleo_ans` → `api_ans` → `consumo_ans`. Camadas paralelas: `quality_ans`, `mdm_ans`.
-- **`frontend/healthintel_frontend_fase9/`**: Site público + portal cliente (Vite + React 19 + TS, react-router-dom, recharts). Consome a API via `api_ans` apenas — nunca expõe schemas internos.
+- **`frontend/healthintel_frontend_fase9/`**: Site público + portal cliente (Vite + React 19 + TS, react-router-dom, recharts). E2E com Playwright. Consome a API via `api_ans` apenas — nunca expõe schemas internos.
 
 **Schemas PostgreSQL:**
 - `bruto_ans`: Bronze. RANGE partition por competência/trimestre. SIB: partições anuais `_YYYY` (nunca mensais).
@@ -89,6 +95,10 @@ Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest
 | ELT | `make elt-discover / elt-extract / elt-load / elt-all / elt-status` · `make elt-transform-all / elt-validate-all` |
 | Dev backend | `make api-dev` (:8000 direto) · `make layout-dev` (:8001) · `make load-test` · `make dag-parse` |
 | Dev frontend (Fase 9) | `cd frontend/healthintel_frontend_fase9 && npm install && npm run dev` (:5173) · `npm run build` · `npm run lint` |
+| E2E frontend | `make frontend-e2e` (Playwright; relatórios em `frontend/.../playwright-report/`) |
+| Segurança | `make security-audit-local` · `make api-security-tests` |
+| Airflow / DAGs | `make airflow-setup` · `make dag-test` (uma DAG) · `make dag-test-all` |
+| Delta ANS | `make dbt-build-delta-ans` · `make dbt-test-delta-ans` · `make smoke-delta-ans-100` |
 | Venv local | `.venv/bin/pytest <path> -v` · `.venv/bin/python <script>` (ativar: `source .venv/bin/activate`) |
 | Deploy VPS hml | `scripts/vps/deploy_hml_ip.sh` · `scripts/vps/check_hml_ip.sh` (API: `http://5.189.160.27:8080`) |
 
@@ -102,7 +112,7 @@ Nenhuma ação manual — RTK funciona automaticamente em `make`, `dbt`, `pytest
 
 **DAG:** `ingestao/dags/dag_{dataset}.py` → validar layout MongoDB → upsert `bruto_ans` → registrar `plataforma.job` → freshness em `_sources.yml`.
 
-**Testes:** `pytest api/tests/unit/` · `pytest api/tests/integration/` · `pytest testes/regressao/` · `make smoke` · `make load-test`
+**Testes:** unitários/integration da API em `api/tests/{unit,integration}/`; regressão e carga em `testes/{regressao,load,unit}/` (PT, com `conftest.py` próprio); hardgates em `tests/hardgates/` (EN, executados em CI para travar regressões de fase). Frontend E2E (Playwright) via `make frontend-e2e`. Smokes via `make smoke[-*]`.
 
 ---
 

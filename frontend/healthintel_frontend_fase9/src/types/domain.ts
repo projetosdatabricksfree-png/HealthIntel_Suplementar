@@ -3,6 +3,8 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type EndpointTier = 'core' | 'premium' | 'admin' | 'interno' | 'sob_demanda';
 export type DeliveryStatus = 'pronto' | 'parcial' | 'premium' | 'roadmap' | 'sem_dados';
 export type EndpointAvailability = 'disponivel' | 'parcial' | 'premium' | 'roadmap' | 'sem_dados';
+export type PlanSlug = 'free' | 'starter' | 'pro' | 'max' | 'enterprise';
+export type PortalRole = 'admin_internal' | 'owner' | 'admin' | 'member' | 'reader';
 
 export interface ApiEndpoint {
   id: string;
@@ -44,15 +46,18 @@ export interface UsagePoint {
 
 export interface ApiPlan {
   nome: string;
-  slug: string;
+  slug: PlanSlug;
   preco: string;
   descricao: string;
   destaque?: boolean;
+  limiteDiario: string;
+  keyLimit: number | 'ilimitado';
+  teamLimit: number | 'ilimitado' | 0;
   features: string[];
   limits: string[];
   stripePaymentLink?: string;
-  planoBd?: string;
-  checkoutSlug?: 'sandbox' | 'piloto' | 'core';
+  planoBd: PlanSlug;
+  checkoutSlug?: 'starter' | 'pro' | 'max';
 }
 
 export interface UsageDia {
@@ -66,8 +71,18 @@ export interface UsageRealData {
   total_requisicoes: number;
   total_erros: number;
   latencia_media_ms: number;
+  success_rate?: number;
   serie_diaria: UsageDia[];
   por_endpoint: Array<{ endpoint: string; requisicoes: number; erros: number }>;
+}
+
+export interface UsageMeta {
+  periodo: string;
+  inicio: string;
+  fim: string;
+  plano: string;
+  quota_daily?: number;
+  quota_used_today?: number;
 }
 
 export interface PortalUser {
@@ -76,6 +91,76 @@ export interface PortalUser {
   empresa: string;
   cargo: string;
   plano: string;
-  role?: 'admin' | 'member';
+  role?: PortalRole;
   apiKey?: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  nome: string;
+  avatar_url: string | null;
+  status: string;
+  email_verificado: boolean;
+  tenants: AuthTenant[];
+  tenant_ativo: AuthTenant | null;
+}
+
+export interface AuthTenant {
+  cliente_id: string;
+  nome: string;
+  role: string;
+  status: string;
+  plano_nome: string;
+}
+
+export interface PortalApiKey {
+  id: string;
+  nome: string | null;
+  prefixo: string;
+  ambiente: 'sandbox' | 'producao';
+  escopos: string[];
+  status: string;
+  criado_em: string;
+  ultimo_uso_em: string | null;
+  revogada_em: string | null;
+  expira_em: string | null;
+}
+
+export interface BillingResumo {
+  plano: {
+    nome: string;
+    limite_rpm: number;
+    limite_api_keys: number;
+  };
+  assinatura: {
+    status: string;
+    stripe_subscription_id: string | null;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+  } | null;
+  uso_hoje: number;
+  chaves_ativas: number;
+}
+
+export interface Fatura {
+  id: string;
+  numero: string | null;
+  data: number;
+  valor_centavos: number;
+  moeda: string;
+  status: string;
+  pdf_url: string | null;
+  descricao: string | null;
+}
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  nome: string;
+  avatar_url: string | null;
+  role: string;
+  status: string;
+  aceito_em: string | null;
+  ultimo_login_em: string | null;
 }

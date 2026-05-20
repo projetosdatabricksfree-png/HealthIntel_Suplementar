@@ -5,7 +5,7 @@ import { plans } from '../../data/plans';
 import { PlanCard } from '../../components/PlanCard';
 import { useNotification } from '../../components/NotificationProvider';
 import { useAuth } from '../../hooks/useAuth';
-import { getCurrentPlan, hasPlanAtLeast } from '../../data/planRules';
+import { getCurrentPlan } from '../../data/planRules';
 import { buildUrl } from '../../services/apiClient';
 import { getAccessToken } from '../../services/storage';
 import { criarSessaoCustomerPortal } from '../../services/checkoutApi';
@@ -26,7 +26,7 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 export function BillingPage() {
   const { user } = useAuth();
-  const { success, error } = useNotification();
+  const { error } = useNotification();
   const [resumo, setResumo] = useState<BillingResumo | null>(null);
   const [faturas, setFaturas] = useState<Fatura[]>([]);
   const [loadingPortal, setLoadingPortal] = useState(false);

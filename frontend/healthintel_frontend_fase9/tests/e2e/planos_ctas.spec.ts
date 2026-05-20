@@ -1,43 +1,43 @@
 import { test, expect } from '@playwright/test';
 
-const PLANO_CTA = [
-  { label: 'Começar sandbox', plano: 'sandbox' },
-  { label: 'Solicitar piloto', plano: 'piloto' },
-  { label: 'Falar com vendas', plano: 'core' }
-];
-
 test.describe('CTAs de planos', () => {
   test.beforeEach(async ({ page }) => {
-    await page.route('**/v1/checkout/sessao', async (route) => {
-      const body = route.request().postDataJSON() as { plano: string };
-      await route.fulfill({
-        status: 201,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          dados: {
-            checkout_url: `http://localhost:5173/checkout/sucesso?mock_plano=${body.plano}`,
-            session_id: `cs_test_${body.plano}`,
-            plano: body.plano
-          }
-        })
-      });
-    });
     await page.goto('/precos');
   });
 
-  for (const { label, plano } of PLANO_CTA) {
-    test(`CTA ${label} cria checkout Stripe para ${plano}`, async ({ page }) => {
-      const requestPromise = page.waitForRequest((request) => (
-        request.url().includes('/v1/checkout/sessao')
-        && request.method() === 'POST'
-        && request.postDataJSON().plano === plano
-      ));
+  test('CTA FREE leva para cadastro gratuito', async ({ page }) => {
+    const href = await page.getByRole('link', { name: /começar grátis/i }).first().getAttribute('href');
+    expect(href).toMatch(/\/login/);
+  });
 
-      await page.getByRole('button', { name: label }).click();
-      await requestPromise;
-      await expect(page).toHaveURL(new RegExp(`/checkout/sucesso\\?mock_plano=${plano}`));
-    });
-  }
+  test('CTAs STARTER, PRO e MAX usam Stripe ou fallback comercial', async ({ page }) => {
+    const ctas = await page.locator('.pricing-card').getByRole('link').all();
+    expect(ctas.length).toBeGreaterThanOrEqual(4);
+
+    const paidHrefs = [];
+    for (const cta of ctas) {
+      const label = (await cta.textContent()) || '';
+      const href = await cta.getAttribute('href');
+      if (/adquirir plano|falar com comercial/i.test(label)) {
+        paidHrefs.push(href || '');
+      }
+    }
+
+    expect(paidHrefs.length).toBeGreaterThanOrEqual(3);
+    for (const href of paidHrefs) {
+      expect(
+        href.includes('stripe.com') ||
+          href.includes('buy.stripe') ||
+          href.includes('/contato') ||
+          href.includes('/checkout/')
+      ).toBe(true);
+    }
+  });
+
+  test('CTA Enterprise leva para contato', async ({ page }) => {
+    const href = await page.getByRole('link', { name: /falar com comercial/i }).last().getAttribute('href');
+    expect(href).toMatch(/\/contato/);
+  });
 
   test('página de sucesso não exibe API key no navegador', async ({ page }) => {
     await page.goto('/checkout/sucesso?session_id=cs_test_sandbox');

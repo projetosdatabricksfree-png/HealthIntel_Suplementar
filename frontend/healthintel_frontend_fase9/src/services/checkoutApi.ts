@@ -1,6 +1,7 @@
 import { buildUrl } from './apiClient';
+import { getAccessToken } from './storage';
 
-export type CheckoutPlano = 'sandbox' | 'piloto' | 'core';
+export type CheckoutPlano = 'starter' | 'pro' | 'max';
 
 export interface CheckoutSessaoResposta {
   dados?: {
@@ -36,4 +37,24 @@ export async function criarCheckoutSessao(plano: CheckoutPlano): Promise<string>
     throw new Error('Checkout criado sem URL de pagamento.');
   }
   return checkoutUrl;
+}
+
+export async function criarSessaoCustomerPortal(): Promise<string> {
+  const at = getAccessToken();
+  if (!at) throw new Error('Sessão expirada.');
+  const response = await fetch(buildUrl('/v1/portal/billing/customer-portal'), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${at}`,
+    },
+  });
+  const body = (await response.json().catch(() => ({}))) as { dados?: { url?: string }; detail?: { mensagem?: string } };
+  if (!response.ok) {
+    throw new Error(body.detail?.mensagem || `Erro ao abrir portal de billing (HTTP ${response.status}).`);
+  }
+  const url = body.dados?.url;
+  if (!url) throw new Error('Resposta sem URL do portal.');
+  return url;
 }

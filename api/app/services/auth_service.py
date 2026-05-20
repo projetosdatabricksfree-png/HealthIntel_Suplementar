@@ -77,7 +77,13 @@ async def _provisionar_plano_free(db, usuario_id: str, email: str, nome: str) ->
 # Cadastro
 # ---------------------------------------------------------------------------
 
-async def cadastrar_usuario(email: str, nome: str, senha: str, ip: str | None = None) -> dict:
+async def cadastrar_usuario(
+    email: str,
+    nome: str,
+    senha: str,
+    ip: str | None = None,
+    perfil_b2b: dict | None = None,
+) -> dict:
     async with SessionLocal() as db:
         existe = await db.execute(
             text("select id from plataforma.usuario where email = :email"),
@@ -98,6 +104,35 @@ async def cadastrar_usuario(email: str, nome: str, senha: str, ip: str | None = 
             {"email": email, "nome": nome, "hash": hash_senha(senha)},
         )
         usuario_id = str(uid_result.scalar_one())
+
+        if perfil_b2b:
+            await db.execute(
+                text(
+                    """
+                    insert into plataforma.usuario_perfil_b2b (
+                        usuario_id, empresa, cnpj, telefone, cargo,
+                        segmento, objetivo_uso, site_empresa, tamanho_empresa,
+                        mensagem, aceite_termos_em, aceite_lgpd_em
+                    ) values (
+                        cast(:uid as uuid), :empresa, :cnpj, :telefone, :cargo,
+                        :segmento, :objetivo_uso, :site_empresa, :tamanho_empresa,
+                        :mensagem, now(), now()
+                    )
+                    """
+                ),
+                {
+                    "uid": usuario_id,
+                    "empresa": perfil_b2b["empresa"],
+                    "cnpj": perfil_b2b["cnpj"],
+                    "telefone": perfil_b2b["telefone"],
+                    "cargo": perfil_b2b["cargo"],
+                    "segmento": perfil_b2b["segmento"],
+                    "objetivo_uso": perfil_b2b["objetivo_uso"],
+                    "site_empresa": perfil_b2b.get("site_empresa"),
+                    "tamanho_empresa": perfil_b2b.get("tamanho_empresa"),
+                    "mensagem": perfil_b2b.get("mensagem"),
+                },
+            )
 
         token_plain, token_hash = gerar_token_aleatorio()
         expira = datetime.now(UTC) + timedelta(hours=settings.auth_email_verification_ttl_hours)

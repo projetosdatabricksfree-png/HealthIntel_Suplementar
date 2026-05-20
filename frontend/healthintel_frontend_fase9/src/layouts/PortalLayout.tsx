@@ -1,6 +1,7 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, LayoutDashboard, LogOut, Shield, Users, UserCircle, Wrench } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { canAccessFeature, getCurrentPlan } from '../data/planRules';
 
 const links = [
   { to: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,18 +11,23 @@ const links = [
   { to: '/app/uso', label: 'Uso', icon: BarChart3 },
   { to: '/app/datasets', label: 'Datasets', icon: Database },
   { to: '/app/billing', label: 'Billing', icon: CreditCard },
-  { to: '/app/equipe', label: 'Equipe', icon: Users },
   { to: '/app/perfil', label: 'Perfil', icon: UserCircle },
-  { to: '/app/seguranca', label: 'Segurança', icon: Shield }
-];
-
-const adminLinks = [
-  { to: '/app/admin/billing', label: 'Admin Billing', icon: CreditCard },
-  { to: '/app/admin/layouts', label: 'Admin Layouts', icon: Database }
+  { to: '/app/seguranca', label: 'Segurança', icon: Shield, feature: 'security' as const },
+  { to: '/app/equipe', label: 'Equipe', icon: Users, feature: 'team' as const }
 ];
 
 export function PortalLayout() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const planoNome = user?.tenant_ativo?.plano_nome;
+  const currentPlan = getCurrentPlan(planoNome);
+
+  if (isLoading) {
+    return (
+      <div className="portal-auth-loading">
+        Carregando portal...
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -39,7 +45,7 @@ export function PortalLayout() {
         </div>
 
         <nav className="sidebar-nav">
-          {links.map((item) => {
+          {links.filter((item) => !item.feature || canAccessFeature(planoNome, item.feature)).map((item) => {
             const Icon = item.icon;
             return (
               <NavLink key={item.to} to={item.to} end={item.to === '/app'}>
@@ -48,23 +54,9 @@ export function PortalLayout() {
               </NavLink>
             );
           })}
-          {user?.role === 'admin' && (
-            <>
-              <div className="sidebar-section">Admin interno</div>
-              {adminLinks.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink key={item.to} to={item.to}>
-                    <Icon size={18} />
-                    <span>{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </>
-          )}
         </nav>
 
-        <button className="logout-button" onClick={logout}>
+        <button className="logout-button" onClick={() => void logout()}>
           <LogOut size={18} />
           Sair
         </button>
@@ -73,8 +65,8 @@ export function PortalLayout() {
       <section className="portal-main">
         <header className="portal-topbar">
           <div>
-            <strong>{user?.empresa}</strong>
-            <small>Plano {user?.plano}</small>
+            <strong>{user?.tenant_ativo?.nome || user?.nome}</strong>
+            <small>Plano {currentPlan.nome}</small>
           </div>
           <div className="portal-user">
             <span>{user?.nome}</span>

@@ -18,7 +18,7 @@ class CheckoutConfirmarRequest(BaseModel):
 
 
 class CheckoutSessaoRequest(BaseModel):
-    plano: str = Field(..., description="Slug do plano publico: sandbox, piloto ou core.")
+    plano: str = Field(..., description="Slug do plano publico: starter, pro ou max.")
 
 
 @router.post("/confirmar", status_code=201)

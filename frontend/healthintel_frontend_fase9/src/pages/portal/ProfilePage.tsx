@@ -3,29 +3,37 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
 import { useAuth } from '../../hooks/useAuth';
-import { addAuditEvent } from '../../services/localPortalStore';
+import { buildUrl } from '../../services/apiClient';
+import { getAccessToken } from '../../services/storage';
 
 export function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { success, error } = useNotification();
   const [nome, setNome] = useState(user?.nome || '');
-  const [empresa, setEmpresa] = useState(user?.empresa || '');
-  const [cargo, setCargo] = useState(user?.cargo || '');
+  const [saving, setSaving] = useState(false);
 
-  function save() {
-    if (!nome.trim() || !empresa.trim() || !cargo.trim()) {
-      error('Informe nome, empresa e cargo.');
+  async function save() {
+    if (!nome.trim()) {
+      error('Informe seu nome.');
       return;
     }
-    if (!user) return;
-    updateUser({ ...user, nome: nome.trim(), empresa: empresa.trim(), cargo: cargo.trim() });
-    addAuditEvent({
-      tipo: 'perfil_salvo',
-      usuario: user.email,
-      detalhe: 'Perfil salvo localmente.',
-      status: 'sucesso'
-    });
-    success('Perfil salvo localmente e topbar atualizada.');
+    setSaving(true);
+    try {
+      const at = getAccessToken();
+      if (!at) throw new Error('Sessão expirada.');
+      const res = await fetch(buildUrl('/v1/me/perfil'), {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: nome.trim() }),
+      });
+      if (!res.ok) throw new Error('Falha ao salvar.');
+      await refreshUser();
+      success('Perfil atualizado.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Falha ao salvar perfil.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -34,18 +42,20 @@ export function ProfilePage() {
         <div>
           <p className="eyebrow">Perfil</p>
           <h1>Dados da conta</h1>
-          <p>Perfil completo do cliente para operação comercial e suporte.</p>
+          <p>Informações da sua conta HealthIntel.</p>
         </div>
       </div>
 
       <Card>
-        <CardHeader title="Informações principais" description="Dados salvos localmente nesta versão." />
+        <CardHeader title="Informações principais" description="Dados vinculados à sua conta." />
         <div className="form-grid">
-          <label>Nome<input value={nome} onChange={(event) => setNome(event.target.value)} /></label>
+          <label>Nome<input value={nome} onChange={(e) => setNome(e.target.value)} /></label>
           <label>E-mail<input value={user?.email || ''} disabled /></label>
-          <label>Empresa<input value={empresa} onChange={(event) => setEmpresa(event.target.value)} /></label>
-          <label>Cargo<input value={cargo} onChange={(event) => setCargo(event.target.value)} /></label>
-          <Button onClick={save}>Salvar perfil</Button>
+          <label>Organização<input value={user?.tenant_ativo?.nome || '—'} disabled /></label>
+          <label>Plano<input value={user?.tenant_ativo?.plano_nome || '—'} disabled /></label>
+          <Button onClick={() => void save()} disabled={saving}>
+            {saving ? 'Salvando…' : 'Salvar nome'}
+          </Button>
         </div>
       </Card>
     </div>

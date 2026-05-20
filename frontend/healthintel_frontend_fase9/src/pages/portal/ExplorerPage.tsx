@@ -30,6 +30,7 @@ export function ExplorerPage() {
   const [pagina, setPagina] = useState('1');
   const [porPagina, setPorPagina] = useState('20');
   const [result, setResult] = useState<ApiResult | null>(null);
+  const [history, setHistory] = useState<ApiResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   const endpoint = useMemo<ApiEndpoint>(
@@ -39,6 +40,7 @@ export function ExplorerPage() {
   const resolvedPath = resolvePath(endpoint.path, registroAns, municipio, uf);
   const normalizedPagina = Math.max(Number.parseInt(pagina, 10) || 1, 1);
   const normalizedPorPagina = Math.min(Math.max(Number.parseInt(porPagina, 10) || 20, 1), 100);
+  const hasApiKey = Boolean(getApiKey()?.trim());
 
   async function run() {
     if (!getApiKey()?.trim()) {
@@ -56,14 +58,23 @@ export function ExplorerPage() {
       }
     });
     setResult(response);
+    setHistory((current) => [response, ...current].slice(0, 10));
     addAuditEvent({
       tipo: 'chamada_api_explorer',
       usuario: 'portal_local',
       detalhe: `${endpoint.method} ${resolvedPath} retornou status ${response.status}.`,
       status: response.ok ? 'sucesso' : 'erro'
     });
-    if (response.ok) success(`Endpoint executado com status ${response.status}.`);
-    else error(`Falha ao executar endpoint. Status ${response.status}.`);
+    if (response.ok) {
+      success(`Endpoint executado com status ${response.status}. Veja em /app/uso.`);
+      try {
+        window.dispatchEvent(new CustomEvent('usage-updated'));
+      } catch {
+        // ambiente sem CustomEvent — silencioso
+      }
+    } else {
+      error(`Falha ao executar endpoint. Status ${response.status}.`);
+    }
     setLoading(false);
   }
 
@@ -83,10 +94,10 @@ export function ExplorerPage() {
         </div>
       </div>
 
-      {!getApiKey() && (
+      {!hasApiKey && (
         <div className="explorer-no-key">
-          <p>Configure uma <strong>API key</strong> para usar o Live Tester.</p>
-          <Link to="/app/api-keys" className="btn btn--primary btn--sm">Ir para API Keys</Link>
+          <p>Você precisa de uma <strong>API key</strong> para testar endpoints reais.</p>
+          <Link to="/app/api-keys" className="btn btn--primary btn--sm">Criar agora</Link>
         </div>
       )}
 
@@ -96,7 +107,7 @@ export function ExplorerPage() {
           <div className="form-grid single">
             <label>
               Endpoint
-              <select value={endpointId} onChange={(event) => setEndpointId(event.target.value)}>
+              <select disabled={!hasApiKey} value={endpointId} onChange={(event) => setEndpointId(event.target.value)}>
                 {liveTesterEndpoints.map((item) => (
                   <option key={item.id} value={item.id}>{item.method} {item.path}</option>
                 ))}
@@ -104,21 +115,22 @@ export function ExplorerPage() {
             </label>
             <label>
               Registro ANS
-              <input value={registroAns} onChange={(event) => setRegistroAns(event.target.value)} />
+              <input disabled={!hasApiKey} value={registroAns} onChange={(event) => setRegistroAns(event.target.value)} />
             </label>
             <label>
               Código município
-              <input value={municipio} onChange={(event) => setMunicipio(event.target.value)} />
+              <input disabled={!hasApiKey} value={municipio} onChange={(event) => setMunicipio(event.target.value)} />
             </label>
             <label>
               UF
-              <input value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} />
+              <input disabled={!hasApiKey} value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} />
             </label>
             <label>
               Página
               <input
                 type="number"
                 min="1"
+                disabled={!hasApiKey}
                 value={pagina}
                 onChange={(event) => setPagina(event.target.value)}
               />
@@ -129,11 +141,12 @@ export function ExplorerPage() {
                 type="number"
                 min="1"
                 max="100"
+                disabled={!hasApiKey}
                 value={porPagina}
                 onChange={(event) => setPorPagina(event.target.value)}
               />
             </label>
-            <Button type="button" onClick={run} disabled={loading}>
+            <Button type="button" onClick={run} disabled={loading || !hasApiKey}>
               {loading ? 'Executando...' : 'Executar'}
             </Button>
           </div>
@@ -141,7 +154,7 @@ export function ExplorerPage() {
             <Button type="button" variant="secondary" onClick={copyCurl}>Copiar cURL</Button>
             <Button type="button" variant="ghost" onClick={() => setResult(null)}>Limpar resposta</Button>
           </div>
-          <CodeBlock code={(result?.curl) || `${endpoint.method} ${resolvedPath}\nX-API-Key: ${getApiKey() ? 'configurada' : 'não configurada'}`} />
+          <CodeBlock code={(result?.curl) || (hasApiKey ? `${endpoint.method} ${resolvedPath}\nX-API-Key: configurada` : 'Crie uma API key para gerar o cURL equivalente.')} />
         </Card>
 
         <Card>
@@ -154,8 +167,37 @@ export function ExplorerPage() {
             </div>
           )}
           <CodeBlock code={JSON.stringify(result || { mensagem: 'Execute uma chamada para ver o resultado.' }, null, 2)} />
+          {result?.ok && (
+            <div className="button-row">
+              <Link to="/app/uso" className="btn btn--secondary btn--sm">
+                Ver no dashboard de uso
+              </Link>
+            </div>
+          )}
         </Card>
       </div>
+
+      {history.length > 0 && (
+        <Card>
+          <CardHeader title="Histórico da sessão" description="Últimas 10 chamadas executadas neste navegador." />
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Método</th><th>URL</th><th>Status</th><th>Tempo</th><th>Ação</th></tr></thead>
+              <tbody>
+                {history.map((item, index) => (
+                  <tr key={`${item.url}-${index}`}>
+                    <td>{item.method}</td>
+                    <td><code>{item.url}</code></td>
+                    <td>{item.status}</td>
+                    <td>{item.durationMs} ms</td>
+                    <td><Button variant="secondary" onClick={() => setResult(item)}>Ver</Button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

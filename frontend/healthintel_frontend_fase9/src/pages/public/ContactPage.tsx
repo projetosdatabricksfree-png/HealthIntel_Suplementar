@@ -92,8 +92,8 @@ export function ContactPage() {
     <Section id="contato-top" label="contato">
       <SectionHeader
         eyebrow="Contato"
-        title="Solicitar acesso ou piloto"
-        description="Registre interesse comercial para Sandbox Técnico, Piloto Assistido ou Core API. Retornamos com onboarding e geração de chave."
+        title="Falar com comercial"
+        description="Registre interesse em STARTER, PRO, MAX ou ENTERPRISE. Retornamos com onboarding quando o caso exigir venda assistida."
         align="center"
       />
       <div className="section__body">
@@ -141,9 +141,9 @@ export function ContactPage() {
               Plano de interesse
               <select value={plano} onChange={(e) => setPlano(e.target.value)}>
                 <option value="">Selecione um plano...</option>
-                <option value="sandbox">Sandbox Técnico</option>
-                <option value="piloto">Piloto Assistido</option>
-                <option value="core">Core API</option>
+                <option value="starter">STARTER</option>
+                <option value="pro">PRO</option>
+                <option value="max">MAX</option>
                 <option value="enterprise">Enterprise</option>
               </select>
             </label>

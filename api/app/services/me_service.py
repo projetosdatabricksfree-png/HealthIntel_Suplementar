@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import text
 
 from api.app.core.database import SessionLocal
+from api.app.core.redis_client import redis_client
 
 _PERIODOS = {
     "hoje": 0,
@@ -25,7 +26,22 @@ def _intervalo(periodo: str) -> tuple[date, date]:
     return hoje - timedelta(days=dias), hoje
 
 
-async def get_uso(chave_id: str, periodo: str, plano_nome: str) -> dict:
+async def _quota_diaria_redis(chave_id: str) -> int:
+    hoje_str = datetime.now(UTC).strftime("%Y%m%d")
+    chave_redis = f"rate_limit_day:{chave_id}:{hoje_str}"
+    try:
+        valor = await redis_client.get(chave_redis)
+        return int(valor) if valor is not None else 0
+    except Exception:
+        return 0
+
+
+async def get_uso(
+    chave_id: str,
+    periodo: str,
+    plano_nome: str,
+    limite_req_dia: int = 0,
+) -> dict:
     inicio, fim = _intervalo(periodo)
     fim_exclusivo = fim + timedelta(days=1)
 
@@ -90,6 +106,12 @@ async def get_uso(chave_id: str, periodo: str, plano_nome: str) -> dict:
     latencia_media = (
         round(sum(d["latencia_ms"] for d in serie) / len(serie)) if serie else 0
     )
+    success_rate = (
+        round(((total_requisicoes - total_erros) / total_requisicoes) * 1000) / 10
+        if total_requisicoes > 0
+        else 100.0
+    )
+    quota_used_today = await _quota_diaria_redis(chave_id)
 
     return {
         "dados": {
@@ -97,6 +119,7 @@ async def get_uso(chave_id: str, periodo: str, plano_nome: str) -> dict:
             "total_requisicoes": total_requisicoes,
             "total_erros": total_erros,
             "latencia_media_ms": latencia_media,
+            "success_rate": success_rate,
             "serie_diaria": serie,
             "por_endpoint": por_endpoint,
         },
@@ -105,5 +128,7 @@ async def get_uso(chave_id: str, periodo: str, plano_nome: str) -> dict:
             "inicio": str(inicio),
             "fim": str(fim),
             "plano": plano_nome,
+            "quota_daily": int(limite_req_dia),
+            "quota_used_today": quota_used_today,
         },
     }

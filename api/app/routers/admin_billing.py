@@ -14,6 +14,10 @@ from api.app.services.billing import (
     listar_resumo_faturamento,
     registrar_upgrade_plano,
 )
+from api.app.services.stripe_payment_methods import (
+    consultar_metodo_pagamento_stripe,
+    listar_metodos_pagamento_cliente_stripe,
+)
 
 router = APIRouter(
     prefix="/admin/billing",
@@ -47,3 +51,20 @@ async def post_criar_chave_cliente(
 ) -> dict:
     """Cria uma chave API para o cliente. A chave plain-text e retornada uma unica vez."""
     return await criar_chave_api(cliente_id, payload)
+
+
+@router.get("/stripe/metodos-pagamento/{payment_method_id}")
+async def get_metodo_pagamento_stripe(
+    payment_method_id: str = Path(..., description="Stripe Payment Method ID, ex: pm_..."),
+) -> dict:
+    """Consulta metodo de pagamento Stripe com resposta sanitizada."""
+    return await consultar_metodo_pagamento_stripe(payment_method_id)
+
+
+@router.get("/stripe/clientes/{customer_id}/metodos-pagamento")
+async def get_metodos_pagamento_cliente_stripe(
+    customer_id: str = Path(..., description="Stripe Customer ID, ex: cus_..."),
+    tipo: str = "card",
+) -> dict:
+    """Lista metodos de pagamento de um cliente Stripe com resposta sanitizada."""
+    return await listar_metodos_pagamento_cliente_stripe(customer_id, tipo)

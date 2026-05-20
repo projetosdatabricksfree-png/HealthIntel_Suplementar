@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
-import { UsageChart } from '../../components/charts/UsageChart';
-import { LatencyChart } from '../../components/charts/LatencyChart';
 import { useNotification } from '../../components/NotificationProvider';
-import { addAuditEvent, getUsageData } from '../../services/localPortalStore';
+import { addAuditEvent } from '../../services/localPortalStore';
 import { requestApi } from '../../services/apiClient';
 import { getApiKey } from '../../services/storage';
 import { useAuth } from '../../hooks/useAuth';
-import type { UsageRealData } from '../../types/domain';
+import type { UsageMeta, UsageRealData } from '../../types/domain';
 
 const periods = ['hoje', '7 dias', '30 dias', 'mês atual'] as const;
 const periodoMap: Record<typeof periods[number], string> = {
@@ -23,7 +21,9 @@ export function UsagePage() {
   const { success } = useNotification();
   const [period, setPeriod] = useState<typeof periods[number]>('7 dias');
   const [realData, setRealData] = useState<UsageRealData | null>(null);
+  const [realMeta, setRealMeta] = useState<UsageMeta | null>(null);
   const [loadingReal, setLoadingReal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const key = getApiKey();
@@ -31,29 +31,33 @@ export function UsagePage() {
     setLoadingReal(true);
     requestApi('/v1/me/uso', { apiKey: key, query: { periodo: periodoMap[period] } })
       .then((res) => {
-        if (res.ok && res.data) setRealData((res.data as { dados: UsageRealData }).dados);
-        else setRealData(null);
+        if (res.ok && res.data) {
+          const payload = res.data as { dados: UsageRealData; meta: UsageMeta };
+          setRealData(payload.dados);
+          setRealMeta(payload.meta);
+        } else {
+          setRealData(null);
+          setRealMeta(null);
+        }
       })
       .finally(() => setLoadingReal(false));
-  }, [period]);
+  }, [period, refreshKey]);
 
-  const mockData = getUsageData();
-  const mockFiltered = useMemo(() => {
-    if (period === 'hoje') return mockData.slice(-1);
-    if (period === '7 dias') return mockData.slice(-7);
-    return mockData;
-  }, [mockData, period]);
+  useEffect(() => {
+    const onUsageUpdated = () => setRefreshKey((n) => n + 1);
+    window.addEventListener('usage-updated', onUsageUpdated);
+    return () => window.removeEventListener('usage-updated', onUsageUpdated);
+  }, []);
 
-  const totalRequests = realData ? realData.total_requisicoes : mockFiltered.reduce((sum, item) => sum + item.requisicoes, 0);
-  const totalErrors = realData ? realData.total_erros : mockFiltered.reduce((sum, item) => sum + item.erros, 0);
-  const latency = realData ? realData.latencia_media_ms : Math.round(mockFiltered.reduce((sum, item) => sum + item.latenciaMs, 0) / Math.max(mockFiltered.length, 1));
-  const isDemo = !realData;
+  const totalRequests = realData?.total_requisicoes ?? 0;
+  const totalErrors = realData?.total_erros ?? 0;
+  const latency = realData?.latencia_media_ms ?? 0;
+  const hasRealData = Boolean(realData);
 
   function exportReport(format: 'json' | 'csv') {
-    const origem = isDemo ? 'demo local' : 'real';
-    const payload = realData
-      ? realData.serie_diaria.map((item) => ({ ...item, periodo: period, origem }))
-      : mockFiltered.map((item) => ({ ...item, periodo: period, origem }));
+    if (!realData) return;
+    const origem = 'real';
+    const payload = realData.serie_diaria.map((item) => ({ ...item, periodo: period, origem }));
     const latenciaKey = (item: Record<string, unknown>) =>
       'latencia_ms' in item ? item['latencia_ms'] : item['latenciaMs'];
     const content = format === 'json'
@@ -69,10 +73,10 @@ export function UsagePage() {
     addAuditEvent({
       tipo: 'uso_exportado',
       usuario: user?.email || 'portal_local',
-      detalhe: `Relatorio ${format.toUpperCase()} gerado com dados demonstrativos locais.`,
+      detalhe: `Relatorio ${format.toUpperCase()} gerado com dados reais.`,
       status: 'sucesso'
     });
-    success('Relatório local gerado.');
+    success('Relatório gerado.');
   }
 
   return (
@@ -85,41 +89,84 @@ export function UsagePage() {
         </div>
       </div>
 
-      {isDemo && !getApiKey() && (
+      {!getApiKey() && (
         <div className="empty-state-inline">
-          Configure uma <strong>API key</strong> em <a href="/app/api-keys">API Keys</a> para ver dados reais de consumo. Exibindo dados demonstrativos.
+          Configure uma <strong>API key</strong> em <a href="/app/api-keys">API Keys</a> para ver dados reais de consumo.
+        </div>
+      )}
+      {getApiKey() && !loadingReal && !hasRealData && (
+        <div className="empty-state-inline">
+          Ainda não há consumo real registrado para esta API key no período selecionado.{' '}
+          <a href="/app/explorer">Faça uma chamada no Explorer</a> para ver dados aqui.
         </div>
       )}
       <div className="metrics-grid">
-        <MetricCard label="Requisições" value={loadingReal ? '…' : String(totalRequests)} detail={isDemo ? 'demonstrativo' : 'real'} />
-        <MetricCard label="Erros" value={loadingReal ? '…' : String(totalErrors)} detail={isDemo ? 'demonstrativo' : 'real'} />
-        <MetricCard label="Latência média" value={loadingReal ? '…' : `${latency} ms`} detail={isDemo ? 'demonstrativo' : 'real'} />
-        <MetricCard label="Rate limit" value="60 rpm" detail="ajustável por plano" />
+        <MetricCard label="Requisições" value={loadingReal ? '…' : String(totalRequests)} detail="real" />
+        <MetricCard label="Erros" value={loadingReal ? '…' : String(totalErrors)} detail="4xx + 5xx" />
+        <MetricCard label="Latência média" value={loadingReal ? '…' : `${latency} ms`} detail="real" />
+        <MetricCard
+          label="Quota diária"
+          value={
+            realMeta?.quota_daily
+              ? `${realMeta.quota_used_today ?? 0}/${realMeta.quota_daily}`
+              : '—'
+          }
+          detail={realMeta?.quota_daily ? `plano ${realMeta.plano}` : 'sem limite diário'}
+        />
       </div>
 
       <Card>
-        <CardHeader title="Filtros e exportação" description={isDemo ? 'Dados demonstrativos locais. Configure uma API key para ver consumo real.' : `Dados reais do plano ${user?.plano || ''}.`} />
+        <CardHeader title="Filtros e exportação" description={`Dados reais do plano ${user?.tenant_ativo?.plano_nome || ''}.`} />
         <div className="button-row">
           {periods.map((item) => (
             <Button key={item} variant={item === period ? 'primary' : 'secondary'} onClick={() => setPeriod(item)}>
               {item}
             </Button>
           ))}
-          <Button variant="secondary" onClick={() => exportReport('json')}>Exportar JSON</Button>
-          <Button variant="secondary" onClick={() => exportReport('csv')}>Exportar CSV</Button>
+          <Button variant="secondary" disabled={!hasRealData} onClick={() => exportReport('json')}>Exportar JSON</Button>
+          <Button variant="secondary" disabled={!hasRealData} onClick={() => exportReport('csv')}>Exportar CSV</Button>
         </div>
       </Card>
 
-      <div className="split-grid">
-        <Card>
-          <CardHeader title="Requisições" description="Série demonstrativa." />
-          <UsageChart />
-        </Card>
-        <Card>
-          <CardHeader title="Latência" description="Série demonstrativa." />
-          <LatencyChart />
-        </Card>
-      </div>
+      {hasRealData ? (
+        <div className="split-grid">
+          <Card>
+            <CardHeader title="Requisições" description="Série real retornada por /me/uso." />
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>Dia</th><th>Requisições</th><th>Erros</th><th>Latência média</th></tr></thead>
+                <tbody>
+                  {realData?.serie_diaria.map((item) => (
+                    <tr key={item.dia}>
+                      <td>{item.dia}</td>
+                      <td>{item.requisicoes}</td>
+                      <td>{item.erros}</td>
+                      <td>{item.latencia_ms} ms</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+          <Card>
+            <CardHeader title="Top endpoints" description="Consumo agregado por endpoint." />
+            <div className="table-wrap">
+              <table>
+                <thead><tr><th>Endpoint</th><th>Requisições</th><th>Erros</th></tr></thead>
+                <tbody>
+                  {realData?.por_endpoint.map((item) => (
+                    <tr key={item.endpoint}>
+                      <td><code>{item.endpoint}</code></td>
+                      <td>{item.requisicoes}</td>
+                      <td>{item.erros}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      ) : null}
     </div>
   );
 }

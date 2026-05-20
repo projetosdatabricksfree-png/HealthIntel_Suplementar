@@ -1,78 +1,133 @@
-import { createContext, useContext, useMemo, useState } from 'react';
-import { demoUser } from '../data/mock';
-import type { PortalUser } from '../types/domain';
-import { clearUser, getUser, saveUser } from '../services/storage';
-import { addAuditEvent } from '../services/localPortalStore';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import type { AuthUser } from '../types/domain';
+import { authApi } from '../services/authApi';
+import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from '../services/storage';
 
 interface AuthContextValue {
-  user: PortalUser | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
-  login: (email: string, apiKey: string) => void;
-  loginWithGoogle: (credential: string) => void;
-  logout: () => void;
-  updateUser: (user: PortalUser) => void;
+  isLoading: boolean;
+  login: (email: string, senha: string) => Promise<void>;
+  loginWithGoogle: (id_token: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function _perfilToAuthUser(perfil: Awaited<ReturnType<typeof authApi.perfil>>): AuthUser {
+  const tenants = perfil.tenants ?? [];
+  const tenant_ativo = tenants[0] ?? null;
+  return {
+    id: perfil.id,
+    email: perfil.email,
+    nome: perfil.nome,
+    avatar_url: perfil.avatar_url,
+    status: perfil.status,
+    email_verificado: perfil.email_verificado,
+    tenants,
+    tenant_ativo,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<PortalUser | null>(() => getUser());
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    // Refresh 2 minutos antes de expirar (access TTL = 15 min → refresh em 13 min)
+    refreshTimerRef.current = setTimeout(async () => {
+      const rt = getRefreshToken();
+      if (!rt) return;
+      try {
+        const res = await authApi.refresh(rt);
+        saveTokens(res.access_token, res.refresh_token);
+        scheduleRefresh();
+      } catch {
+        clearTokens();
+        setUser(null);
+      }
+    }, 13 * 60 * 1000);
+  }, []);
+
+  // Bootstrap: tenta carregar sessão existente
+  useEffect(() => {
+    async function bootstrap() {
+      const at = getAccessToken();
+      const rt = getRefreshToken();
+      if (!at || !rt) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const perfil = await authApi.perfil(at);
+        setUser(_perfilToAuthUser(perfil));
+        scheduleRefresh();
+      } catch {
+        // Tenta refresh se access expirou
+        try {
+          const refreshed = await authApi.refresh(rt);
+          saveTokens(refreshed.access_token, refreshed.refresh_token);
+          const perfil = await authApi.perfil(refreshed.access_token);
+          setUser(_perfilToAuthUser(perfil));
+          scheduleRefresh();
+        } catch {
+          clearTokens();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    bootstrap();
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, [scheduleRefresh]);
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
     isAuthenticated: Boolean(user),
-    login: (email: string, apiKey: string) => {
-      const nextUser = {
-        ...demoUser,
-        email,
-        apiKey
-      };
-      saveUser(nextUser);
-      addAuditEvent({
-        tipo: 'login',
-        usuario: email,
-        detalhe: 'Login local no portal com API key informada.',
-        status: 'sucesso'
-      });
-      setUser(nextUser);
+    isLoading,
+
+    login: async (email: string, senha: string) => {
+      const res = await authApi.login(email, senha);
+      saveTokens(res.access_token, res.refresh_token);
+      const perfil = await authApi.perfil(res.access_token);
+      setUser(_perfilToAuthUser(perfil));
+      scheduleRefresh();
     },
-    loginWithGoogle: (credential: string) => {
-      try {
-        const payloadB64 = credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(atob(payloadB64)) as { email?: string; name?: string };
-        const email = payload.email || '';
-        const nome = payload.name || email.split('@')[0];
-        const existing = getUser();
-        const nextUser: PortalUser = existing?.email === email
-          ? { ...existing, nome }
-          : { ...demoUser, email, nome, apiKey: undefined };
-        saveUser(nextUser);
-        addAuditEvent({
-          tipo: 'login',
-          usuario: email,
-          detalhe: 'Login via Google OAuth.',
-          status: 'sucesso'
-        });
-        setUser(nextUser);
-      } catch {
-        // ignore decode errors
+
+    loginWithGoogle: async (id_token: string) => {
+      const res = await authApi.loginGoogle(id_token);
+      saveTokens(res.access_token, res.refresh_token);
+      const perfil = await authApi.perfil(res.access_token);
+      setUser(_perfilToAuthUser(perfil));
+      scheduleRefresh();
+    },
+
+    logout: async () => {
+      const rt = getRefreshToken();
+      const at = getAccessToken();
+      if (rt) {
+        try { await authApi.logout(rt); } catch { /* best-effort */ }
       }
-    },
-    logout: () => {
-      addAuditEvent({
-        tipo: 'logout',
-        usuario: user?.email || 'usuario_local',
-        detalhe: 'Sessao local encerrada.',
-        status: 'sucesso'
-      });
-      clearUser();
+      if (at) {
+        try { await authApi.logoutTudo(at); } catch { /* best-effort */ }
+      }
+      clearTokens();
       setUser(null);
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     },
-    updateUser: (nextUser: PortalUser) => {
-      saveUser(nextUser);
-      setUser(nextUser);
-    }
-  }), [user]);
+
+    refreshUser: async () => {
+      const at = getAccessToken();
+      if (!at) return;
+      const perfil = await authApi.perfil(at);
+      setUser(_perfilToAuthUser(perfil));
+    },
+  }), [user, isLoading, scheduleRefresh]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -13,6 +13,7 @@ const ENABLE_DEMO_FALLBACK = String(import.meta.env.VITE_ENABLE_DEMO_FALLBACK ??
 const ALLOWED_DEMO_MODES = new Set(['development', 'dev', 'local', 'homologacao', 'hml', 'staging', 'test']);
 
 function canUseDemoFallback(): boolean {
+  if (import.meta.env.MODE === 'production') return false;
   return ENABLE_DEMO_FALLBACK && ALLOWED_DEMO_MODES.has(import.meta.env.MODE);
 }
 
@@ -106,6 +107,10 @@ export async function requestApi(
     };
   } catch (error) {
     if (canUseDemoFallback()) {
+      console.warn(
+        '[HealthIntel] Demo fallback ativado — resposta exibida NÃO é real. ' +
+          'Defina VITE_ENABLE_DEMO_FALLBACK=false em produção.'
+      );
       return {
         ok: true,
         status: 200,

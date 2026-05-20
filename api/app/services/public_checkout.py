@@ -22,20 +22,20 @@ from api.app.services.email_service import (
 logger = logging.getLogger(__name__)
 
 PLANOS_CHECKOUT = {
-    "sandbox": {
-        "nome": "Sandbox Tecnico",
-        "plano_bd": "starter_local",
-        "price_attr": "stripe_price_sandbox",
+    "starter": {
+        "nome": "STARTER",
+        "plano_bd": "starter",
+        "price_attr": "stripe_price_starter",
     },
-    "piloto": {
-        "nome": "Piloto Assistido",
-        "plano_bd": "piloto",
-        "price_attr": "stripe_price_piloto",
+    "pro": {
+        "nome": "PRO",
+        "plano_bd": "pro",
+        "price_attr": "stripe_price_pro",
     },
-    "core": {
-        "nome": "Core API",
-        "plano_bd": "essencial",
-        "price_attr": "stripe_price_core_api",
+    "max": {
+        "nome": "MAX",
+        "plano_bd": "max",
+        "price_attr": "stripe_price_max",
     },
 }
 
@@ -51,6 +51,14 @@ def _metadata(session: Any) -> dict[str, Any]:
     if isinstance(raw, dict):
         return raw
     return dict(raw)
+
+
+def _id_stripe(valor: Any) -> str:
+    if not valor:
+        return ""
+    if isinstance(valor, str):
+        return valor
+    return str(_get(valor, "id", "") or "")
 
 
 def _plano_checkout(plano: str) -> dict[str, str]:
@@ -125,16 +133,21 @@ async def criar_sessao_checkout(plano: str) -> dict:
     try:
         session = await asyncio.to_thread(
             stripe.checkout.Session.create,
-            mode="payment",
+            mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
             success_url=success_url,
             cancel_url=cancel_url,
             allow_promotion_codes=True,
             billing_address_collection="auto",
-            customer_creation="always",
             metadata={
                 "plano": plano,
                 "plano_bd": plano_cfg["plano_bd"],
+            },
+            subscription_data={
+                "metadata": {
+                    "plano": plano,
+                    "plano_bd": plano_cfg["plano_bd"],
+                }
             },
         )
     except Exception as exc:
@@ -180,12 +193,18 @@ async def processar_webhook_checkout(payload: bytes, stripe_signature: str | Non
         ) from exc
 
     event_type = _get(event, "type")
-    if event_type != "checkout.session.completed":
-        return {"dados": {"status": "ignorado", "evento": event_type}}
+    objeto = _get(_get(event, "data", {}), "object", {})
+    if event_type == "checkout.session.completed":
+        resultado = await provisionar_checkout_pago(objeto)
+        return {"dados": resultado}
+    if event_type in {"customer.subscription.updated", "customer.subscription.deleted"}:
+        resultado = await sincronizar_assinatura_stripe(objeto, event_type)
+        return {"dados": resultado}
+    if event_type in {"invoice.payment_succeeded", "invoice.payment_failed"}:
+        resultado = await sincronizar_fatura_stripe(objeto, event_type)
+        return {"dados": resultado}
 
-    session = _get(_get(event, "data", {}), "object", {})
-    resultado = await provisionar_checkout_pago(session)
-    return {"dados": resultado}
+    return {"dados": {"status": "ignorado", "evento": event_type}}
 
 
 async def confirmar_checkout(session_id: str, plano_bd: str | None = None) -> dict:
@@ -196,7 +215,7 @@ async def confirmar_checkout(session_id: str, plano_bd: str | None = None) -> di
         session = await asyncio.to_thread(
             stripe.checkout.Session.retrieve,
             session_id,
-            expand=["customer_details"],
+            expand=["customer_details", "customer", "subscription"],
         )
     except Exception as exc:
         raise HTTPException(
@@ -228,6 +247,8 @@ async def provisionar_checkout_pago(session: Any, plano_bd_fallback: str | None 
     metadata = _metadata(session)
     plano = str(metadata.get("plano") or "").strip()
     plano_bd = str(metadata.get("plano_bd") or plano_bd_fallback or "").strip()
+    subscription_id = _id_stripe(_get(session, "subscription"))
+    customer_id = _id_stripe(_get(session, "customer"))
     if not plano_bd:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -247,7 +268,16 @@ async def provisionar_checkout_pago(session: Any, plano_bd_fallback: str | None 
             },
         )
 
-    provisionamento = await _persistir_provisionamento(session_id, plano, plano_bd, email, nome)
+    provisionamento = await _persistir_provisionamento(
+        session_id=session_id,
+        plano=plano,
+        plano_bd=plano_bd,
+        email=email,
+        nome=nome,
+        customer_id=customer_id,
+        subscription_id=subscription_id,
+        payment_status=str(_get(session, "payment_status", "") or ""),
+    )
     if provisionamento["status"] == "ja_processado":
         return provisionamento
 
@@ -270,11 +300,19 @@ async def provisionar_checkout_pago(session: Any, plano_bd_fallback: str | None 
 
 
 async def _persistir_provisionamento(
-    session_id: str, plano: str, plano_bd: str, email: str, nome: str
+    *,
+    session_id: str,
+    plano: str,
+    plano_bd: str,
+    email: str,
+    nome: str,
+    customer_id: str,
+    subscription_id: str,
+    payment_status: str,
 ) -> dict:
-    prefixo = ("hi_" + secrets.token_urlsafe(7).replace("-", "x").replace("_", "y"))[:10]
-    corpo = secrets.token_urlsafe(32)
-    chave_plain = f"{prefixo}_{corpo}"
+    corpo = secrets.token_urlsafe(40).replace("-", "x").replace("_", "y")
+    chave_plain = f"hi_live_{corpo}"
+    prefixo = chave_plain[:10]
     hash_chave = gerar_hash_sha256(chave_plain)
     criado_em = datetime.now(tz=UTC).isoformat()
 
@@ -375,6 +413,9 @@ async def _persistir_provisionamento(
                 "payload": json.dumps(
                     {
                         "session_id": session_id,
+                        "customer_id": customer_id,
+                        "subscription_id": subscription_id,
+                        "payment_status": payment_status,
                         "plano": plano,
                         "plano_bd": plano_bd,
                         "chave_id": chave_id,
@@ -393,6 +434,173 @@ async def _persistir_provisionamento(
         "email": email,
         "plano": plano or plano_bd,
         "criado_em": criado_em,
+    }
+
+
+async def sincronizar_assinatura_stripe(subscription: Any, event_type: str) -> dict:
+    subscription_id = _id_stripe(subscription)
+    customer_id = _id_stripe(_get(subscription, "customer"))
+    status_stripe = str(_get(subscription, "status", "") or "")
+    metadata = _metadata(subscription)
+    plano_bd = str(metadata.get("plano_bd") or metadata.get("plano") or "").strip()
+    status_cobranca = _status_cobranca_por_assinatura(status_stripe, event_type)
+    payload = {
+        "event_type": event_type,
+        "subscription_id": subscription_id,
+        "customer_id": customer_id,
+        "status_stripe": status_stripe,
+        "status_cobranca": status_cobranca,
+        "plano_bd": plano_bd,
+        "cancel_at_period_end": bool(_get(subscription, "cancel_at_period_end", False)),
+        "current_period_end": _get(subscription, "current_period_end"),
+    }
+    return await _atualizar_cliente_por_stripe(
+        evento="stripe_subscription",
+        ator=subscription_id or customer_id or "stripe",
+        subscription_id=subscription_id,
+        customer_id=customer_id,
+        status_cobranca=status_cobranca,
+        plano_bd=plano_bd,
+        payload=payload,
+    )
+
+
+async def sincronizar_fatura_stripe(invoice: Any, event_type: str) -> dict:
+    subscription_id = _id_stripe(_get(invoice, "subscription"))
+    customer_id = _id_stripe(_get(invoice, "customer"))
+    status_cobranca = "em_dia" if event_type == "invoice.payment_succeeded" else "inadimplente"
+    payload = {
+        "event_type": event_type,
+        "invoice_id": _id_stripe(invoice),
+        "subscription_id": subscription_id,
+        "customer_id": customer_id,
+        "status_stripe": str(_get(invoice, "status", "") or ""),
+        "status_cobranca": status_cobranca,
+        "amount_paid": _get(invoice, "amount_paid"),
+        "amount_due": _get(invoice, "amount_due"),
+        "hosted_invoice_url": _get(invoice, "hosted_invoice_url"),
+        "invoice_pdf": _get(invoice, "invoice_pdf"),
+    }
+    return await _atualizar_cliente_por_stripe(
+        evento="stripe_invoice",
+        ator=_id_stripe(invoice) or subscription_id or customer_id or "stripe",
+        subscription_id=subscription_id,
+        customer_id=customer_id,
+        status_cobranca=status_cobranca,
+        plano_bd="",
+        payload=payload,
+    )
+
+
+def _status_cobranca_por_assinatura(status_stripe: str, event_type: str) -> str:
+    if event_type == "customer.subscription.deleted" or status_stripe == "canceled":
+        return "cancelado"
+    if status_stripe in {"active", "trialing"}:
+        return "em_dia"
+    if status_stripe in {"past_due", "unpaid", "incomplete", "incomplete_expired"}:
+        return "inadimplente"
+    return "pendente"
+
+
+async def _atualizar_cliente_por_stripe(
+    *,
+    evento: str,
+    ator: str,
+    subscription_id: str,
+    customer_id: str,
+    status_cobranca: str,
+    plano_bd: str,
+    payload: dict[str, Any],
+) -> dict:
+    if not subscription_id and not customer_id:
+        return {"status": "ignorado", "motivo": "stripe_id_ausente", "evento": evento}
+
+    async with SessionLocal() as db:
+        audit_row = await db.execute(
+            text(
+                """
+                SELECT cliente_id
+                FROM plataforma.auditoria_cobranca
+                WHERE evento = 'checkout_stripe'
+                  AND (
+                    (:subscription_id <> '' AND payload->>'subscription_id' = :subscription_id)
+                    OR (:customer_id <> '' AND payload->>'customer_id' = :customer_id)
+                  )
+                ORDER BY criado_em DESC
+                LIMIT 1
+                """
+            ),
+            {"subscription_id": subscription_id, "customer_id": customer_id},
+        )
+        audit_rec = audit_row.mappings().first()
+        if not audit_rec or not audit_rec.get("cliente_id"):
+            return {"status": "ignorado", "motivo": "cliente_nao_encontrado", "evento": evento}
+
+        cliente_id = str(audit_rec["cliente_id"])
+        plano_id = None
+        if plano_bd:
+            plano_row = await db.execute(
+                text("SELECT id FROM plataforma.plano WHERE nome = :nome LIMIT 1"),
+                {"nome": plano_bd},
+            )
+            plano_rec = plano_row.mappings().first()
+            plano_id = str(plano_rec["id"]) if plano_rec else None
+
+        if plano_id:
+            await db.execute(
+                text(
+                    """
+                    UPDATE plataforma.cliente
+                    SET status_cobranca = :status_cobranca,
+                        status = CASE WHEN :status_cobranca = 'cancelado' THEN 'cancelado' ELSE status END,
+                        plano_id = cast(:plano_id as uuid)
+                    WHERE id = cast(:cliente_id as uuid)
+                    """
+                ),
+                {
+                    "cliente_id": cliente_id,
+                    "status_cobranca": status_cobranca,
+                    "plano_id": plano_id,
+                },
+            )
+        else:
+            await db.execute(
+                text(
+                    """
+                    UPDATE plataforma.cliente
+                    SET status_cobranca = :status_cobranca,
+                        status = CASE WHEN :status_cobranca = 'cancelado' THEN 'cancelado' ELSE status END
+                    WHERE id = cast(:cliente_id as uuid)
+                    """
+                ),
+                {"cliente_id": cliente_id, "status_cobranca": status_cobranca},
+            )
+
+        await db.execute(
+            text(
+                """
+                INSERT INTO plataforma.auditoria_cobranca
+                  (id, evento, cliente_id, ator, origem, payload, criado_em)
+                VALUES (
+                  gen_random_uuid(), :evento, cast(:cliente_id as uuid),
+                  :ator, 'stripe_webhook', cast(:payload as jsonb), now()
+                )
+                """
+            ),
+            {
+                "evento": evento,
+                "cliente_id": cliente_id,
+                "ator": ator,
+                "payload": json.dumps(payload),
+            },
+        )
+        await db.commit()
+
+    return {
+        "status": "sincronizado",
+        "evento": evento,
+        "cliente_id": cliente_id,
+        "status_cobranca": status_cobranca,
     }
 
 
