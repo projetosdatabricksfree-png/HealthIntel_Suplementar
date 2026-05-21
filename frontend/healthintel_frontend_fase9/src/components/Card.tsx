@@ -15,12 +15,30 @@ export function CardHeader({ eyebrow, title, description }: { eyebrow?: string; 
   );
 }
 
-export function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+export function MetricCard({
+  label,
+  value,
+  detail,
+  loading,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  loading?: boolean;
+}) {
   return (
-    <div className="metric-card">
+    <div className={cn('metric-card', loading && 'metric-card--loading')}>
       <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
+      {loading ? (
+        <span className="skeleton skeleton--metric-value" aria-hidden="true" />
+      ) : (
+        <strong>{value}</strong>
+      )}
+      {loading ? (
+        <span className="skeleton skeleton--metric-detail" aria-hidden="true" />
+      ) : (
+        <small>{detail}</small>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './hooks/useAuth';
 
@@ -24,6 +24,7 @@ import { LoginPage } from './pages/public/LoginPage';
 import { VerificarEmailPage } from './pages/public/VerificarEmailPage';
 import { ResetSenhaPage } from './pages/public/ResetSenhaPage';
 import { CheckoutSuccessPage } from './pages/public/CheckoutSuccessPage';
+import { NotFoundPage } from './pages/public/NotFoundPage';
 import { DashboardPage } from './pages/portal/DashboardPage';
 import { EndpointsPage } from './pages/portal/EndpointsPage';
 import { ExplorerPage } from './pages/portal/ExplorerPage';
@@ -55,6 +56,7 @@ export function App() {
               <Route path="/seguranca" element={<SecurityPage />} />
               <Route path="/contato" element={<ContactPage />} />
               <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
 
             <Route path="/login" element={<LoginPage />} />
@@ -76,7 +78,6 @@ export function App() {
               <Route path="admin/layouts" element={<AdminLayoutsPage />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

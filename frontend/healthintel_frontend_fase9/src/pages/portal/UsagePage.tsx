@@ -129,9 +129,9 @@ export function UsagePage() {
         </div>
       )}
       <div className="metrics-grid">
-        <MetricCard label="Requisições" value={loadingReal ? '…' : String(totalRequests)} detail="real" />
-        <MetricCard label="Erros" value={loadingReal ? '…' : String(totalErrors)} detail="4xx + 5xx" />
-        <MetricCard label="Latência média" value={loadingReal ? '…' : `${latency} ms`} detail="real" />
+        <MetricCard label="Requisições" value={String(totalRequests)} detail="real" loading={loadingReal} />
+        <MetricCard label="Erros" value={String(totalErrors)} detail="4xx + 5xx" loading={loadingReal} />
+        <MetricCard label="Latência média" value={`${latency} ms`} detail="real" loading={loadingReal} />
         <MetricCard
           label="Quota diária"
           value={
@@ -140,6 +140,7 @@ export function UsagePage() {
               : '—'
           }
           detail={realMeta?.quota_daily ? `plano ${realMeta.plano}` : 'sem limite diário'}
+          loading={loadingReal}
         />
       </div>
 

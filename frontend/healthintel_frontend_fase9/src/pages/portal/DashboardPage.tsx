@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, AlertCircle, AlertTriangle, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
+import { OnboardingChecklist } from '../../components/portal/OnboardingChecklist';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
 import { requestApi } from '../../services/apiClient';
@@ -13,6 +14,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
   const [usageMeta, setUsageMeta] = useState<UsageMeta | null>(null);
+  const [loadingUsage, setLoadingUsage] = useState<boolean>(false);
   const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
   const hasApiKey = Boolean(getApiKey().trim());
 
@@ -23,13 +25,15 @@ export function DashboardPage() {
   useEffect(() => {
     const key = getApiKey();
     if (!key?.trim()) return;
+    setLoadingUsage(true);
     requestApi('/v1/me/uso', { apiKey: key, query: { periodo: 'hoje' } })
       .then((res) => {
         if (res.ok && res.data) {
           const payload = res.data as { meta: UsageMeta };
           setUsageMeta(payload.meta ?? null);
         }
-      });
+      })
+      .finally(() => setLoadingUsage(false));
   }, []);
 
   const quotaUsed = usageMeta?.quota_used_today ?? null;
@@ -37,6 +41,7 @@ export function DashboardPage() {
   const quotaPct = quotaUsed !== null && quotaDaily ? Math.round((quotaUsed / quotaDaily) * 100) : null;
   const quotaWarning = quotaPct !== null && quotaPct >= 80 && quotaPct < 100;
   const quotaExceeded = quotaPct !== null && quotaPct >= 100;
+  const hasUsage = quotaUsed !== null && quotaUsed > 0;
 
   return (
     <div className="portal-page">
@@ -50,6 +55,8 @@ export function DashboardPage() {
           <Link to="/app/billing" className="btn btn--primary">Fazer upgrade</Link>
         )}
       </div>
+
+      <OnboardingChecklist hasApiKey={hasApiKey} hasUsage={hasUsage} />
 
       {(quotaWarning || quotaExceeded) && (
         <div className={`portal-alert portal-alert--${quotaExceeded ? 'danger' : 'warning'}`} role="status">
@@ -85,8 +92,14 @@ export function DashboardPage() {
                 ? 'sem limite diário'
                 : 'aguardando telemetria real'
           }
+          loading={loadingUsage && hasApiKey}
         />
-        <MetricCard label="Status da API" value={apiStatus === 'ok' ? 'Operacional' : apiStatus === 'loading' ? 'Verificando' : 'Indisponível'} detail="ver /status" />
+        <MetricCard
+          label="Status da API"
+          value={apiStatus === 'ok' ? 'Operacional' : 'Indisponível'}
+          detail="ver /status"
+          loading={apiStatus === 'loading'}
+        />
       </div>
 
       <div className="action-grid">

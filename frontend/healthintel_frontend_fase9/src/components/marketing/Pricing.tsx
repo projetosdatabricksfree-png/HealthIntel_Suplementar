@@ -1,4 +1,4 @@
-import { Check, Minus, Zap, ArrowRight, ArrowUpRight, Layers, Gauge } from 'lucide-react';
+import { Check, Minus, Zap, ArrowRight, ArrowUpRight, Layers, Gauge, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { commercialLinks } from '../../config/commercialLinks';
 
@@ -14,6 +14,7 @@ interface Plan {
   cta: string;
   href: string;
   recommended?: boolean;
+  rateDetail: string;
 }
 
 const PLANS: Plan[] = [
@@ -33,6 +34,7 @@ const PLANS: Plan[] = [
     kind: 'free',
     cta: 'Começar grátis',
     href: commercialLinks.login,
+    rateDetail: '100 req/dia · ~1 req/seg · sem burst. Excedente devolve HTTP 429 até virar o dia (00:00 UTC-3).',
   },
   {
     name: 'STARTER',
@@ -51,6 +53,7 @@ const PLANS: Plan[] = [
     kind: 'buy',
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.starter,
+    rateDetail: '30k req/dia · ~5 req/seg sustentado · burst 10 req/seg em janelas curtas.',
   },
   {
     name: 'PRO',
@@ -70,6 +73,7 @@ const PLANS: Plan[] = [
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.pro,
     recommended: true,
+    rateDetail: '150k req/dia · ~25 req/seg sustentado · burst 50 req/seg. Rate limit elevado para bronze/prata.',
   },
   {
     name: 'MAX',
@@ -88,6 +92,7 @@ const PLANS: Plan[] = [
     kind: 'buy',
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.max,
+    rateDetail: '500k req/dia · ~100 req/seg sustentado · burst dedicado por chave. Ideal para ingestão batch noturna.',
   },
 ];
 
@@ -148,9 +153,10 @@ export function Pricing() {
               <span className="pricing-card__amount">{p.price}</span>
               {p.cadence && <span className="pricing-card__cadence">{p.cadence}</span>}
             </div>
-            <div className="pricing-card__limit mono">
+            <div className="pricing-card__limit mono" title={p.rateDetail}>
               <Gauge size={12} />
               <span>{p.limit}</span>
+              <Info size={11} className="pricing-card__limit-info" aria-label="Detalhes do rate limit" />
             </div>
             <PlanCTA plan={p} />
             <p className="pricing-card__cta-meta mono">
