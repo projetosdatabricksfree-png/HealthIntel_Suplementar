@@ -7,11 +7,11 @@ import type { DeliveryStatus } from '../../types/domain';
 const API_BASE = 'https://api.healthintel.com.br/v1';
 
 const RATE_LIMITS = [
-  { plano: 'FREE', rpm: '5', dia: '100 req/dia', preco: 'R$ 0' },
-  { plano: 'STARTER', rpm: '30', dia: 'sem limite diário', preco: 'R$ 290 / mês' },
-  { plano: 'PRO', rpm: '120', dia: 'sem limite diário', preco: 'R$ 990 / mês' },
-  { plano: 'MAX', rpm: '300', dia: 'sem limite diário', preco: 'R$ 2.490 / mês' },
-  { plano: 'ENTERPRISE', rpm: 'customizado', dia: 'SLA dedicado', preco: 'Falar com comercial' },
+  { plano: 'FREE', rpm: '10', dia: '100 req/dia', preco: 'R$ 0' },
+  { plano: 'STARTER', rpm: '120', dia: '30.000 req/dia', preco: 'R$ 99,99 / mês' },
+  { plano: 'PRO', rpm: '300', dia: '150.000 req/dia', preco: 'R$ 499 / mês' },
+  { plano: 'MAX', rpm: '1.000', dia: '500.000 req/dia', preco: 'R$ 1.499 / mês' },
+  { plano: 'ENTERPRISE', rpm: '5.000+', dia: 'Contratual', preco: 'Sob contrato' },
 ];
 
 const ERROS_COMUNS = [
