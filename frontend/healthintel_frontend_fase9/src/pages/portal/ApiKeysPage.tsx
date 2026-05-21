@@ -39,6 +39,8 @@ export function ApiKeysPage() {
   const [newKeyAmbiente, setNewKeyAmbiente] = useState<'sandbox' | 'producao'>('sandbox');
   const [oneTimeSecret, setOneTimeSecret] = useState('');
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; nome: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
 
   const loadKeys = useCallback(async () => {
@@ -76,13 +78,22 @@ export function ApiKeysPage() {
     }
   }
 
-  async function revokeKey(id: string) {
+  function askDelete(id: string, nome: string | null) {
+    setDeleteTarget({ id, nome: nome || 'sem nome' });
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await apiFetch(`/v1/portal/api-keys/${id}/revogar`, 'POST');
+      await apiFetch(`/v1/portal/api-keys/${deleteTarget.id}/revogar`, 'POST');
       await loadKeys();
-      success('Chave revogada.');
+      success('Chave excluída.');
+      setDeleteTarget(null);
     } catch (err) {
-      error(err instanceof Error ? err.message : 'Erro ao revogar.');
+      error(err instanceof Error ? err.message : 'Erro ao excluir.');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -96,6 +107,17 @@ export function ApiKeysPage() {
       success('Chave rotacionada. Copie a nova chave agora.');
     } catch (err) {
       error(err instanceof Error ? err.message : 'Erro ao rotacionar.');
+    }
+  }
+
+  async function toggleKey(id: string, currentStatus: string) {
+    const action = currentStatus === 'ativo' ? 'desabilitar' : 'habilitar';
+    try {
+      await apiFetch(`/v1/portal/api-keys/${id}/${action}`, 'POST');
+      await loadKeys();
+      success(action === 'desabilitar' ? 'Chave desabilitada.' : 'Chave habilitada.');
+    } catch (err) {
+      error(err instanceof Error ? err.message : `Erro ao ${action}.`);
     }
   }
 
@@ -152,11 +174,23 @@ export function ApiKeysPage() {
                     <td>{key.ambiente}</td>
                     <td>{new Date(key.criado_em).toLocaleDateString('pt-BR')}</td>
                     <td>{key.ultimo_uso_em ? new Date(key.ultimo_uso_em).toLocaleString('pt-BR') : 'Nunca'}</td>
-                    <td>{key.status}</td>
+                    <td>
+                      <span className={`status-pill status-pill--${key.status === 'ativo' ? 'disponivel' : 'sem_dados'}`}>{key.status}</span>
+                    </td>
                     <td>
                       <div className="button-row">
-                        {key.status === 'ativo' && <Button variant="secondary" onClick={() => void revokeKey(key.id)}>Revogar</Button>}
-                        {key.status === 'ativo' && <Button variant="ghost" onClick={() => void rotateKey(key.id)}>Rotacionar</Button>}
+                        {key.status === 'ativo' && (
+                          <>
+                            <Button variant="ghost" onClick={() => void rotateKey(key.id)}>Rotacionar</Button>
+                            <Button variant="secondary" onClick={() => void toggleKey(key.id, key.status)}>Desabilitar</Button>
+                          </>
+                        )}
+                        {key.status === 'desabilitado' && (
+                          <Button variant="secondary" onClick={() => void toggleKey(key.id, key.status)}>Habilitar</Button>
+                        )}
+                        {(key.status === 'ativo' || key.status === 'desabilitado') && (
+                          <Button variant="danger" onClick={() => askDelete(key.id, key.nome)}>Excluir</Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -170,6 +204,19 @@ export function ApiKeysPage() {
           <Button variant="secondary" onClick={() => void loadKeys()}>Atualizar</Button>
         </div>
       </Card>
+
+      {deleteTarget && (
+        <Card className="modal-card">
+          <CardHeader title="Excluir chave de API" description="A chave deixará de funcionar imediatamente e essa ação não pode ser desfeita." />
+          <p>
+            Tem certeza que deseja excluir a chave <strong>{deleteTarget.nome}</strong>?
+          </p>
+          <div className="button-row">
+            <Button variant="danger" onClick={() => void confirmDelete()} disabled={deleting}>{deleting ? 'Excluindo…' : 'Excluir'}</Button>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancelar</Button>
+          </div>
+        </Card>
+      )}
 
       {showCreate && (
         <Card className="modal-card">
@@ -212,7 +259,7 @@ export function ApiKeysPage() {
           <ul className="check-list">
             <li>Nunca use API key para login no portal.</li>
             <li>Use <code>hi_test_</code> em sandbox e <code>hi_live_</code> em produção.</li>
-            <li>Revogue chaves vazadas imediatamente.</li>
+            <li>Exclua chaves vazadas imediatamente.</li>
             <li>Rotacione periodicamente chaves de produção.</li>
             <li>Chave ativa atual: {maskApiKey(activeApiKey)}</li>
           </ul>

@@ -70,7 +70,7 @@ async def listar_chaves(
                 select id, nome, prefixo_chave, ambiente, escopos, status,
                        criado_em, ultimo_uso_em, revogada_em, expira_em
                 from plataforma.chave_api
-                where cliente_id = :cid
+                where cliente_id = :cid and revogada_em is null
                 order by criado_em desc
             """),
             {"cid": cliente_id},
@@ -157,13 +157,13 @@ async def _revogar_chave_db(db: Any, chave_id: str, cliente_id: str, usuario_id:
         text("""
             update plataforma.chave_api
             set status = 'revogado', revogada_em = now(), revogada_por_usuario_id = :uid
-            where id = :id and cliente_id = :cid and status = 'ativo'
+            where id = :id and cliente_id = :cid and revogada_em is null
             returning id, hash_chave
         """),
         {"id": chave_id, "cid": cliente_id, "uid": usuario_id},
     )).mappings().first()
     if not row:
-        raise HTTPException(status_code=404, detail={"codigo": "CHAVE_NAO_ENCONTRADA", "mensagem": "Chave não encontrada ou já revogada."})
+        raise HTTPException(status_code=404, detail={"codigo": "CHAVE_NAO_ENCONTRADA", "mensagem": "Chave não encontrada ou já excluída."})
     return dict(row)
 
 
@@ -183,6 +183,71 @@ async def revogar_chave(
         await redis.delete(f"api_key:{row['hash_chave']}")
 
     return {"dados": {"status": "revogado", "id": chave_id}}
+
+
+@router.post("/{chave_id}/desabilitar")
+async def desabilitar_chave(
+    chave_id: str = Path(...),
+    request: Request = None,
+    usuario_id: str = Depends(_ROLES_ADMIN),
+) -> dict:
+    cliente_id = await _tenant_ativo(request)
+    async with SessionLocal() as db:
+        row = (await db.execute(
+            text("""
+                update plataforma.chave_api
+                set status = 'desabilitado'
+                where id = :id and cliente_id = :cid and status = 'ativo' and revogada_em is null
+                returning id, hash_chave
+            """),
+            {"id": chave_id, "cid": cliente_id},
+        )).mappings().first()
+        if not row:
+            raise HTTPException(status_code=404, detail={"codigo": "CHAVE_NAO_ENCONTRADA", "mensagem": "Chave não encontrada ou já desabilitada."})
+        await db.commit()
+
+    redis = await get_redis()
+    if redis:
+        await redis.delete(f"api_key:{row['hash_chave']}")
+
+    return {"dados": {"status": "desabilitado", "id": chave_id}}
+
+
+@router.post("/{chave_id}/habilitar")
+async def habilitar_chave(
+    chave_id: str = Path(...),
+    request: Request = None,
+    usuario_id: str = Depends(_ROLES_ADMIN),
+) -> dict:
+    cliente_id = await _tenant_ativo(request)
+    async with SessionLocal() as db:
+        plano = await _plano_do_tenant(db, cliente_id)
+        limite = plano["limite_api_keys"]
+        if limite != -1:
+            contagem = (await db.execute(
+                text("select count(*) from plataforma.chave_api where cliente_id = :cid and status = 'ativo'"),
+                {"cid": cliente_id},
+            )).scalar_one()
+            if contagem >= limite:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail={"codigo": "LIMITE_API_KEYS", "mensagem": f"Plano {plano['nome']} permite {limite} chave(s) ativa(s). Desabilite ou exclua outra para habilitar esta."},
+                )
+
+        row = (await db.execute(
+            text("""
+                update plataforma.chave_api
+                set status = 'ativo'
+                where id = :id and cliente_id = :cid and status = 'desabilitado' and revogada_em is null
+                returning id
+            """),
+            {"id": chave_id, "cid": cliente_id},
+        )).mappings().first()
+        if not row:
+            raise HTTPException(status_code=404, detail={"codigo": "CHAVE_NAO_ENCONTRADA", "mensagem": "Chave não encontrada ou já está ativa."})
+        await db.commit()
+
+    return {"dados": {"status": "ativo", "id": chave_id}}
 
 
 @router.post("/{chave_id}/rotacionar", status_code=status.HTTP_201_CREATED)
