@@ -128,9 +128,9 @@ export function QuemSomosPage() {
       </section>
 
       <section className="qs-section">
-        <div style={{ maxWidth: 'var(--container)', margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+        <div className="container qs-section__intro">
           <span className="qs-block__eyebrow">Como atuamos</span>
-          <h2 className="qs-block__title" style={{ maxWidth: 720, margin: '14px auto 0' }}>
+          <h2 className="qs-block__title qs-block__title--centered">
             Quatro princípios que orientam cada release
           </h2>
         </div>
@@ -146,7 +146,7 @@ export function QuemSomosPage() {
       </section>
 
       <section className="qs-section qs-section--soft">
-        <div className="qs-grid" style={{ gridTemplateColumns: '1fr', maxWidth: 820 }}>
+        <div className="qs-grid qs-grid--single">
           <div>
             <span className="qs-block__eyebrow">Para quem é</span>
             <h2 className="qs-block__title">Times que tomam decisão em saúde suplementar</h2>
@@ -173,9 +173,9 @@ export function QuemSomosPage() {
       </section>
 
       <section className="qs-section">
-        <div style={{ maxWidth: 'var(--container)', margin: '0 auto', padding: '0 32px', textAlign: 'center' }}>
+        <div className="container qs-section__intro">
           <span className="qs-block__eyebrow">Compromissos</span>
-          <h2 className="qs-block__title" style={{ maxWidth: 720, margin: '14px auto 0' }}>
+          <h2 className="qs-block__title qs-block__title--centered">
             O que você nunca vai ver da gente
           </h2>
         </div>
@@ -205,7 +205,7 @@ export function QuemSomosPage() {
             <Link
               to="/#planos"
               className="btn btn--primary btn--lg btn--on-dark"
-              style={{ background: 'white', color: 'var(--primary-600)' }}
+              style={{ background: 'var(--background)', color: 'var(--primary-600)' }}
             >
               Ver planos
               <ArrowRight size={14} />

@@ -1,4 +1,4 @@
-import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { NavLink, Outlet, Navigate, Link } from 'react-router-dom';
 import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, LayoutDashboard, LogOut, Shield, Users, UserCircle, Wrench } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { canAccessFeature, getCurrentPlan } from '../data/planRules';
@@ -76,6 +76,15 @@ export function PortalLayout() {
         <main className="portal-content">
           <Outlet />
         </main>
+        <footer className="portal-footer">
+          <span className="mono">© 2026 HealthIntel · CNPJ 53.936.542/0001-37</span>
+          <div className="portal-footer__links">
+            <Link to="/documentacao">Documentação</Link>
+            <Link to="/contato">Suporte</Link>
+            <Link to="/seguranca">Termos</Link>
+            <Link to="/seguranca">Privacidade</Link>
+          </div>
+        </footer>
       </section>
     </div>
   );

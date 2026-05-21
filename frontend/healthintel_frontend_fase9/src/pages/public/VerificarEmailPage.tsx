@@ -35,8 +35,12 @@ export function VerificarEmailPage() {
 
         {status === 'loading' && (
           <>
-            <Loader2 size={40} className="spin" style={{ color: 'var(--blue-500)', marginBottom: '1rem' }} />
+            <Loader2 size={40} className="spin" style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
             <h2>Verificando seu e-mail…</h2>
+            <p className="verify-hint">
+              Isso costuma levar 1 ou 2 segundos. Se demorar mais, recarregue a página ou
+              cheque sua caixa de spam para reabrir o link de confirmação.
+            </p>
           </>
         )}
 

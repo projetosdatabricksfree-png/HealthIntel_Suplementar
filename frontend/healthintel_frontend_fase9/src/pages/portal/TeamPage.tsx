@@ -126,9 +126,9 @@ export function TeamPage() {
             <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Status</th><th>Último login</th><th>Ações</th></tr></thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '1rem' }}>Carregando…</td></tr>
+                <tr><td colSpan={6} style={{ color: 'var(--muted)', textAlign: 'center', padding: '1rem' }}>Carregando…</td></tr>
               ) : members.length === 0 ? (
-                <tr><td colSpan={6} style={{ color: 'var(--slate-400)', textAlign: 'center', padding: '1rem' }}>Nenhum membro encontrado.</td></tr>
+                <tr><td colSpan={6} style={{ color: 'var(--muted)', textAlign: 'center', padding: '1rem' }}>Nenhum membro encontrado.</td></tr>
               ) : members.map((m) => (
                 <tr key={m.id}>
                   <td>{m.nome}</td>

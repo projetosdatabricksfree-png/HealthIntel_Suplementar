@@ -158,15 +158,15 @@ export function ContactPage() {
             </label>
             <input
               type="text"
-              style={{ position: 'absolute', left: -9999, opacity: 0 }}
+              className="contact-honeypot"
               value={honeypot}
               onChange={(e) => setHoneypot(e.target.value)}
               tabIndex={-1}
               autoComplete="off"
               aria-hidden="true"
             />
-            <div className="full" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, alignItems: 'center' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }} className="mono">
+            <div className="full contact-actions">
+              <span className="mono contact-helper">
                 <Mail size={12} /> projetosdatabricksfree@gmail.com
               </span>
               <button type="submit" className="btn btn--primary btn--lg" disabled={enviando}>
