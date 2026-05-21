@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle, Crown, Calendar, Ban, Code2 } from 'lucide-react';
+import { CopyButton } from '../../components/CopyButton';
 import { datasets, statusLabel, statusTone } from '../../data/datasets';
 import type { DeliveryStatus } from '../../types/domain';
 
@@ -107,10 +108,15 @@ export function DocumentacaoPage() {
             <p>
               Cole sua chave (header <code>X-API-Key</code>) e faça a primeira chamada em segundos.
             </p>
-            <pre className="docs-code">
-              <code>{`curl -H "X-API-Key: hi_test_SUA_CHAVE" \\
+            <div className="docs-code-block">
+              <pre className="docs-code">
+                <code>{`curl -H "X-API-Key: hi_test_SUA_CHAVE" \\
   "${API_BASE}/operadoras?page=1&page_size=10"`}</code>
-            </pre>
+              </pre>
+              <CopyButton
+                value={`curl -H "X-API-Key: hi_test_SUA_CHAVE" "${API_BASE}/operadoras?page=1&page_size=10"`}
+              />
+            </div>
             <p>Resposta resumida:</p>
             <pre className="docs-code">
               <code>{`{
@@ -285,15 +291,20 @@ export function DocumentacaoPage() {
                           <dd>{d.grao}</dd>
                         </div>
                       </dl>
-                      {d.status === 'pronto' && d.extracao.includes('/v1') && (
-                        <pre className="docs-code docs-code--inline">
-                          <code>
-                            <Code2 size={11} /> curl -H "X-API-Key: hi_test_…"{' '}
-                            {API_BASE}
-                            {d.extracao.replace(/.*?\/v1/, '').split(' ')[0].replace('GET ', '')}
-                          </code>
-                        </pre>
-                      )}
+                      {d.status === 'pronto' && d.extracao.includes('/v1') && (() => {
+                        const path = d.extracao.replace(/.*?\/v1/, '').split(' ')[0].replace('GET ', '');
+                        const curl = `curl -H "X-API-Key: hi_test_…" ${API_BASE}${path}`;
+                        return (
+                          <div className="docs-code-block docs-code-block--inline">
+                            <pre className="docs-code docs-code--inline">
+                              <code>
+                                <Code2 size={11} /> {curl}
+                              </code>
+                            </pre>
+                            <CopyButton value={curl} />
+                          </div>
+                        );
+                      })()}
                       <p className="docs-dataset__uso">
                         <strong>Uso comercial:</strong> {d.usoComercial}
                       </p>

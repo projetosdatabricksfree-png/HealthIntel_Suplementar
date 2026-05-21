@@ -1,21 +1,42 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, AlertCircle, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
+import { Activity, AlertCircle, AlertTriangle, BarChart3, BookOpen, CreditCard, Database, KeyRound, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
 import { requestApi } from '../../services/apiClient';
 import { getApiKey } from '../../services/storage';
 import { getCurrentPlan, hasPlanAtLeast } from '../../data/planRules';
+import type { UsageMeta } from '../../types/domain';
 
 export function DashboardPage() {
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
+  const [usageMeta, setUsageMeta] = useState<UsageMeta | null>(null);
   const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
   const hasApiKey = Boolean(getApiKey().trim());
+
   useEffect(() => {
     requestApi('/saude', { apiKey: '' }).then((res) => setApiStatus(res.ok ? 'ok' : 'error'));
   }, []);
+
+  useEffect(() => {
+    const key = getApiKey();
+    if (!key?.trim()) return;
+    requestApi('/v1/me/uso', { apiKey: key, query: { periodo: 'hoje' } })
+      .then((res) => {
+        if (res.ok && res.data) {
+          const payload = res.data as { meta: UsageMeta };
+          setUsageMeta(payload.meta ?? null);
+        }
+      });
+  }, []);
+
+  const quotaUsed = usageMeta?.quota_used_today ?? null;
+  const quotaDaily = usageMeta?.quota_daily ?? null;
+  const quotaPct = quotaUsed !== null && quotaDaily ? Math.round((quotaUsed / quotaDaily) * 100) : null;
+  const quotaWarning = quotaPct !== null && quotaPct >= 80 && quotaPct < 100;
+  const quotaExceeded = quotaPct !== null && quotaPct >= 100;
 
   return (
     <div className="portal-page">
@@ -30,10 +51,41 @@ export function DashboardPage() {
         )}
       </div>
 
+      {(quotaWarning || quotaExceeded) && (
+        <div className={`portal-alert portal-alert--${quotaExceeded ? 'danger' : 'warning'}`} role="status">
+          <AlertTriangle size={18} />
+          <div>
+            <strong>
+              {quotaExceeded
+                ? `Limite diário atingido (${quotaUsed}/${quotaDaily})`
+                : `${quotaPct}% do limite diário consumido (${quotaUsed}/${quotaDaily})`}
+            </strong>
+            <span>
+              {quotaExceeded
+                ? 'Novas chamadas retornarão HTTP 429 até a virada do dia (00:00 UTC-3).'
+                : 'Considere upgrade para evitar interrupção quando atingir 100%.'}
+            </span>
+          </div>
+          {!hasPlanAtLeast(currentPlan.slug, 'pro') && (
+            <Link to="/app/billing" className="btn btn--primary btn--sm">Fazer upgrade</Link>
+          )}
+        </div>
+      )}
+
       <div className="metrics-grid">
         <MetricCard label="Plano atual" value={currentPlan.nome} detail={currentPlan.limiteDiario} />
         <MetricCard label="API keys" value={hasApiKey ? '1 ativa' : '0 ativas'} detail={`limite: ${currentPlan.keyLimit}`} />
-        <MetricCard label="Requisições hoje" value="—" detail="aguardando telemetria real" />
+        <MetricCard
+          label="Requisições hoje"
+          value={quotaUsed !== null ? String(quotaUsed) : '—'}
+          detail={
+            quotaDaily
+              ? `${quotaPct ?? 0}% de ${quotaDaily}`
+              : quotaUsed !== null
+                ? 'sem limite diário'
+                : 'aguardando telemetria real'
+          }
+        />
         <MetricCard label="Status da API" value={apiStatus === 'ok' ? 'Operacional' : apiStatus === 'loading' ? 'Verificando' : 'Indisponível'} detail="ver /status" />
       </div>
 

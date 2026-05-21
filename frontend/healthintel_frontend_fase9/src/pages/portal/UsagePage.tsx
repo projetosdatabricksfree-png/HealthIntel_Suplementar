@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
@@ -89,6 +91,32 @@ export function UsagePage() {
         </div>
       </div>
 
+      {(() => {
+        const used = realMeta?.quota_used_today ?? null;
+        const daily = realMeta?.quota_daily ?? null;
+        if (used === null || !daily) return null;
+        const pct = Math.round((used / daily) * 100);
+        if (pct < 80) return null;
+        const exceeded = pct >= 100;
+        return (
+          <div className={`portal-alert portal-alert--${exceeded ? 'danger' : 'warning'}`} role="status">
+            <AlertTriangle size={18} />
+            <div>
+              <strong>
+                {exceeded
+                  ? `Limite diário atingido (${used}/${daily})`
+                  : `${pct}% do limite diário consumido (${used}/${daily})`}
+              </strong>
+              <span>
+                {exceeded
+                  ? 'Novas chamadas retornarão HTTP 429 até a virada do dia (00:00 UTC-3).'
+                  : 'Considere upgrade para evitar interrupção quando atingir 100%.'}
+              </span>
+            </div>
+            <Link to="/app/billing" className="btn btn--primary btn--sm">Fazer upgrade</Link>
+          </div>
+        );
+      })()}
       {!getApiKey() && (
         <div className="empty-state-inline">
           Configure uma <strong>API key</strong> em <a href="/app/api-keys">API Keys</a> para ver dados reais de consumo.

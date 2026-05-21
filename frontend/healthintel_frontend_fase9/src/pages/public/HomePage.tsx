@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hero } from '../../components/marketing/Hero';
 import { StatsStrip } from '../../components/marketing/StatsStrip';
+import { TrustBar } from '../../components/marketing/TrustBar';
 import { Section, SectionHeader } from '../../components/marketing/Section';
 import { ProductSection } from '../../components/marketing/ProductSection';
 import { CustomerJourney } from '../../components/marketing/CustomerJourney';
@@ -18,6 +19,8 @@ export function HomePage() {
       <Hero variant="split" showWidget />
 
       <StatsStrip />
+
+      <TrustBar />
 
       <Section id="produto" surface="default" label="produto">
         <SectionHeader

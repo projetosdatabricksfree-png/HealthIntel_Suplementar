@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Check, Eye, EyeOff, Lock, Shield } from 'lucide-react';
 import { useNotification } from '../../components/NotificationProvider';
+import { PasswordStrength } from '../../components/forms/PasswordStrength';
 import { authApi } from '../../services/authApi';
 
 export function ResetSenhaPage() {
@@ -106,6 +107,7 @@ export function ResetSenhaPage() {
                       {mostrar ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <PasswordStrength senha={senha} />
                 </div>
                 <div className="field">
                   <label className="field-label" htmlFor="confirmar-senha">Confirmar senha</label>

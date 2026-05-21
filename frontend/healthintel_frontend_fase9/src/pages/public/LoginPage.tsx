@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../services/authApi';
 import { CNPJInput } from '../../components/forms/CNPJInput';
 import { TelefoneInput } from '../../components/forms/TelefoneInput';
+import { PasswordStrength } from '../../components/forms/PasswordStrength';
 import { validarCNPJ, validarTelefoneBR, validarSenhaForte } from '../../utils/validators';
 
 const SEGMENTOS = [
@@ -343,6 +344,7 @@ export function LoginPage() {
                           {mostrarSenha ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
+                      <PasswordStrength senha={senha} />
                     </div>
                     <div className="field">
                       <label className="field-label" htmlFor="c-confirmar">Confirmar senha *</label>
