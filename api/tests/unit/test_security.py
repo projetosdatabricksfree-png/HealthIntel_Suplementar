@@ -29,6 +29,7 @@ def _criar_request_rate_limit(path: str = "/v1/operadoras") -> Request:
         }
     )
     request.state.chave_api_id = "chave_teste"
+    request.state.cliente_id = "cliente_teste"
     request.state.limite_rpm = 10
     return request
 

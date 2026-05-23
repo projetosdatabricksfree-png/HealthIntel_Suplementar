@@ -26,9 +26,9 @@ def _intervalo(periodo: str) -> tuple[date, date]:
     return hoje - timedelta(days=dias), hoje
 
 
-async def _quota_diaria_redis(chave_id: str) -> int:
+async def _quota_diaria_redis(cliente_id: str) -> int:
     hoje_str = datetime.now(UTC).strftime("%Y%m%d")
-    chave_redis = f"rate_limit_day:{chave_id}:{hoje_str}"
+    chave_redis = f"rate_limit_day:{cliente_id}:{hoje_str}"
     try:
         valor = await redis_client.get(chave_redis)
         return int(valor) if valor is not None else 0
@@ -38,6 +38,7 @@ async def _quota_diaria_redis(chave_id: str) -> int:
 
 async def get_uso(
     chave_id: str,
+    cliente_id: str,
     periodo: str,
     plano_nome: str,
     limite_req_dia: int = 0,
@@ -111,7 +112,7 @@ async def get_uso(
         if total_requisicoes > 0
         else 100.0
     )
-    quota_used_today = await _quota_diaria_redis(chave_id)
+    quota_used_today = await _quota_diaria_redis(cliente_id)
 
     return {
         "dados": {

@@ -32,11 +32,13 @@ async def uso_cliente(
 ) -> dict:
     await aplicar_rate_limit(request)
     chave_id = request.state.chave_api_id
+    cliente_id = request.state.cliente_id
     plano_nome = request.state.plano_nome
     limite_req_dia = getattr(request.state, "limite_req_dia", 0)
     periodo_efetivo = _periodo_de_days(days, periodo)
     return await get_uso(
         chave_id=chave_id,
+        cliente_id=cliente_id,
         periodo=periodo_efetivo,
         plano_nome=plano_nome,
         limite_req_dia=limite_req_dia,

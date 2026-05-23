@@ -16,11 +16,11 @@ async def aplicar_rate_limit(request: Request) -> None:
     )
     limite_rpm = getattr(request.state, "limite_rpm", settings.app_rate_limit_rpm)
     limite_req_dia = getattr(request.state, "limite_req_dia", 0)
-    chave_api_id = getattr(request.state, "chave_api_id", None)
+    cliente_id = getattr(request.state, "cliente_id", None)
 
-    if limite_req_dia > 0 and chave_api_id:
+    if limite_req_dia > 0 and cliente_id:
         hoje = datetime.now(timezone.utc).strftime("%Y%m%d")
-        dia_key = f"rate_limit_day:{chave_api_id}:{hoje}"
+        dia_key = f"rate_limit_day:{cliente_id}:{hoje}"
         try:
             dia_total = await redis_client.incr(dia_key)
             if dia_total == 1:
