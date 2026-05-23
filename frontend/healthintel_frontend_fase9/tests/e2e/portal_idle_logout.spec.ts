@@ -28,13 +28,12 @@ test.describe('Portal — idle logout (5 min)', () => {
     await page.clock.install();
     await setupAuth(page);
     await page.goto('/app');
-    await expect(page.getByRole('heading', { name: /Dashboard|HealthIntel/i }).first()).toBeVisible({ timeout: 6000 });
     await page.waitForLoadState('networkidle');
+    await expect(page.locator('.portal-shell')).toBeVisible({ timeout: 6000 });
 
     await page.clock.fastForward('05:00');
 
     await page.waitForURL(/\/login/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle');
     const access = await page.evaluate(() => localStorage.getItem('healthintel.auth.access_token'));
     expect(access).toBeNull();
   });
