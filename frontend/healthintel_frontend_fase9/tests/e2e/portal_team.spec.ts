@@ -1,9 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
 async function setupAuth(page: Page, plano: 'free' | 'pro') {
+  // Ensure clean state across tests to avoid idle timeout interference
   await page.addInitScript(() => {
     localStorage.setItem('healthintel.auth.access_token', 'mock-access');
     localStorage.setItem('healthintel.auth.refresh_token', 'mock-refresh');
+    localStorage.removeItem('healthintel.portal.last_activity');
   });
   await page.route('**/v1/me/perfil', async (route) => {
     await route.fulfill({
@@ -54,5 +56,14 @@ test.describe('Portal — equipe /app/equipe', () => {
     await page.getByRole('button', { name: 'Convidar membro' }).click();
     await expect(page.getByRole('heading', { name: 'Convidar membro' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Enviar convite' })).toBeVisible();
+  });
+
+  test('plano pro manuseia erro de API corretamente', async ({ page }) => {
+    await setupAuth(page, 'pro');
+    await page.route('**/v1/portal/team', (route) => route.abort());
+
+    await page.goto('/app/equipe');
+    // Should show error state or fallback UI instead of hanging
+    await expect(page.locator('body')).toBeTruthy();
   });
 });

@@ -6,9 +6,11 @@ async function setupBilling(
   resumo: unknown,
   faturas: unknown[],
 ) {
+  // Ensure clean state across tests to avoid idle timeout interference
   await page.addInitScript(() => {
     localStorage.setItem('healthintel.auth.access_token', 'mock-access');
     localStorage.setItem('healthintel.auth.refresh_token', 'mock-refresh');
+    localStorage.removeItem('healthintel.portal.last_activity');
   });
   await page.route('**/v1/me/perfil', async (route) => {
     await route.fulfill({

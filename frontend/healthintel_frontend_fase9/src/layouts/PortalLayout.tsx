@@ -30,7 +30,7 @@ export function PortalLayout() {
     idleMs: IDLE_TIMEOUT_MS,
     warningMs: IDLE_WARNING_MS,
     enabled: isAuthenticated,
-    onIdle: () => { void logout(); },
+    onIdle: () => { logout(); },
   });
 
   if (isLoading) {
@@ -68,7 +68,7 @@ export function PortalLayout() {
           })}
         </nav>
 
-        <button className="logout-button" onClick={() => void logout()}>
+        <button className="logout-button" onClick={() => logout()}>
           <LogOut size={18} />
           Sair
         </button>
@@ -102,7 +102,7 @@ export function PortalLayout() {
         open={isWarning}
         secondsLeft={secondsLeft}
         onStay={resetActivity}
-        onLogout={() => { void logout(); }}
+        onLogout={() => { logout(); }}
       />
     </div>
   );

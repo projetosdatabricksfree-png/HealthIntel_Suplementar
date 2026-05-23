@@ -1,9 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
 async function setupAuth(page: Page, plano: 'free' | 'starter' | 'pro') {
+  // Ensure clean state across tests to avoid idle timeout interference
   await page.addInitScript(() => {
     localStorage.setItem('healthintel.auth.access_token', 'mock-access');
     localStorage.setItem('healthintel.auth.refresh_token', 'mock-refresh');
+    localStorage.removeItem('healthintel.portal.last_activity');
   });
   await page.route('**/v1/me/perfil', async (route) => {
     await route.fulfill({
@@ -36,5 +38,13 @@ test.describe('Portal — segurança /app/seguranca', () => {
     await expect(page.getByRole('heading', { name: 'Proteção da API key' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Auditoria recente' })).toBeVisible();
     await expect(page.getByText('Sem eventos locais registrados.')).toBeVisible();
+  });
+
+  test('plano starter acessa segurança com features básicas', async ({ page }) => {
+    await setupAuth(page, 'starter');
+    await page.goto('/app/seguranca');
+
+    await expect(page.getByRole('heading', { name: 'Configurações de segurança' })).toBeVisible({ timeout: 6000 });
+    await expect(page.getByRole('heading', { name: 'Acesso', exact: true })).toBeVisible();
   });
 });

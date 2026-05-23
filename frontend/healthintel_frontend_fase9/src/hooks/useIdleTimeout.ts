@@ -25,11 +25,16 @@ export function useIdleTimeout({ idleMs, warningMs, enabled, onIdle }: UseIdleTi
   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastWriteRef = useRef<number>(0);
+  const lastScheduleRef = useRef<number>(0);
   const onIdleRef = useRef(onIdle);
 
   useEffect(() => {
     onIdleRef.current = onIdle;
   }, [onIdle]);
+
+  // Note: The countdown timer captures lastActivityAt in a closure when the warning
+  // timer fires. This is safe because lastActivityAt is the timestamp when the warning
+  // started and never changes during the countdown's lifetime.
 
   const clearAllTimers = useCallback(() => {
     if (warningTimerRef.current) {
@@ -66,6 +71,8 @@ export function useIdleTimeout({ idleMs, warningMs, enabled, onIdle }: UseIdleTi
         setIsWarning(true);
         const remainingMs = Math.max(idleMs - (Date.now() - lastActivityAt), 0);
         setSecondsLeft(Math.ceil(remainingMs / 1000));
+        // Clear old interval before creating new one to prevent memory leaks
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = setInterval(() => {
           const left = Math.max(idleMs - (Date.now() - lastActivityAt), 0);
           setSecondsLeft(Math.ceil(left / 1000));
@@ -90,7 +97,11 @@ export function useIdleTimeout({ idleMs, warningMs, enabled, onIdle }: UseIdleTi
           // localStorage indisponível (modo privado, quota); seguir só com timer local
         }
       }
-      scheduleFromTimestamp(now);
+      // Throttle timer rescheduling to avoid excessive updates from rapid activity events
+      if (now - lastScheduleRef.current >= THROTTLE_MS) {
+        lastScheduleRef.current = now;
+        scheduleFromTimestamp(now);
+      }
     },
     [scheduleFromTimestamp],
   );

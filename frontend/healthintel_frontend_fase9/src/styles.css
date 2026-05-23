@@ -916,8 +916,11 @@ small { color: var(--color-muted); }
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  animation: fadeIn 0.3s ease-out;
 }
-.idle-modal-card { max-width: 460px; width: 100%; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.idle-modal-card { max-width: 460px; width: 100%; animation: slideDown 0.3s ease-out; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 .idle-modal-hint { margin: 0 0 0.75rem; color: var(--color-muted); font-size: 0.92rem; }
 
 .plan-gate { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 2rem; text-align: center; color: var(--color-muted); }

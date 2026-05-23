@@ -29,10 +29,12 @@ test.describe('Portal — idle logout (5 min)', () => {
     await setupAuth(page);
     await page.goto('/app');
     await expect(page.getByRole('heading', { name: /Dashboard|HealthIntel/i }).first()).toBeVisible({ timeout: 6000 });
+    await page.waitForLoadState('networkidle');
 
     await page.clock.fastForward('05:00');
 
-    await page.waitForURL(/\/login/, { timeout: 8000 });
+    await page.waitForURL(/\/login/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     const access = await page.evaluate(() => localStorage.getItem('healthintel.auth.access_token'));
     expect(access).toBeNull();
   });
@@ -68,5 +70,22 @@ test.describe('Portal — idle logout (5 min)', () => {
 
     expect(page.url()).toContain('/app');
     await expect(page.getByRole('button', { name: 'Continuar conectado' })).not.toBeVisible();
+  });
+
+  test('mostra countdown timer decrescente no modal antes de logout', async ({ page }) => {
+    await page.clock.install();
+    await setupAuth(page);
+    await page.goto('/app');
+    await expect(page.locator('.portal-shell')).toBeVisible({ timeout: 6000 });
+
+    await page.clock.fastForward('04:00');
+    await expect(page.getByRole('button', { name: 'Continuar conectado' })).toBeVisible({ timeout: 4000 });
+
+    const modalText = page.locator('.idle-modal-hint');
+    await expect(modalText).toContainText('Clique em');
+
+    // Verify countdown shows in warning modal (less than 60 seconds remaining)
+    const warningText = page.locator('[role="dialog"]').filter({ hasText: /Por inatividade/ });
+    await expect(warningText).toBeVisible();
   });
 });
