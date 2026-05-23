@@ -26,7 +26,12 @@ test.describe('Navbar e links principais', () => {
   }
 
   test('botão "Entrar" navega para /login', async ({ page }) => {
-    await page.getByRole('link', { name: 'Entrar' }).click();
+    // Em viewport mobile o link "Entrar" fica dentro do menu hamburger.
+    const entrar = page.getByRole('link', { name: 'Entrar' }).first();
+    if (!(await entrar.isVisible().catch(() => false))) {
+      await page.locator('button:has(svg)').first().click();
+    }
+    await page.getByRole('link', { name: 'Entrar' }).filter({ visible: true }).first().click();
     await expect(page).toHaveURL('/login');
   });
 

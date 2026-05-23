@@ -907,6 +907,19 @@ small { color: var(--color-muted); }
 .response-meta span { padding: 0.45rem 0.7rem; border-radius: 999px; background: var(--color-surface-soft); color: var(--color-muted); font-size: 0.86rem; }
 .modal-card { border-color: oklch(from var(--primary) l c h / 0.36); background: oklch(1 0 0); }
 
+.idle-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.idle-modal-card { max-width: 460px; width: 100%; }
+.idle-modal-hint { margin: 0 0 0.75rem; color: var(--color-muted); font-size: 0.92rem; }
+
 .plan-gate { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 4rem 2rem; text-align: center; color: var(--color-muted); }
 .plan-gate h2 { font-size: 1.25rem; color: var(--color-text, #111); margin: 0; }
 .plan-gate p { margin: 0; }

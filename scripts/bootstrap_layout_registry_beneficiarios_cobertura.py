@@ -138,8 +138,11 @@ async def bootstrap() -> None:
                 try:
                     await service.criar_alias(
                         layout_id,
-                        layout_versao_id,
-                        LayoutAliasCreate(nome_fisico=nome_fisico, destino_raw=destino_raw),
+                        LayoutAliasCreate(
+                            nome_fisico=nome_fisico,
+                            destino_raw=destino_raw,
+                            layout_versao_id=layout_versao_id,
+                        ),
                     )
                 except Exception:
                     pass

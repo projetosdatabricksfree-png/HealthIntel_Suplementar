@@ -1,7 +1,12 @@
 import { NavLink, Outlet, Navigate, Link } from 'react-router-dom';
 import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, LayoutDashboard, LogOut, Shield, Users, UserCircle, Wrench } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useIdleTimeout } from '../hooks/useIdleTimeout';
+import { IdleWarningModal } from '../components/IdleWarningModal';
 import { canAccessFeature, getCurrentPlan } from '../data/planRules';
+
+const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+const IDLE_WARNING_MS = 60 * 1000;
 
 const links = [
   { to: '/app', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,6 +25,13 @@ export function PortalLayout() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const planoNome = user?.tenant_ativo?.plano_nome;
   const currentPlan = getCurrentPlan(planoNome);
+
+  const { isWarning, secondsLeft, resetActivity } = useIdleTimeout({
+    idleMs: IDLE_TIMEOUT_MS,
+    warningMs: IDLE_WARNING_MS,
+    enabled: isAuthenticated,
+    onIdle: () => { void logout(); },
+  });
 
   if (isLoading) {
     return (
@@ -86,6 +98,12 @@ export function PortalLayout() {
           </div>
         </footer>
       </section>
+      <IdleWarningModal
+        open={isWarning}
+        secondsLeft={secondsLeft}
+        onStay={resetActivity}
+        onLogout={() => { void logout(); }}
+      />
     </div>
   );
 }
