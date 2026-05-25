@@ -620,7 +620,9 @@ button, input, select, textarea { font: inherit; appearance: none; -webkit-appea
 @media (max-width: 980px) { .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; } }
 .pricing-card { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; display: flex; flex-direction: column; }
 .pricing-card--rec { border-color: var(--primary); box-shadow: 0 0 0 2px oklch(from var(--primary) l c h / 0.18), var(--shadow-md); }
+.pricing-card--current { border-color: var(--color-success, #16a34a); box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.18), var(--shadow-md); }
 .pricing-card__rec { position: absolute; top: -12px; left: 28px; padding: 4px 10px; border-radius: 999px; background: var(--primary); color: white; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.pricing-card__rec--current { background: var(--color-success, #16a34a); }
 .pricing-card__name { margin: 0; font-size: 16px; font-weight: 600; color: var(--strong); }
 .pricing-card__tagline { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); }
 .pricing-card__price { margin: 22px 0 20px; display: flex; align-items: baseline; gap: 4px; }

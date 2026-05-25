@@ -1,6 +1,19 @@
 import { Check, Minus, Zap, ArrowRight, ArrowUpRight, Layers, Gauge, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { commercialLinks } from '../../config/commercialLinks';
+import type { PlanSlug } from '../../types/domain';
+
+const NAME_TO_SLUG: Record<string, PlanSlug> = {
+  FREE: 'free',
+  STARTER: 'starter',
+  PRO: 'pro',
+  MAX: 'max',
+};
+
+interface PricingProps {
+  currentSlug?: PlanSlug;
+  onManageSubscription?: () => void;
+}
 
 interface Plan {
   name: string;
@@ -96,11 +109,27 @@ const PLANS: Plan[] = [
   },
 ];
 
-function PlanCTA({ plan }: { plan: Plan }) {
+function PlanCTA({ plan, isCurrent, onManageSubscription }: { plan: Plan; isCurrent?: boolean; onManageSubscription?: () => void }) {
   const isBuy = plan.kind === 'buy';
   const isFree = plan.kind === 'free';
   const stripeUnconfigured = isBuy && !plan.href;
   const btnClass = `btn btn--lg pricing-card__cta ${plan.recommended ? 'btn--primary' : 'btn--outline'}`;
+
+  if (isCurrent) {
+    if (isFree) {
+      return (
+        <button type="button" className="btn btn--lg btn--outline pricing-card__cta" disabled aria-disabled="true">
+          Plano atual
+        </button>
+      );
+    }
+    return (
+      <button type="button" className="btn btn--lg btn--primary pricing-card__cta" onClick={onManageSubscription}>
+        <span>Gerenciar assinatura</span>
+        <ArrowUpRight size={14} />
+      </button>
+    );
+  }
 
   if (stripeUnconfigured) {
     return (
@@ -135,16 +164,19 @@ function PlanCTA({ plan }: { plan: Plan }) {
   );
 }
 
-export function Pricing() {
+export function Pricing({ currentSlug, onManageSubscription }: PricingProps = {}) {
   return (
     <>
       <div className="pricing-grid pricing-grid--4">
-        {PLANS.map((p) => (
+        {PLANS.map((p) => {
+          const isCurrent = currentSlug ? NAME_TO_SLUG[p.name] === currentSlug : false;
+          return (
           <article
             key={p.name}
-            className={`pricing-card${p.recommended ? ' pricing-card--rec' : ''}${p.kind === 'free' ? ' pricing-card--free' : ''}`}
+            className={`pricing-card${p.recommended ? ' pricing-card--rec' : ''}${p.kind === 'free' ? ' pricing-card--free' : ''}${isCurrent ? ' pricing-card--current' : ''}`}
           >
-            {p.recommended && <span className="pricing-card__rec">Mais escolhido</span>}
+            {isCurrent && <span className="pricing-card__rec pricing-card__rec--current">Plano atual</span>}
+            {!isCurrent && p.recommended && <span className="pricing-card__rec">Mais escolhido</span>}
             <header className="pricing-card__head">
               <h3 className="pricing-card__name">{p.name}</h3>
               <p className="pricing-card__tagline">{p.tagline}</p>
@@ -158,7 +190,7 @@ export function Pricing() {
               <span>{p.limit}</span>
               <Info size={11} className="pricing-card__limit-info" aria-label="Detalhes do rate limit" />
             </div>
-            <PlanCTA plan={p} />
+            <PlanCTA plan={p} isCurrent={isCurrent} onManageSubscription={onManageSubscription} />
             <p className="pricing-card__cta-meta mono">
               {p.kind === 'buy'
                 ? (p.href ? 'Checkout via Stripe · cartão ou Pix' : 'Entre em contato para contratar')
@@ -185,7 +217,8 @@ export function Pricing() {
               </ul>
             )}
           </article>
-        ))}
+          );
+        })}
       </div>
 
       <div className="pricing-enterprise">

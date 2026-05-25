@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
-import { plans } from '../../data/plans';
-import { PlanCard } from '../../components/PlanCard';
+import { Pricing } from '../../components/marketing/Pricing';
+import { SectionHeader } from '../../components/marketing/Section';
 import { useNotification } from '../../components/NotificationProvider';
 import { useAuth } from '../../hooks/useAuth';
 import { getCurrentPlan } from '../../data/planRules';
@@ -105,9 +105,7 @@ export function BillingPage() {
       )}
 
       <div className="metrics-grid">
-        <MetricCard label="Plano atual" value={resumo?.plano.nome || currentPlan.nome} detail={currentPlan.preco} />
-        <MetricCard label="Requisições hoje" value={resumo ? String(resumo.uso_hoje) : '—'} detail={isFree ? 'de 100 req/dia (plano free)' : 'chamadas à API'} />
-        <MetricCard label="Chaves ativas" value={resumo ? String(resumo.chaves_ativas) : '—'} detail={`limite: ${resumo?.plano.limite_api_keys === -1 ? 'ilimitado' : (resumo?.plano.limite_api_keys ?? currentPlan.keyLimit)}`} />
+        <MetricCard label="Plano atual" value={currentPlan.nome} detail={currentPlan.preco} />
         <MetricCard label="Próxima cobrança" value={proximaCobranca} detail={resumo?.assinatura?.cancel_at_period_end ? 'cancelamento no fim do período' : hasSubscription ? 'via Customer Portal' : 'sem assinatura ativa'} />
       </div>
 
@@ -155,19 +153,17 @@ export function BillingPage() {
         </div>
       </Card>
 
-      <div id="planos-disponiveis">
-        <Card>
-          <CardHeader title="Planos disponíveis" description="Mesmos planos da landing: FREE, STARTER, PRO, MAX e ENTERPRISE." />
-          <div className="plans-grid plans-grid-five">
-            {plans.map((plan) => (
-              <PlanCard
-                key={plan.slug}
-                plan={plan}
-                isCurrent={plan.slug === currentPlan.slug}
-              />
-            ))}
-          </div>
-        </Card>
+      <div id="planos-disponiveis" className="portal-pricing-section">
+        <SectionHeader
+          eyebrow="Planos"
+          title="Comece grátis. Suba quando o uso crescer."
+          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, Enterprise sob contrato."
+          align="center"
+        />
+        <Pricing
+          currentSlug={currentPlan.slug}
+          onManageSubscription={() => void openCustomerPortal()}
+        />
       </div>
     </div>
   );
