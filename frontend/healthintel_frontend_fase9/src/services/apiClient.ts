@@ -1,5 +1,5 @@
 import { sampleResponse } from '../data/mock';
-import { getApiKey } from './storage';
+import { getAccessToken, getApiKey } from './storage';
 
 function getDefaultApiBaseUrl(): string {
   if (typeof window === 'undefined') {
@@ -147,4 +147,27 @@ export async function requestApi(
       curl: buildCurl(method, url, apiKey, options.body)
     };
   }
+}
+
+export async function fetchJwt<T>(
+  path: string,
+  options: { method?: string; query?: Record<string, string | number | boolean | undefined>; body?: unknown } = {},
+): Promise<T> {
+  const token = getAccessToken();
+  const url = buildUrl(path, options.query);
+  const res = await fetch(url, {
+    method: options.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = (json as { detail?: { mensagem?: string } }).detail?.mensagem || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return json as T;
 }

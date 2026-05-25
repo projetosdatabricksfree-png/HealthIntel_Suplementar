@@ -29,6 +29,7 @@ from api.app.routers import (
     operadora,
     portal_api_keys,
     portal_billing,
+    portal_dashboard,
     portal_team,
     prata,
     premium,
@@ -121,6 +122,7 @@ app.include_router(comercial.router, prefix=settings.app_prefixo)
 app.include_router(me.router, prefix=settings.app_prefixo)
 app.include_router(portal_api_keys.router, prefix=settings.app_prefixo)
 app.include_router(portal_billing.router, prefix=settings.app_prefixo)
+app.include_router(portal_dashboard.router, prefix=settings.app_prefixo)
 app.include_router(portal_team.router, prefix=settings.app_prefixo)
 app.include_router(public_checkout.router, prefix=settings.app_prefixo)
 app.include_router(contato.router, prefix=settings.app_prefixo)

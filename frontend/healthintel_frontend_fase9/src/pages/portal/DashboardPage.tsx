@@ -5,36 +5,41 @@ import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { OnboardingChecklist } from '../../components/portal/OnboardingChecklist';
 import { UsageChart } from '../../components/charts/UsageChart';
 import { useAuth } from '../../hooks/useAuth';
-import { requestApi } from '../../services/apiClient';
-import { getApiKey } from '../../services/storage';
+import { fetchJwt, requestApi } from '../../services/apiClient';
 import { getCurrentPlan, hasPlanAtLeast } from '../../data/planRules';
-import type { UsageMeta } from '../../types/domain';
+import type { PortalApiKey, UsageMeta } from '../../types/domain';
 
 export function DashboardPage() {
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
   const [usageMeta, setUsageMeta] = useState<UsageMeta | null>(null);
   const [loadingUsage, setLoadingUsage] = useState<boolean>(false);
+  const [activeKeysCount, setActiveKeysCount] = useState<number | null>(null);
+  const [loadingKeys, setLoadingKeys] = useState<boolean>(false);
   const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
-  const hasApiKey = Boolean(getApiKey().trim());
+  const hasApiKey = (activeKeysCount ?? 0) > 0;
 
   useEffect(() => {
     requestApi('/saude', { apiKey: '' }).then((res) => setApiStatus(res.ok ? 'ok' : 'error'));
   }, []);
 
   useEffect(() => {
-    const key = getApiKey();
-    if (!key?.trim()) return;
+    if (!user?.id) return;
+    setLoadingKeys(true);
+    fetchJwt<{ dados: PortalApiKey[] }>('/v1/portal/api-keys')
+      .then((d) => setActiveKeysCount(d.dados.filter((k) => k.status === 'ativo').length))
+      .catch(() => setActiveKeysCount(0))
+      .finally(() => setLoadingKeys(false));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
     setLoadingUsage(true);
-    requestApi('/v1/me/uso', { apiKey: key, query: { periodo: 'hoje' } })
-      .then((res) => {
-        if (res.ok && res.data) {
-          const payload = res.data as { meta: UsageMeta };
-          setUsageMeta(payload.meta ?? null);
-        }
-      })
+    fetchJwt<{ meta: UsageMeta }>('/v1/portal/dashboard/uso', { query: { periodo: 'hoje' } })
+      .then((payload) => setUsageMeta(payload.meta ?? null))
+      .catch(() => setUsageMeta(null))
       .finally(() => setLoadingUsage(false));
-  }, []);
+  }, [user?.id]);
 
   const quotaUsed = usageMeta?.quota_used_today ?? null;
   const quotaDaily = usageMeta?.quota_daily ?? null;
@@ -81,7 +86,12 @@ export function DashboardPage() {
 
       <div className="metrics-grid">
         <MetricCard label="Plano atual" value={currentPlan.nome} detail={currentPlan.limiteDiario} />
-        <MetricCard label="API keys" value={hasApiKey ? '1 ativa' : '0 ativas'} detail={`limite: ${currentPlan.keyLimit}`} />
+        <MetricCard
+          label="API keys"
+          value={activeKeysCount === null ? '—' : `${activeKeysCount} ativa${activeKeysCount === 1 ? '' : 's'}`}
+          detail={`limite: ${currentPlan.keyLimit}`}
+          loading={loadingKeys && activeKeysCount === null}
+        />
         <MetricCard
           label="Requisições hoje"
           value={quotaUsed !== null ? String(quotaUsed) : '—'}
@@ -92,7 +102,7 @@ export function DashboardPage() {
                 ? 'sem limite diário'
                 : 'aguardando telemetria real'
           }
-          loading={loadingUsage && hasApiKey}
+          loading={loadingUsage}
         />
         <MetricCard
           label="Status da API"
