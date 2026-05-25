@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, timedelta
 
 from sqlalchemy import text
 
 from api.app.core.database import SessionLocal
-from api.app.core.redis_client import redis_client
 
 _PERIODOS = {
     "hoje": 0,
@@ -26,14 +25,27 @@ def _intervalo(periodo: str) -> tuple[date, date]:
     return hoje - timedelta(days=dias), hoje
 
 
-async def _quota_diaria_redis(cliente_id: str) -> int:
-    hoje_str = datetime.now(UTC).strftime("%Y%m%d")
-    chave_redis = f"rate_limit_day:{cliente_id}:{hoje_str}"
-    try:
-        valor = await redis_client.get(chave_redis)
-        return int(valor) if valor is not None else 0
-    except Exception:
-        return 0
+async def _quota_diaria_sql(cliente_id: str) -> int:
+    """Conta requisições do cliente no dia comercial brasileiro (America/Sao_Paulo).
+
+    Fonte de verdade = plataforma.log_uso. Não usamos o counter Redis aqui porque
+    ele pode driftar (restart, expiração) e o dashboard precisa mostrar o número
+    real consumido hoje, não o valor cacheado de rate limit.
+    """
+    async with SessionLocal() as session:
+        result = await session.execute(
+            text(
+                """
+                select count(*)
+                from plataforma.log_uso
+                where cliente_id = :cliente_id
+                  and date_trunc('day', timestamp_req at time zone 'America/Sao_Paulo')
+                      = date_trunc('day', now() at time zone 'America/Sao_Paulo')
+                """
+            ),
+            {"cliente_id": cliente_id},
+        )
+        return int(result.scalar_one() or 0)
 
 
 async def get_uso(
@@ -111,7 +123,7 @@ async def get_uso(
         if total_requisicoes > 0
         else 100.0
     )
-    quota_used_today = await _quota_diaria_redis(cliente_id)
+    quota_used_today = await _quota_diaria_sql(cliente_id)
 
     return {
         "dados": {

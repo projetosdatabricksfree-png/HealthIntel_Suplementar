@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Circle, X } from 'lucide-react';
 
@@ -19,11 +19,10 @@ interface OnboardingChecklistProps {
 const DISMISS_KEY = 'healthintel.onboarding.dismissed';
 
 export function OnboardingChecklist({ hasApiKey, hasUsage }: OnboardingChecklistProps) {
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    setDismissed(window.localStorage.getItem(DISMISS_KEY) === '1');
-  }, []);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(DISMISS_KEY) === '1';
+  });
 
   const steps: ChecklistStep[] = [
     {

@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent } from '../../services/localPortalStore';
 import { fetchJwt } from '../../services/apiClient';
 import { useAuth } from '../../hooks/useAuth';
-import type { UsageMeta, UsageRealData } from '../../types/domain';
+import type { UsageRealData } from '../../types/domain';
 
 const periods = ['hoje', '7 dias', '30 dias', 'mês atual'] as const;
 const periodoMap: Record<typeof periods[number], string> = {
@@ -22,24 +20,21 @@ export function UsagePage() {
   const { success } = useNotification();
   const [period, setPeriod] = useState<typeof periods[number]>('7 dias');
   const [realData, setRealData] = useState<UsageRealData | null>(null);
-  const [realMeta, setRealMeta] = useState<UsageMeta | null>(null);
   const [loadingReal, setLoadingReal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
     setLoadingReal(true);
-    fetchJwt<{ dados: UsageRealData; meta: UsageMeta }>(
+    fetchJwt<{ dados: UsageRealData }>(
       '/v1/portal/dashboard/uso',
       { query: { periodo: periodoMap[period] } },
     )
       .then((payload) => {
         setRealData(payload.dados ?? null);
-        setRealMeta(payload.meta ?? null);
       })
       .catch(() => {
         setRealData(null);
-        setRealMeta(null);
       })
       .finally(() => setLoadingReal(false));
   }, [period, refreshKey, user?.id]);
@@ -90,32 +85,6 @@ export function UsagePage() {
         </div>
       </div>
 
-      {(() => {
-        const used = realMeta?.quota_used_today ?? null;
-        const daily = realMeta?.quota_daily ?? null;
-        if (used === null || !daily) return null;
-        const pct = Math.round((used / daily) * 100);
-        if (pct < 80) return null;
-        const exceeded = pct >= 100;
-        return (
-          <div className={`portal-alert portal-alert--${exceeded ? 'danger' : 'warning'}`} role="status">
-            <AlertTriangle size={18} />
-            <div>
-              <strong>
-                {exceeded
-                  ? `Limite diário atingido (${used}/${daily})`
-                  : `${pct}% do limite diário consumido (${used}/${daily})`}
-              </strong>
-              <span>
-                {exceeded
-                  ? 'Novas chamadas retornarão HTTP 429 até a virada do dia (00:00 UTC-3).'
-                  : 'Considere upgrade para evitar interrupção quando atingir 100%.'}
-              </span>
-            </div>
-            <Link to="/app/billing" className="btn btn--primary btn--sm">Fazer upgrade</Link>
-          </div>
-        );
-      })()}
       {!loadingReal && !hasRealData && (
         <div className="empty-state-inline">
           Ainda não há consumo real registrado para este tenant no período selecionado.{' '}
@@ -123,19 +92,9 @@ export function UsagePage() {
         </div>
       )}
       <div className="metrics-grid">
-        <MetricCard label="Requisições" value={String(totalRequests)} detail="real" loading={loadingReal} />
+        <MetricCard label="Requisições no período" value={String(totalRequests)} detail={`período: ${period}`} loading={loadingReal} />
         <MetricCard label="Erros" value={String(totalErrors)} detail="4xx + 5xx" loading={loadingReal} />
         <MetricCard label="Latência média" value={`${latency} ms`} detail="real" loading={loadingReal} />
-        <MetricCard
-          label="Quota diária"
-          value={
-            realMeta?.quota_daily
-              ? `${realMeta.quota_used_today ?? 0}/${realMeta.quota_daily}`
-              : '—'
-          }
-          detail={realMeta?.quota_daily ? `plano ${realMeta.plano}` : 'sem limite diário'}
-          loading={loadingReal}
-        />
       </div>
 
       <Card>

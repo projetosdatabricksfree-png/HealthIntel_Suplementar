@@ -13,11 +13,12 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading');
   const [usageMeta, setUsageMeta] = useState<UsageMeta | null>(null);
-  const [loadingUsage, setLoadingUsage] = useState<boolean>(false);
+  const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
   const [activeKeysCount, setActiveKeysCount] = useState<number | null>(null);
-  const [loadingKeys, setLoadingKeys] = useState<boolean>(false);
+  const [loadingKeys, setLoadingKeys] = useState<boolean>(true);
   const currentPlan = getCurrentPlan(user?.tenant_ativo?.plano_nome);
   const hasApiKey = (activeKeysCount ?? 0) > 0;
+  const dataReady = !loadingKeys && !loadingUsage;
 
   useEffect(() => {
     requestApi('/saude', { apiKey: '' }).then((res) => setApiStatus(res.ok ? 'ok' : 'error'));
@@ -61,7 +62,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      <OnboardingChecklist hasApiKey={hasApiKey} hasUsage={hasUsage} />
+      {dataReady && <OnboardingChecklist hasApiKey={hasApiKey} hasUsage={hasUsage} />}
 
       {(quotaWarning || quotaExceeded) && (
         <div className={`portal-alert portal-alert--${quotaExceeded ? 'danger' : 'warning'}`} role="status">
@@ -121,7 +122,12 @@ export function DashboardPage() {
       </div>
 
       <div className="split-grid">
-        {hasApiKey ? (
+        {!dataReady ? (
+          <Card>
+            <CardHeader title="Consumo recente" description="Carregando telemetria…" />
+            <div className="empty-state-inline">Carregando…</div>
+          </Card>
+        ) : hasApiKey ? (
           <Card>
             <CardHeader title="Consumo recente" description="Dados reais aparecem aqui quando /me/uso retornar série de uso." />
             <UsageChart />

@@ -75,10 +75,10 @@ async def resumo_billing(
         uso_hoje = (await db.execute(
             text("""
                 select count(*) as total
-                from plataforma.log_uso lu
-                join plataforma.chave_api ca on ca.id = lu.chave_id
-                where ca.cliente_id = :cid
-                  and date(lu.timestamp_req) = current_date
+                from plataforma.log_uso
+                where cliente_id = :cid
+                  and date_trunc('day', timestamp_req at time zone 'America/Sao_Paulo')
+                      = date_trunc('day', now() at time zone 'America/Sao_Paulo')
             """),
             {"cid": cliente_id},
         )).scalar_one()
