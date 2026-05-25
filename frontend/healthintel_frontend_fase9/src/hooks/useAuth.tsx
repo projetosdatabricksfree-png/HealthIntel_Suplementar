@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { AuthUser } from '../types/domain';
 import { authApi } from '../services/authApi';
-import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from '../services/storage';
+import { clearTokens, discardApiKeyIfOwnerMismatch, getAccessToken, getRefreshToken, saveTokens } from '../services/storage';
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await authApi.login(email, senha);
       saveTokens(res.access_token, res.refresh_token);
       const perfil = await authApi.perfil(res.access_token);
+      discardApiKeyIfOwnerMismatch(perfil.id);
       setUser(_perfilToAuthUser(perfil));
       scheduleRefresh();
     },
@@ -103,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await authApi.loginGoogle(id_token);
       saveTokens(res.access_token, res.refresh_token);
       const perfil = await authApi.perfil(res.access_token);
+      discardApiKeyIfOwnerMismatch(perfil.id);
       setUser(_perfilToAuthUser(perfil));
       scheduleRefresh();
     },

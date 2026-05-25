@@ -37,7 +37,6 @@ async def _quota_diaria_redis(cliente_id: str) -> int:
 
 
 async def get_uso(
-    chave_id: str,
     cliente_id: str,
     periodo: str,
     plano_nome: str,
@@ -56,14 +55,14 @@ async def get_uso(
                     count(*) filter (where codigo_status >= 400) as erros,
                     round(avg(latencia_ms)) as latencia_ms
                 from plataforma.log_uso
-                where chave_id = :chave_id
+                where cliente_id = :cliente_id
                   and timestamp_req >= :inicio
                   and timestamp_req < :fim_exclusivo
                 group by 1
                 order by 1
                 """
             ),
-            {"chave_id": chave_id, "inicio": inicio, "fim_exclusivo": fim_exclusivo},
+            {"cliente_id": cliente_id, "inicio": inicio, "fim_exclusivo": fim_exclusivo},
         )
         serie = [
             {
@@ -83,7 +82,7 @@ async def get_uso(
                     count(*) as requisicoes,
                     count(*) filter (where codigo_status >= 400) as erros
                 from plataforma.log_uso
-                where chave_id = :chave_id
+                where cliente_id = :cliente_id
                   and timestamp_req >= :inicio
                   and timestamp_req < :fim_exclusivo
                 group by endpoint
@@ -91,7 +90,7 @@ async def get_uso(
                 limit 20
                 """
             ),
-            {"chave_id": chave_id, "inicio": inicio, "fim_exclusivo": fim_exclusivo},
+            {"cliente_id": cliente_id, "inicio": inicio, "fim_exclusivo": fim_exclusivo},
         )
         por_endpoint = [
             {

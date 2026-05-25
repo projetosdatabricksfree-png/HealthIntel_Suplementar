@@ -65,7 +65,7 @@ export function ApiKeysPage() {
         '/v1/portal/api-keys', 'POST', { nome: newKeyName.trim(), ambiente: newKeyAmbiente }
       );
       setOneTimeSecret(data.dados.chave_plain);
-      saveApiKey(data.dados.chave_plain);
+      saveApiKey(data.dados.chave_plain, user?.id);
       setActiveApiKey(data.dados.chave_plain);
       setShowCreate(false);
       setNewKeyName('Produção principal');
@@ -101,7 +101,7 @@ export function ApiKeysPage() {
     try {
       const data = await apiFetch<{ dados: { chave_plain: string } }>(`/v1/portal/api-keys/${id}/rotacionar`, 'POST');
       setOneTimeSecret(data.dados.chave_plain);
-      saveApiKey(data.dados.chave_plain);
+      saveApiKey(data.dados.chave_plain, user?.id);
       setActiveApiKey(data.dados.chave_plain);
       await loadKeys();
       success('Chave rotacionada. Copie a nova chave agora.');
@@ -246,7 +246,7 @@ export function ApiKeysPage() {
             <input value={activeApiKey} onChange={(event) => setActiveApiKey(event.target.value)} />
           </label>
           <div className="button-row">
-            <Button onClick={() => { saveApiKey(activeApiKey.trim()); success('Chave ativa salva.'); }}>Salvar chave ativa</Button>
+            <Button onClick={() => { saveApiKey(activeApiKey.trim(), user?.id); success('Chave ativa salva.'); }}>Salvar chave ativa</Button>
             <Button variant="secondary" onClick={() => void test()} disabled={!activeApiKey.trim()}>Testar chave</Button>
             <Button variant="ghost" onClick={() => { clearApiKey(); setActiveApiKey(''); }}>Limpar</Button>
           </div>
