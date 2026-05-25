@@ -64,5 +64,5 @@ Corretoras · Consultorias atuariais · Healthtechs · Times de BI para saúde �
 
 ---
 
-**Contato:** projetosdatabricksfree@gmail.com  
+**Contato:** contato@healthintel.com.br  
 **Swagger:** `/docs` — autenticação por API key (`X-API-Key`)

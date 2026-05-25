@@ -66,4 +66,4 @@ Pagamento antecipado via PIX ou transferência. Acesso liberado após confirmaç
 ---
 
 **HealthIntel Suplementar**  
-projetosdatabricksfree@gmail.com
+contato@healthintel.com.br

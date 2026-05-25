@@ -67,7 +67,7 @@ export function ContactPage() {
         });
         setMensagem('');
       } else {
-        error(resp.detalhe || 'Falha no envio. Tente novamente ou escreva direto para projetosdatabricksfree@gmail.com.');
+        error(resp.detalhe || 'Falha no envio. Tente novamente ou escreva direto para contato@healthintel.com.br.');
         addAuditEvent({
           tipo: 'contato_enviado',
           usuario: email.trim(),
@@ -76,7 +76,7 @@ export function ContactPage() {
         });
       }
     } catch (e) {
-      error('Falha de conexão. Tente novamente ou escreva para projetosdatabricksfree@gmail.com.');
+      error('Falha de conexão. Tente novamente ou escreva para contato@healthintel.com.br.');
       addAuditEvent({
         tipo: 'contato_enviado',
         usuario: email.trim(),
@@ -167,7 +167,7 @@ export function ContactPage() {
             />
             <div className="full contact-actions">
               <span className="mono contact-helper">
-                <Mail size={12} /> projetosdatabricksfree@gmail.com
+                <Mail size={12} /> contato@healthintel.com.br
               </span>
               <button type="submit" className="btn btn--primary btn--lg" disabled={enviando}>
                 {enviando ? 'Enviando...' : 'Enviar solicitação'}
