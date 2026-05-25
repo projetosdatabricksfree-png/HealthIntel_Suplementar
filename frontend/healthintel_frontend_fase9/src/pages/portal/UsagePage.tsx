@@ -5,8 +5,7 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent } from '../../services/localPortalStore';
-import { requestApi } from '../../services/apiClient';
-import { getApiKey } from '../../services/storage';
+import { fetchJwt } from '../../services/apiClient';
 import { useAuth } from '../../hooks/useAuth';
 import type { UsageMeta, UsageRealData } from '../../types/domain';
 
@@ -28,22 +27,22 @@ export function UsagePage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const key = getApiKey();
-    if (!key?.trim()) return;
+    if (!user?.id) return;
     setLoadingReal(true);
-    requestApi('/v1/me/uso', { apiKey: key, query: { periodo: periodoMap[period] } })
-      .then((res) => {
-        if (res.ok && res.data) {
-          const payload = res.data as { dados: UsageRealData; meta: UsageMeta };
-          setRealData(payload.dados);
-          setRealMeta(payload.meta);
-        } else {
-          setRealData(null);
-          setRealMeta(null);
-        }
+    fetchJwt<{ dados: UsageRealData; meta: UsageMeta }>(
+      '/v1/portal/dashboard/uso',
+      { query: { periodo: periodoMap[period] } },
+    )
+      .then((payload) => {
+        setRealData(payload.dados ?? null);
+        setRealMeta(payload.meta ?? null);
+      })
+      .catch(() => {
+        setRealData(null);
+        setRealMeta(null);
       })
       .finally(() => setLoadingReal(false));
-  }, [period, refreshKey]);
+  }, [period, refreshKey, user?.id]);
 
   useEffect(() => {
     const onUsageUpdated = () => setRefreshKey((n) => n + 1);
@@ -117,14 +116,9 @@ export function UsagePage() {
           </div>
         );
       })()}
-      {!getApiKey() && (
+      {!loadingReal && !hasRealData && (
         <div className="empty-state-inline">
-          Configure uma <strong>API key</strong> em <a href="/app/api-keys">API Keys</a> para ver dados reais de consumo.
-        </div>
-      )}
-      {getApiKey() && !loadingReal && !hasRealData && (
-        <div className="empty-state-inline">
-          Ainda não há consumo real registrado para esta API key no período selecionado.{' '}
+          Ainda não há consumo real registrado para este tenant no período selecionado.{' '}
           <a href="/app/explorer">Faça uma chamada no Explorer</a> para ver dados aqui.
         </div>
       )}
