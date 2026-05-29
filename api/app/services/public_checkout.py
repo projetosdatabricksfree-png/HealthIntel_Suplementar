@@ -79,6 +79,39 @@ def _plano_checkout(plano: str) -> dict[str, str]:
         ) from exc
 
 
+def _mapa_price_para_plano(settings: Any) -> dict[str, str]:
+    """Mapa reverso price_id -> plano_bd, cobrindo ciclos mensal e anual."""
+    mapa: dict[str, str] = {}
+    for cfg in PLANOS_CHECKOUT.values():
+        for attr in (cfg["price_attr_mensal"], cfg["price_attr_anual"]):
+            price_id = (getattr(settings, attr, "") or "").strip()
+            if price_id:
+                mapa[price_id] = cfg["plano_bd"]
+    return mapa
+
+
+async def _plano_bd_por_line_items(session_id: str, settings: Any) -> str:
+    """Resolve plano_bd pelo price_id dos line items (fallback p/ Payment Links sem metadata)."""
+    if not session_id:
+        return ""
+    mapa = _mapa_price_para_plano(settings)
+    if not mapa:
+        return ""
+    stripe = _importar_stripe(settings)
+    try:
+        line_items = await asyncio.to_thread(
+            stripe.checkout.Session.list_line_items, session_id, limit=10
+        )
+    except Exception as exc:  # pragma: no cover - chamada de runtime
+        logger.warning("Falha ao listar line items da sessao %s: %s", session_id, exc)
+        return ""
+    for item in _get(line_items, "data", []) or []:
+        price_id = _id_stripe(_get(item, "price"))
+        if price_id in mapa:
+            return mapa[price_id]
+    return ""
+
+
 def _normalizar_ciclo(ciclo: str | None) -> str:
     valor = (ciclo or "mensal").strip().lower()
     if valor not in CICLOS_VALIDOS:
@@ -156,6 +189,7 @@ async def criar_sessao_checkout(plano: str, ciclo: str | None = None) -> dict:
         session = await asyncio.to_thread(
             stripe.checkout.Session.create,
             mode="subscription",
+            payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             success_url=success_url,
             cancel_url=cancel_url,
@@ -274,6 +308,9 @@ async def provisionar_checkout_pago(session: Any, plano_bd_fallback: str | None 
     plano_bd = str(metadata.get("plano_bd") or plano_bd_fallback or "").strip()
     subscription_id = _id_stripe(_get(session, "subscription"))
     customer_id = _id_stripe(_get(session, "customer"))
+    if not plano_bd:
+        # Payment Links estaticos nao carregam metadata.plano_bd: resolve pelo price_id.
+        plano_bd = await _plano_bd_por_line_items(str(session_id), get_settings())
     if not plano_bd:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
