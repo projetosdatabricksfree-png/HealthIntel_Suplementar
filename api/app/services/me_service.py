@@ -48,11 +48,33 @@ async def _quota_diaria_sql(cliente_id: str) -> int:
         return int(result.scalar_one() or 0)
 
 
+async def _quota_mensal_sql(cliente_id: str) -> int:
+    """Conta requisições do cliente no mês comercial brasileiro (America/Sao_Paulo)."""
+    async with SessionLocal() as session:
+        result = await session.execute(
+            text(
+                """
+                select count(*)
+                from plataforma.log_uso
+                where cliente_id = :cliente_id
+                  and date_trunc('month', timestamp_req at time zone 'America/Sao_Paulo')
+                      = date_trunc('month', now() at time zone 'America/Sao_Paulo')
+                """
+            ),
+            {"cliente_id": cliente_id},
+        )
+        return int(result.scalar_one() or 0)
+
+
 async def get_uso(
     cliente_id: str,
     periodo: str,
     plano_nome: str,
     limite_req_dia: int = 0,
+    limite_req_mes: int = 0,
+    modelo_cobranca: str = "flat",
+    trial_pro_ativo: bool = False,
+    trial_pro_expira_em: str | None = None,
 ) -> dict:
     inicio, fim = _intervalo(periodo)
     fim_exclusivo = fim + timedelta(days=1)
@@ -124,6 +146,7 @@ async def get_uso(
         else 100.0
     )
     quota_used_today = await _quota_diaria_sql(cliente_id)
+    quota_used_month = await _quota_mensal_sql(cliente_id) if limite_req_mes > 0 else None
 
     return {
         "dados": {
@@ -142,5 +165,10 @@ async def get_uso(
             "plano": plano_nome,
             "quota_daily": int(limite_req_dia),
             "quota_used_today": quota_used_today,
+            "quota_monthly": int(limite_req_mes),
+            "quota_used_month": quota_used_month,
+            "modelo_cobranca": modelo_cobranca,
+            "trial_pro_ativo": bool(trial_pro_ativo),
+            "trial_pro_expira_em": trial_pro_expira_em,
         },
     }

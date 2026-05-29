@@ -77,28 +77,13 @@ export function BillingPage() {
 
       {isFree && (
         <Card>
-          <CardHeader title="Você está no plano gratuito" description="Free é um SKU real para avaliação técnica com 100 requisições por dia." />
-          <div className="button-row">
-            <Button onClick={() => document.getElementById('planos-disponiveis')?.scrollIntoView({ behavior: 'smooth' })}>
-              Fazer upgrade
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {isFree && resumo && resumo.uso_hoje >= 80 && (
-        <Card>
           <CardHeader
-            title={resumo.uso_hoje >= 100 ? 'Limite diário atingido' : 'Próximo do limite diário'}
-            description={
-              resumo.uso_hoje >= 100
-                ? '100/100 requisições usadas hoje. Novas chamadas retornam HTTP 429 até amanhã. Faça upgrade para continuar sem interrupção.'
-                : `${resumo.uso_hoje}/100 requisições usadas hoje. Faça upgrade para não ser bloqueado.`
-            }
+            title="Você está no plano gratuito"
+            description="14 dias de trial PRO ao cadastrar (2.500 req/dia). Depois: 100 requisições/mês."
           />
           <div className="button-row">
             <Button onClick={() => document.getElementById('planos-disponiveis')?.scrollIntoView({ behavior: 'smooth' })}>
-              Ver planos
+              Fazer upgrade
             </Button>
           </div>
         </Card>
@@ -156,8 +141,8 @@ export function BillingPage() {
       <div id="planos-disponiveis" className="portal-pricing-section">
         <SectionHeader
           eyebrow="Planos"
-          title="Comece grátis. Suba quando o uso crescer."
-          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, Enterprise sob contrato."
+          title="14 dias grátis no PRO. Suba quando o uso crescer."
+          description="Quatro planos self-service via Stripe — do FREE (100 req/mês após trial PRO) ao MAX (25 mil/dia). Volume além disso, Enterprise pay-as-you-go."
           align="center"
         />
         <Pricing

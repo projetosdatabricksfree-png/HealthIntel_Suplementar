@@ -111,14 +111,37 @@ async def validar_chave(
                         cliente.status as status_cliente,
                         plano.limite_rpm,
                         plano.limite_req_dia,
+                        plano.limite_req_mes,
                         plano.endpoint_permitido,
                         plano.camadas_permitidas,
-                        plano.nome as plano_nome
+                        plano.modelo_cobranca,
+                        plano.nome as plano_nome,
+                        trial.expira_em as trial_expira_em,
+                        coalesce(trial.consumido, true) as trial_consumido,
+                        case
+                            when trial.cliente_id is not null
+                                 and trial.consumido = false
+                                 and trial.expira_em > now()
+                            then true else false
+                        end as trial_ativo,
+                        plano_pro.limite_rpm as pro_limite_rpm,
+                        plano_pro.limite_req_dia as pro_limite_req_dia,
+                        plano_pro.camadas_permitidas as pro_camadas_permitidas,
+                        plano_pro.endpoint_permitido as pro_endpoint_permitido
                     from plataforma.chave_api chave
                     inner join plataforma.cliente cliente
                         on chave.cliente_id = cliente.id
                     inner join plataforma.plano plano
                         on chave.plano_id = plano.id
+                    left join plataforma.trial_pro trial
+                        on trial.cliente_id = cliente.id
+                    left join lateral (
+                        select limite_rpm, limite_req_dia,
+                               camadas_permitidas, endpoint_permitido
+                        from plataforma.plano
+                        where nome = 'pro'
+                        limit 1
+                    ) plano_pro on true
                     where chave.hash_chave = :hash_chave
                     limit 1
                     """
@@ -131,6 +154,26 @@ async def validar_chave(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail={"codigo": "CHAVE_INVALIDA", "mensagem": "Chave de API invalida."},
                 )
+
+            plano_nome_raw = str(row["plano_nome"])
+            trial_ativo = bool(row.get("trial_ativo")) and plano_nome_raw == "free"
+            trial_expira_em = row.get("trial_expira_em")
+
+            if trial_ativo and row.get("pro_limite_rpm") is not None:
+                limite_rpm = int(row["pro_limite_rpm"])
+                limite_req_dia = int(row["pro_limite_req_dia"])
+                endpoint_permitido = list(row["pro_endpoint_permitido"] or [])
+                camadas_brutas = row["pro_camadas_permitidas"]
+                camadas_nome_ref: str | None = "pro"
+                limite_req_mes = 0
+            else:
+                limite_rpm = int(row["limite_rpm"])
+                limite_req_dia = int(row["limite_req_dia"])
+                endpoint_permitido = list(row["endpoint_permitido"] or [])
+                camadas_brutas = row["camadas_permitidas"]
+                camadas_nome_ref = plano_nome_raw
+                limite_req_mes = int(row.get("limite_req_mes") or 0)
+
             row = {
                 "chave_id": str(row["chave_id"]),
                 "cliente_id": str(row["cliente_id"]),
@@ -138,13 +181,15 @@ async def validar_chave(
                 "prefixo_chave": str(row["prefixo_chave"]),
                 "status_chave": str(row["status_chave"]),
                 "status_cliente": str(row["status_cliente"]),
-                "limite_rpm": int(row["limite_rpm"]),
-                "limite_req_dia": int(row["limite_req_dia"]),
-                "endpoint_permitido": list(row["endpoint_permitido"] or []),
-                "camadas_permitidas": _normalizar_camadas(
-                    row["camadas_permitidas"], row["plano_nome"]
-                ),
-                "plano_nome": str(row["plano_nome"]),
+                "limite_rpm": limite_rpm,
+                "limite_req_dia": limite_req_dia,
+                "limite_req_mes": limite_req_mes,
+                "endpoint_permitido": endpoint_permitido,
+                "camadas_permitidas": _normalizar_camadas(camadas_brutas, camadas_nome_ref),
+                "plano_nome": plano_nome_raw,
+                "modelo_cobranca": str(row.get("modelo_cobranca") or "flat"),
+                "trial_pro_ativo": trial_ativo,
+                "trial_pro_expira_em": trial_expira_em.isoformat() if trial_expira_em else None,
             }
             await _salvar_cache_chave(hash_chave, row)
 
@@ -167,9 +212,13 @@ async def validar_chave(
     request.state.plano_id = str(row["plano_id"])
     request.state.limite_rpm = int(row["limite_rpm"])
     request.state.limite_req_dia = int(row.get("limite_req_dia", 0))
+    request.state.limite_req_mes = int(row.get("limite_req_mes", 0))
     request.state.endpoint_permitido = endpoints_permitidos
     request.state.camadas_permitidas = list(row.get("camadas_permitidas") or [])
     request.state.plano_nome = plano_nome
+    request.state.modelo_cobranca = str(row.get("modelo_cobranca") or "flat")
+    request.state.trial_pro_ativo = bool(row.get("trial_pro_ativo"))
+    request.state.trial_pro_expira_em = row.get("trial_pro_expira_em")
     request.state.is_admin = plano_nome.lower() == "admin_interno"
     request.state.auth_cache = "hit" if cached else "miss"
     return x_api_key

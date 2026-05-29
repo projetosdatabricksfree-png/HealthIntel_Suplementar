@@ -5,6 +5,7 @@ from sqlalchemy import text
 
 from api.app.core.database import SessionLocal
 from api.app.core.redis_client import redis_client
+from api.app.services.status_cobertura import listar_cobertura
 
 router = APIRouter(tags=["status"])
 
@@ -58,4 +59,25 @@ async def get_status() -> dict:
         "redis": redis,
         "ultima_carga_ans": ultima_carga,
         "status_geral": "ok" if tudo_ok else "degradado",
+    }
+
+
+@router.get("/status/cobertura")
+async def get_cobertura() -> dict:
+    """Cobertura por dataset ANS. Lê MIN/MAX/COUNT direto das tabelas api_ans.
+
+    Sem autenticação — usado pela landing para renderizar o Coverage com
+    dados reais. Cada item traz dataset, tabela servida, range temporal,
+    quantidade de linhas e classificação (`ok` / `parcial` / `vazio`).
+    """
+    itens = await listar_cobertura()
+    em_producao = [i for i in itens if i["situacao"] == "ok"]
+    backfill = [i for i in itens if i["situacao"] in ("parcial", "vazio")]
+    return {
+        "dados": itens,
+        "meta": {
+            "total": len(itens),
+            "em_producao": len(em_producao),
+            "backfill_em_andamento": len(backfill),
+        },
     }

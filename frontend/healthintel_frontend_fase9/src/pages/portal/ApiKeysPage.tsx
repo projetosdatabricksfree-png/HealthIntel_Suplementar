@@ -3,7 +3,7 @@ import { Button } from '../../components/Button';
 import { Card, CardHeader } from '../../components/Card';
 import { CodeBlock } from '../../components/CodeBlock';
 import { useNotification } from '../../components/NotificationProvider';
-import { buildCurl, buildUrl, maskApiKey, requestApi, type ApiResult } from '../../services/apiClient';
+import { buildCurl, buildUrl, maskApiKey, requestApi } from '../../services/apiClient';
 import { clearApiKey, getAccessToken, getApiKey, saveApiKey } from '../../services/storage';
 import { useAuth } from '../../hooks/useAuth';
 import { getCurrentPlan } from '../../data/planRules';
@@ -33,7 +33,7 @@ export function ApiKeysPage() {
   const [keys, setKeys] = useState<PortalApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeApiKey, setActiveApiKey] = useState(getApiKey());
-  const [testResult, setTestResult] = useState<ApiResult | null>(null);
+  const [testStatus, setTestStatus] = useState<{ ok: boolean; mensagem: string } | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [newKeyName, setNewKeyName] = useState('Produção principal');
   const [newKeyAmbiente, setNewKeyAmbiente] = useState<'sandbox' | 'producao'>('sandbox');
@@ -123,9 +123,18 @@ export function ApiKeysPage() {
 
   async function test() {
     const response = await requestApi('/v1/meta/endpoints', { apiKey: activeApiKey.trim() });
-    setTestResult(response);
-    if (response.ok) success('Chave válida para chamada de teste.');
-    else error(response.status === 401 ? 'Chave inválida.' : response.status === 403 ? 'Chave sem permissão.' : 'API indisponível ou retornou erro.');
+    if (response.ok) {
+      setTestStatus({ ok: true, mensagem: 'Chave válida.' });
+      success('Chave válida.');
+      return;
+    }
+    const mensagem = response.status === 401
+      ? 'Chave inválida.'
+      : response.status === 403
+        ? 'Chave sem permissão neste plano.'
+        : 'Não foi possível validar a chave agora.';
+    setTestStatus({ ok: false, mensagem });
+    error(mensagem);
   }
 
   async function copyOneTimeSecret() {
@@ -251,7 +260,11 @@ export function ApiKeysPage() {
             <Button variant="ghost" onClick={() => { clearApiKey(); setActiveApiKey(''); }}>Limpar</Button>
           </div>
           <CodeBlock code={buildCurl('GET', buildUrl('/v1/meta/endpoints'), activeApiKey.trim())} />
-          {testResult && <CodeBlock code={JSON.stringify(testResult, null, 2)} />}
+          {testStatus && (
+            <p className={testStatus.ok ? 'status-item--ok' : 'status-item--error'} style={{ margin: '0.75rem 0 0', fontWeight: 700 }}>
+              {testStatus.mensagem}
+            </p>
+          )}
         </Card>
 
         <Card>

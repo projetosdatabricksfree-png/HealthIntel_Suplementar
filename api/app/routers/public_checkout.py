@@ -19,6 +19,10 @@ class CheckoutConfirmarRequest(BaseModel):
 
 class CheckoutSessaoRequest(BaseModel):
     plano: str = Field(..., description="Slug do plano publico: starter, pro ou max.")
+    ciclo: str | None = Field(
+        default="mensal",
+        description="Ciclo de cobranca: 'mensal' (padrao) ou 'anual' (2 meses gratis).",
+    )
 
 
 @router.post("/confirmar", status_code=201)
@@ -29,8 +33,8 @@ async def post_confirmar_checkout(payload: CheckoutConfirmarRequest) -> dict:
 
 @router.post("/sessao", status_code=201)
 async def post_criar_sessao_checkout(payload: CheckoutSessaoRequest) -> dict:
-    """Cria uma Stripe Checkout Session para o plano informado."""
-    return await criar_sessao_checkout(payload.plano)
+    """Cria uma Stripe Checkout Session para o plano e ciclo informados."""
+    return await criar_sessao_checkout(payload.plano, payload.ciclo)
 
 
 @router.post("/webhook", include_in_schema=False)

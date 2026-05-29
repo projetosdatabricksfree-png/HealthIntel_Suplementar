@@ -1,4 +1,4 @@
-import { Zap, Database, ShieldCheck, Gauge } from 'lucide-react';
+import { Database, GitBranch, CalendarClock, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface Pillar {
@@ -11,32 +11,32 @@ interface Pillar {
 
 const PILLARS: Pillar[] = [
   {
-    Icon: Zap,
-    badge: '5 min',
-    title: 'Do checkout ao primeiro request',
-    desc: 'Adquira o plano via Stripe, entre com Google e a API key aparece na sua área. Sem ticket, sem onboarding obrigatório.',
-    proof: 'Suporte a cartão e Pix',
+    Icon: Database,
+    badge: 'pipeline gerenciado',
+    title: 'Você não mantém ETL da ANS',
+    desc: 'Download, validação de layout, padronização e versionamento ficam do nosso lado. Quando a ANS muda o layout do arquivo, nós ajustamos — seu código não quebra.',
+    proof: 'Ingestão D-1 · freshness por dataset',
   },
   {
-    Icon: Database,
-    badge: 'Pipeline 24/7',
-    title: 'Você não mantém ETL da ANS',
-    desc: 'CADOP, SIB, CNES, DIOPS e derivados ingeridos, validados e versionados do nosso lado. Quando a ANS muda layout, nós ajustamos.',
-    proof: 'Contratos /v1 com janela de deprecação',
+    Icon: GitBranch,
+    badge: 'contrato /v1',
+    title: 'Envelope estável e versionado',
+    desc: 'Toda resposta vem em { dados, meta }. Quebras de contrato disparam /v2 com 6 meses de deprecação anunciada nos headers Sunset e Deprecation.',
+    proof: 'JSON consistente · sem surpresa de schema',
+  },
+  {
+    Icon: CalendarClock,
+    badge: 'datado',
+    title: 'Cada registro tem competência',
+    desc: 'Do trimestre DIOPS ao ano-base IDSS, toda linha carrega competência e janela. Leitura ponto-no-tempo, histórico auditável e backfill rastreável.',
+    proof: 'YYYYMM · janela explícita por dataset',
   },
   {
     Icon: ShieldCheck,
     badge: 'LGPD-safe',
-    title: 'Cruze ANS sem expor sua base interna',
-    desc: 'Dados públicos curados, audit log por chave. Você não envia sua base privada para consultoria nenhuma.',
-    proof: 'Logs exportáveis · API key por ambiente',
-  },
-  {
-    Icon: Gauge,
-    badge: 'Previsível',
-    title: 'Pague por requisição, não por consultoria',
-    desc: 'Planos transparentes em R$, com limite diário claro. Upgrade self-service quando o uso crescer.',
-    proof: 'Sem cobrança por hora · sem surpresa',
+    title: 'Cruze ANS sem expor sua base',
+    desc: 'Somente dados públicos da ANS, com audit log por chave. Você enriquece e cruza a regulação sem enviar sua base interna para consultoria nenhuma.',
+    proof: 'Sem PII · log de uso por API key',
   },
 ];
 

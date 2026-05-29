@@ -48,6 +48,8 @@ export interface ApiPlan {
   nome: string;
   slug: PlanSlug;
   preco: string;
+  precoAnual?: string;
+  economiaAnual?: string | null;
   descricao: string;
   destaque?: boolean;
   limiteDiario: string;
@@ -83,6 +85,11 @@ export interface UsageMeta {
   plano: string;
   quota_daily?: number;
   quota_used_today?: number;
+  quota_monthly?: number;
+  quota_used_month?: number | null;
+  modelo_cobranca?: 'flat' | 'franquia_overage' | 'pay_as_you_go';
+  trial_pro_ativo?: boolean;
+  trial_pro_expira_em?: string | null;
 }
 
 export interface PortalUser {

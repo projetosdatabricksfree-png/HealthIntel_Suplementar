@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Card, CardHeader, MetricCard } from '../../components/Card';
 import { useNotification } from '../../components/NotificationProvider';
 import { addAuditEvent } from '../../services/localPortalStore';
 import { fetchJwt } from '../../services/apiClient';
 import { useAuth } from '../../hooks/useAuth';
-import type { UsageRealData } from '../../types/domain';
+import type { UsageRealData, UsageMeta } from '../../types/domain';
 
 const periods = ['hoje', '7 dias', '30 dias', 'mês atual'] as const;
 const periodoMap: Record<typeof periods[number], string> = {
@@ -20,21 +21,24 @@ export function UsagePage() {
   const { success } = useNotification();
   const [period, setPeriod] = useState<typeof periods[number]>('7 dias');
   const [realData, setRealData] = useState<UsageRealData | null>(null);
+  const [meta, setMeta] = useState<UsageMeta | null>(null);
   const [loadingReal, setLoadingReal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
     setLoadingReal(true);
-    fetchJwt<{ dados: UsageRealData }>(
+    fetchJwt<{ dados: UsageRealData; meta: UsageMeta }>(
       '/v1/portal/dashboard/uso',
       { query: { periodo: periodoMap[period] } },
     )
       .then((payload) => {
         setRealData(payload.dados ?? null);
+        setMeta(payload.meta ?? null);
       })
       .catch(() => {
         setRealData(null);
+        setMeta(null);
       })
       .finally(() => setLoadingReal(false));
   }, [period, refreshKey, user?.id]);
@@ -75,6 +79,26 @@ export function UsagePage() {
     success('Relatório gerado.');
   }
 
+  const quotaMonthly = meta?.quota_monthly ?? 0;
+  const quotaUsedMonth = meta?.quota_used_month ?? 0;
+  const quotaDaily = meta?.quota_daily ?? 0;
+  const quotaUsedToday = meta?.quota_used_today ?? 0;
+  const trialAtivo = Boolean(meta?.trial_pro_ativo);
+  const trialExpiraEm = meta?.trial_pro_expira_em
+    ? new Date(meta.trial_pro_expira_em).toLocaleDateString('pt-BR')
+    : null;
+  const modeloPayAsYouGo = meta?.modelo_cobranca === 'pay_as_you_go';
+
+  const usoCotaPct = (() => {
+    if (quotaMonthly > 0) {
+      return Math.min(100, Math.round((quotaUsedMonth / quotaMonthly) * 100));
+    }
+    if (quotaDaily > 0) {
+      return Math.min(100, Math.round((quotaUsedToday / quotaDaily) * 100));
+    }
+    return 0;
+  })();
+
   return (
     <div className="portal-page">
       <div className="portal-title">
@@ -84,6 +108,69 @@ export function UsagePage() {
           <p>A API já registra logs de uso por cliente, chave, plano, endpoint, status e latência.</p>
         </div>
       </div>
+
+      {trialAtivo && (
+        <Card>
+          <CardHeader
+            title={(
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <Sparkles size={16} /> Trial PRO ativo até {trialExpiraEm || '—'}
+              </span>
+            )}
+            description="Durante o trial, sua chave responde com os limites do plano PRO (2.500 req/dia). Depois, volta ao plano FREE com 100 req/mês."
+          />
+        </Card>
+      )}
+
+      {modeloPayAsYouGo && (
+        <Card>
+          <CardHeader
+            title="Plano Enterprise · pay-as-you-go"
+            description="Sem cap diário ou mensal. Mínimo R$ 5.000/mês cobre 500.000 requisições; acima disso, R$ 50 por mil req. Fechamento mensal."
+          />
+        </Card>
+      )}
+
+      {(quotaMonthly > 0 || quotaDaily > 0) && !modeloPayAsYouGo && (
+        <Card>
+          <CardHeader
+            title={quotaMonthly > 0 ? 'Cota mensal' : 'Cota diária'}
+            description={
+              quotaMonthly > 0
+                ? `${quotaUsedMonth} de ${quotaMonthly} req usadas no mês corrente.`
+                : `${quotaUsedToday} de ${quotaDaily} req usadas hoje (UTC-3).`
+            }
+          />
+          <div
+            style={{
+              height: 8,
+              borderRadius: 999,
+              background: 'var(--surface-tint)',
+              overflow: 'hidden',
+              margin: '8px 0',
+            }}
+          >
+            <div
+              style={{
+                width: `${usoCotaPct}%`,
+                height: '100%',
+                background:
+                  usoCotaPct >= 90
+                    ? 'var(--color-danger, #dc2626)'
+                    : usoCotaPct >= 70
+                    ? 'var(--color-warning, #f59e0b)'
+                    : 'var(--primary)',
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </div>
+          <p className="mono" style={{ fontSize: 11, color: 'var(--muted)', margin: 0 }}>
+            {usoCotaPct}% utilizado · {quotaMonthly > 0
+              ? `${quotaMonthly - quotaUsedMonth} restantes este mês`
+              : `${quotaDaily - quotaUsedToday} restantes hoje`}
+          </p>
+        </Card>
+      )}
 
       {!loadingReal && !hasRealData && (
         <div className="empty-state-inline">

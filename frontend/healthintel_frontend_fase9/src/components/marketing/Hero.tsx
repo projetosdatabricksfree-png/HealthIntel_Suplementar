@@ -1,6 +1,6 @@
 import { ArrowRight, Database, GitBranch, Gauge, FileText, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { ApiWidget } from './ApiWidget';
+import { DataCatalogHero } from './DataCatalog';
 
 const HERO_SIGNALS: { Icon: LucideIcon; label: string }[] = [
   { Icon: Database, label: 'CADOP · SIB · CNES' },
@@ -25,28 +25,28 @@ export function Hero({ variant = 'split', showWidget = true }: HeroProps) {
         <div className={`hero__copy${isCentered ? ' hero__copy--center' : ''}`}>
           <span className="eyebrow">
             <span className="pulse-dot pulse-dot--mint"></span>
-            HealthIntel Core ANS · Saúde Suplementar
+            Catálogo de dados ANS · API REST versionada
           </span>
           <h1 className="hero__title">
-            Dados ANS curados,{' '}
+            O catálogo de dados da ANS,{' '}
             <span className="hero__title-accent">
-              versionados e prontos para consumo.
+              curado, datado por competência e servido via API.
             </span>
           </h1>
           <p className="hero__sub">
-            Reduza semanas de engenharia de dados em uma integração simples. Pare de manter
-            robôs, layouts e cargas manuais da ANS dentro do seu time — consuma{' '}
-            <code className="mono">CADOP</code>, <code className="mono">SIB</code>,{' '}
-            <code className="mono">CNES</code> e derivados via API REST autenticada,
-            versionada e auditável. Sem enviar sua base interna para terceiros.
+            Não é mais um SaaS para você operar — é a base de dados da saúde suplementar como
+            serviço. Consulte <code className="mono">CADOP</code>, <code className="mono">SIB</code>,{' '}
+            <code className="mono">CNES</code>, DIOPS, IDSS e derivados como datasets versionados,
+            cada registro carimbado por competência, sempre no envelope{' '}
+            <code className="mono">{'{ dados, meta }'}</code>.
           </p>
           <div className="hero__ctas">
-            <a href="#planos" className="btn btn--primary btn--lg" title="Checkout via Stripe">
-              Adquirir plano
+            <a href="#datasets" className="btn btn--primary btn--lg" title="Ver o catálogo de datasets">
+              Explorar o catálogo
               <ArrowRight size={16} />
             </a>
-            <a href="#contato" className="btn btn--outline btn--lg">
-              Falar com comercial
+            <a href="#planos" className="btn btn--outline btn--lg">
+              Ver planos de acesso
             </a>
           </div>
           <ul className="hero__signals">
@@ -61,14 +61,14 @@ export function Hero({ variant = 'split', showWidget = true }: HeroProps) {
 
         {!isCentered && showWidget && (
           <div className="hero__widget">
-            <ApiWidget />
+            <DataCatalogHero />
           </div>
         )}
       </div>
 
       {isCentered && showWidget && (
         <div className="container hero__widget-center">
-          <ApiWidget compact />
+          <DataCatalogHero />
         </div>
       )}
     </section>

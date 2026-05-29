@@ -59,9 +59,16 @@ def test_dashboard_uso_retorna_mesma_estrutura_que_me_uso():
             },
         }
 
-        async def fake_plano(cid: str) -> tuple[str, int]:
+        async def fake_plano(cid: str) -> dict:
             assert cid == cliente_id
-            return "free", 100
+            return {
+                "nome": "free",
+                "limite_req_dia": 0,
+                "limite_req_mes": 100,
+                "modelo_cobranca": "flat",
+                "trial_pro_ativo": False,
+                "trial_pro_expira_em": None,
+            }
 
         with (
             patch.object(router_mod, "get_uso", AsyncMock(return_value=resposta_esperada)),
@@ -94,8 +101,15 @@ def test_dashboard_uso_repassa_cliente_id_do_tenant():
             captured.update(kwargs)
             return {"dados": {}, "meta": {}}
 
-        async def fake_plano(cid: str) -> tuple[str, int]:
-            return "pro", 1000
+        async def fake_plano(cid: str) -> dict:
+            return {
+                "nome": "pro",
+                "limite_req_dia": 1000,
+                "limite_req_mes": 0,
+                "modelo_cobranca": "flat",
+                "trial_pro_ativo": False,
+                "trial_pro_expira_em": None,
+            }
 
         with (
             patch.object(router_mod, "get_uso", AsyncMock(side_effect=fake_get_uso)),

@@ -6,21 +6,23 @@ export const plans: ApiPlan[] = [
     nome: 'FREE',
     slug: 'free',
     preco: 'R$ 0',
-    descricao: 'Ambiente gratuito para avaliacao tecnica sem cartao.',
-    limiteDiario: '100 req/dia',
+    precoAnual: 'R$ 0',
+    economiaAnual: null,
+    descricao: '14 dias de trial PRO ao cadastrar. Depois: 100 requisições/mês.',
+    limiteDiario: '100 req/mês',
     keyLimit: 1,
     teamLimit: 0,
     features: [
-      'Endpoints Core em leitura',
+      '14 dias de trial PRO (2.500 req/dia)',
+      'Após trial: 100 req/mês para sempre',
       '1 API key de teste',
-      'Ambiente test/free',
       'Login com Google',
       'Quickstart com cURL'
     ],
     limits: [
       'Sem uso comercial',
       'Sem equipe',
-      'Sem logs exportaveis'
+      'Sem logs exportáveis'
     ],
     planoBd: 'free'
   },
@@ -28,21 +30,23 @@ export const plans: ApiPlan[] = [
     nome: 'STARTER',
     slug: 'starter',
     preco: 'R$ 99,99/mês',
-    descricao: 'Integracao inicial para validar consumo recorrente da API.',
-    limiteDiario: '30.000 req/dia',
-    keyLimit: 1,
+    precoAnual: 'R$ 999,90/ano',
+    economiaAnual: '2 meses grátis',
+    descricao: 'Integração inicial para validar consumo recorrente da API.',
+    limiteDiario: '500 req/dia',
+    keyLimit: 3,
     teamLimit: 0,
     features: [
       'Core + derivados publicados',
-      '1 API key live/test',
+      '3 API keys live/test',
       '2FA pessoal',
-      'Logs basicos no portal',
+      'Logs básicos no portal',
       'Suporte por e-mail async'
     ],
     limits: [
       'Sem equipe',
       'Sem IP allowlist',
-      'Sem exportacao de logs'
+      'Sem exportação de logs'
     ],
     planoBd: 'starter',
     checkoutSlug: 'starter',
@@ -52,16 +56,18 @@ export const plans: ApiPlan[] = [
     nome: 'PRO',
     slug: 'pro',
     preco: 'R$ 499/mês',
-    descricao: 'Producao padrao para BI, dados e produtos digitais.',
+    precoAnual: 'R$ 4.990/ano',
+    economiaAnual: '2 meses grátis',
+    descricao: 'Produção padrão para BI, dados e produtos digitais.',
     destaque: true,
-    limiteDiario: '150.000 req/dia',
-    keyLimit: 3,
+    limiteDiario: '2.500 req/dia',
+    keyLimit: 10,
     teamLimit: 3,
     features: [
       'Todos os datasets publicados',
-      '3 API keys live/test',
-      'Equipe com ate 3 usuarios',
-      'Logs exportaveis CSV/JSON',
+      '10 API keys live/test',
+      'Equipe com até 3 usuários',
+      'Logs exportáveis CSV/JSON',
       'IP allowlist'
     ],
     limits: [
@@ -76,14 +82,16 @@ export const plans: ApiPlan[] = [
     nome: 'MAX',
     slug: 'max',
     preco: 'R$ 1.499/mês',
+    precoAnual: 'R$ 14.990/ano',
+    economiaAnual: '2 meses grátis',
     descricao: 'Alto volume para healthtechs, operadoras e times de produto.',
-    limiteDiario: '500.000 req/dia',
-    keyLimit: 5,
+    limiteDiario: '25.000 req/dia',
+    keyLimit: 25,
     teamLimit: 10,
     features: [
       'Tudo do PRO',
-      '5 API keys',
-      'Equipe com ate 10 usuarios',
+      '25 API keys',
+      'Equipe com até 10 usuários',
       'Webhooks de uso',
       'Suporte com SLA de resposta'
     ],
@@ -98,20 +106,23 @@ export const plans: ApiPlan[] = [
   {
     nome: 'ENTERPRISE',
     slug: 'enterprise',
-    preco: 'Sob contrato',
-    descricao: 'Volume contratual, SLA dedicado, SSO/SAML e requisitos customizados.',
-    limiteDiario: 'Contratual',
+    preco: 'A partir de R$ 5.000/mês',
+    precoAnual: 'Sob contrato',
+    economiaAnual: null,
+    descricao: 'Pay-as-you-go: mínimo R$ 5.000/mês + R$ 50 por mil req acima de 500k. SLA dedicado, SSO/SAML.',
+    limiteDiario: 'Sem cap diário',
     keyLimit: 'ilimitado',
     teamLimit: 'ilimitado',
     features: [
-      'Limites e SLA sob contrato',
+      'Sem limite diário (pay-as-you-go)',
+      'Mínimo R$ 5.000/mês cobre 500k req',
+      'R$ 50 por mil req adicionais',
       'SSO/SAML',
       'IP allowlist com CIDR',
-      'Retencao customizada',
-      'Premium MDM incluso quando contratado'
+      'SLA contratual e suporte dedicado'
     ],
     limits: [
-      'Negociado off-checkout'
+      'Adquirido apenas via contato comercial'
     ],
     planoBd: 'enterprise'
   }

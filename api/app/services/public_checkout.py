@@ -25,19 +25,24 @@ PLANOS_CHECKOUT = {
     "starter": {
         "nome": "STARTER",
         "plano_bd": "starter",
-        "price_attr": "stripe_price_starter",
+        "price_attr_mensal": "stripe_price_starter",
+        "price_attr_anual": "stripe_price_starter_anual",
     },
     "pro": {
         "nome": "PRO",
         "plano_bd": "pro",
-        "price_attr": "stripe_price_pro",
+        "price_attr_mensal": "stripe_price_pro",
+        "price_attr_anual": "stripe_price_pro_anual",
     },
     "max": {
         "nome": "MAX",
         "plano_bd": "max",
-        "price_attr": "stripe_price_max",
+        "price_attr_mensal": "stripe_price_max",
+        "price_attr_anual": "stripe_price_max_anual",
     },
 }
+
+CICLOS_VALIDOS = {"mensal", "anual"}
 
 
 def _get(obj: Any, key: str, default: Any = None) -> Any:
@@ -72,6 +77,19 @@ def _plano_checkout(plano: str) -> dict[str, str]:
                 "mensagem": "Plano de checkout invalido.",
             },
         ) from exc
+
+
+def _normalizar_ciclo(ciclo: str | None) -> str:
+    valor = (ciclo or "mensal").strip().lower()
+    if valor not in CICLOS_VALIDOS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "codigo": "CICLO_INVALIDO",
+                "mensagem": "Ciclo de cobranca invalido. Use 'mensal' ou 'anual'.",
+            },
+        )
+    return valor
 
 
 def _config_stripe_obrigatoria() -> Any:
@@ -112,16 +130,20 @@ def _extrair_customer_details(session: Any) -> tuple[str, str]:
     return email, nome
 
 
-async def criar_sessao_checkout(plano: str) -> dict:
+async def criar_sessao_checkout(plano: str, ciclo: str | None = None) -> dict:
     settings = _config_stripe_obrigatoria()
     plano_cfg = _plano_checkout(plano)
-    price_id = (getattr(settings, plano_cfg["price_attr"]) or "").strip()
+    ciclo_norm = _normalizar_ciclo(ciclo)
+    price_attr = (
+        plano_cfg["price_attr_anual"] if ciclo_norm == "anual" else plano_cfg["price_attr_mensal"]
+    )
+    price_id = (getattr(settings, price_attr, "") or "").strip()
     if not price_id:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
                 "codigo": "STRIPE_PRICE_NAO_CONFIGURADO",
-                "mensagem": f"Price Stripe nao configurado para o plano '{plano}'.",
+                "mensagem": f"Price Stripe nao configurado para '{plano}' ciclo '{ciclo_norm}'.",
             },
         )
 
@@ -142,11 +164,13 @@ async def criar_sessao_checkout(plano: str) -> dict:
             metadata={
                 "plano": plano,
                 "plano_bd": plano_cfg["plano_bd"],
+                "ciclo": ciclo_norm,
             },
             subscription_data={
                 "metadata": {
                     "plano": plano,
                     "plano_bd": plano_cfg["plano_bd"],
+                    "ciclo": ciclo_norm,
                 }
             },
         )
@@ -161,6 +185,7 @@ async def criar_sessao_checkout(plano: str) -> dict:
             "checkout_url": _get(session, "url"),
             "session_id": _get(session, "id"),
             "plano": plano,
+            "ciclo": ciclo_norm,
         }
     }
 

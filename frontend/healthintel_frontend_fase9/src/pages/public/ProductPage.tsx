@@ -1,7 +1,7 @@
 import { Section, SectionHeader } from '../../components/marketing/Section';
 import { ProductSection } from '../../components/marketing/ProductSection';
 import { CustomerJourney } from '../../components/marketing/CustomerJourney';
-import { DatasetsGrid } from '../../components/marketing/DatasetsGrid';
+import { DataCatalog } from '../../components/marketing/DataCatalog';
 import { Coverage } from '../../components/marketing/Coverage';
 import { CTA } from '../../components/marketing/CTA';
 
@@ -10,9 +10,9 @@ export function ProductPage() {
     <>
       <Section id="produto-top" surface="default" label="produto">
         <SectionHeader
-          eyebrow="Produto"
-          title="O time da ANS terceirizado. Você só chama a API."
-          description="Quatro motivos pelos quais healthtechs, operadoras e consultorias preferem comprar pipeline da ANS pronto a montar e manter o seu próprio."
+          eyebrow="Por que DaaS"
+          title="Um contrato de dados — não mais um projeto de engenharia"
+          description="Quatro garantias pelas quais healthtechs, operadoras e consultorias preferem assinar o dado pronto a montar e manter o próprio pipeline da ANS."
           align="center"
         />
         <div className="section__body">
@@ -22,9 +22,9 @@ export function ProductPage() {
 
       <Section id="como-funciona" surface="soft" label="como-funciona">
         <SectionHeader
-          eyebrow="Como funciona"
-          title="Do checkout à sua primeira requisição em 3 passos"
-          description="Self-service total. Pague no Stripe, entre com Google e a API key aparece na sua área do cliente, pronta pra uso. Sem ticket, sem onboarding obrigatório."
+          eyebrow="Como você consome"
+          title="Do request ao envelope { dados, meta } em 3 passos"
+          description="Sem baixar ZIP, sem decifrar layout fixo, sem descobrir o que mudou no PDF de Resolução. Autentique, chame o endpoint e receba JSON versionado — datado por competência."
         />
         <div className="section__body">
           <CustomerJourney />
@@ -33,12 +33,12 @@ export function ProductPage() {
 
       <Section id="datasets" surface="default" label="datasets">
         <SectionHeader
-          eyebrow="Datasets"
-          title="Cobrimos todas as tabelas publicadas pela ANS"
-          description="CADOP, SIB, CNES, DIOPS, IDSS, NIP, Reajustes, Rol/TUSS, Garantias Financeiras, Mercado e Score — todos versionados e datados por competência."
+          eyebrow="Catálogo"
+          title="O produto é o catálogo. Cada dataset, versionado e datado."
+          description="Lido do catálogo de produção com grão, janela de competência e contagem real de registros. Status por dataset em /status/cobertura."
         />
         <div className="section__body">
-          <DatasetsGrid />
+          <DataCatalog />
         </div>
       </Section>
 

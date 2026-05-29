@@ -5,7 +5,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return <section className={cn('card', className)}>{children}</section>;
 }
 
-export function CardHeader({ eyebrow, title, description }: { eyebrow?: string; title: string; description?: string }) {
+export function CardHeader({ eyebrow, title, description }: { eyebrow?: string; title: ReactNode; description?: ReactNode }) {
   return (
     <div className="card-header">
       {eyebrow && <p className="eyebrow">{eyebrow}</p>}

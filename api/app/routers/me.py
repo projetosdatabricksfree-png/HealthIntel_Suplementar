@@ -34,12 +34,20 @@ async def uso_cliente(
     cliente_id = request.state.cliente_id
     plano_nome = request.state.plano_nome
     limite_req_dia = getattr(request.state, "limite_req_dia", 0)
+    limite_req_mes = getattr(request.state, "limite_req_mes", 0)
+    modelo_cobranca = getattr(request.state, "modelo_cobranca", "flat")
+    trial_pro_ativo = getattr(request.state, "trial_pro_ativo", False)
+    trial_pro_expira_em = getattr(request.state, "trial_pro_expira_em", None)
     periodo_efetivo = _periodo_de_days(days, periodo)
     return await get_uso(
         cliente_id=cliente_id,
         periodo=periodo_efetivo,
         plano_nome=plano_nome,
         limite_req_dia=limite_req_dia,
+        limite_req_mes=limite_req_mes,
+        modelo_cobranca=modelo_cobranca,
+        trial_pro_ativo=trial_pro_ativo,
+        trial_pro_expira_em=trial_pro_expira_em,
     )
 
 

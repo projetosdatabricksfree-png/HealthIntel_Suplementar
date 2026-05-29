@@ -3,4 +3,4 @@ Allow: /
 Disallow: /app/
 Disallow: /checkout/
 
-Sitemap: https://healthintel.com.br/sitemap.xml
+Sitemap: https://www.healthintel.com.br/sitemap.xml

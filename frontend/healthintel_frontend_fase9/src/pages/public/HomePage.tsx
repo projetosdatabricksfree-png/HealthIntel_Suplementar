@@ -6,7 +6,7 @@ import { TrustBar } from '../../components/marketing/TrustBar';
 import { Section, SectionHeader } from '../../components/marketing/Section';
 import { ProductSection } from '../../components/marketing/ProductSection';
 import { CustomerJourney } from '../../components/marketing/CustomerJourney';
-import { DatasetsGrid } from '../../components/marketing/DatasetsGrid';
+import { DataCatalog } from '../../components/marketing/DataCatalog';
 import { SecurityStrip } from '../../components/marketing/SecurityStrip';
 import { Pricing } from '../../components/marketing/Pricing';
 import { Coverage } from '../../components/marketing/Coverage';
@@ -22,46 +22,46 @@ export function HomePage() {
 
       <TrustBar />
 
-      <Section id="produto" surface="default" label="produto">
+      <Section id="datasets" surface="default" label="datasets">
         <SectionHeader
-          eyebrow="Por que HealthIntel"
-          title="O time da ANS terceirizado. Você só chama a API."
-          description="Quatro motivos pelos quais healthtechs, operadoras e consultorias preferem comprar pipeline da ANS pronto a montar e manter o seu próprio."
+          eyebrow="Catálogo"
+          title="O produto é o catálogo. Cada dataset, versionado e datado."
+          description="Operadoras, beneficiários, financeiro DIOPS, IDSS, IGR, NIP, regulatório, score, rede, TUSS e mais — lidos do catálogo de produção com grão, janela de competência e contagem real de registros. Status por dataset em /status/cobertura."
+          action={
+            <Link to="/documentacao" className="btn btn--ghost btn--sm">
+              Ver catálogo + cURL
+              <ArrowUpRight size={14} />
+            </Link>
+          }
+        />
+        <div className="section__body">
+          <DataCatalog />
+        </div>
+      </Section>
+
+      <Section id="produto" surface="soft" label="produto">
+        <SectionHeader
+          eyebrow="Por que DaaS"
+          title="Um contrato de dados — não mais um projeto de engenharia"
+          description="Quatro garantias pelas quais healthtechs, operadoras e consultorias preferem assinar o dado pronto a montar e manter o próprio pipeline da ANS."
         />
         <div className="section__body">
           <ProductSection />
         </div>
       </Section>
 
-      <Section id="como-funciona" surface="soft" label="como-funciona">
+      <Section id="como-funciona" surface="default" label="como-funciona">
         <SectionHeader
-          eyebrow="Como funciona"
-          title="Do checkout à sua primeira requisição em 3 passos"
-          description="Self-service total. Pague no Stripe, entre com Google e a API key aparece na sua área do cliente, pronta pra uso. Sem ticket, sem onboarding obrigatório."
+          eyebrow="Como você consome"
+          title="Do request ao envelope { dados, meta } em 3 passos"
+          description="Sem baixar ZIP, sem decifrar layout fixo, sem descobrir o que mudou no PDF de Resolução. Autentique, chame o endpoint e receba JSON versionado — datado por competência."
         />
         <div className="section__body">
           <CustomerJourney />
         </div>
       </Section>
 
-      <Section id="datasets" surface="default" label="datasets">
-        <SectionHeader
-          eyebrow="Datasets"
-          title="Cobrimos todas as tabelas publicadas pela ANS"
-          description="CADOP, SIB, CNES, DIOPS, IDSS, NIP, Reajustes, Rol/TUSS, Garantias Financeiras, Mercado e Score — todos versionados e datados por competência. TISS e SIB nível beneficiário individual são liberados sob solicitação."
-          action={
-            <Link to="/quem-somos" className="btn btn--ghost btn--sm">
-              Quem somos
-              <ArrowUpRight size={14} />
-            </Link>
-          }
-        />
-        <div className="section__body">
-          <DatasetsGrid />
-        </div>
-      </Section>
-
-      <Section id="seguranca" surface="default" label="seguranca">
+      <Section id="seguranca" surface="soft" label="seguranca">
         <SectionHeader
           eyebrow="Segurança e governança"
           title="API key, rate limit, logs e versionamento"
@@ -72,11 +72,22 @@ export function HomePage() {
         </div>
       </Section>
 
+      <Section id="escopo" surface="default" label="escopo">
+        <SectionHeader
+          eyebrow="Cobertura"
+          title="Todas as tabelas ANS — com escopo controlado para dados sensíveis"
+          description="Cobertura honesta, lida ao vivo de /status/cobertura: o release atual já inclui as famílias completas. TISS e SIB nível beneficiário individual passam por análise comercial antes da liberação."
+        />
+        <div className="section__body">
+          <Coverage />
+        </div>
+      </Section>
+
       <Section id="planos" surface="soft" label="planos">
         <SectionHeader
-          eyebrow="Planos"
-          title="Comece grátis. Suba quando o uso crescer."
-          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, Enterprise sob contrato."
+          eyebrow="Acesso"
+          title="Planos de acesso ao catálogo"
+          description="Quatro planos self-service via Stripe — do FREE com 100 req/mês ao MAX com 25 mil/dia. Volume além disso, Enterprise sob contrato. Você paga pelo acesso ao dado, não por consultoria."
           align="center"
         />
         <div className="section__body">
@@ -84,18 +95,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="escopo" surface="default" label="escopo">
-        <SectionHeader
-          eyebrow="Cobertura"
-          title="Todas as tabelas ANS — com escopo controlado para dados sensíveis"
-          description="Cobertura honesta: o release atual já inclui as famílias completas. TISS e SIB nível beneficiário individual passam por análise comercial antes da liberação."
-        />
-        <div className="section__body">
-          <Coverage />
-        </div>
-      </Section>
-
-      <Section id="faq" surface="soft" label="faq">
+      <Section id="faq" surface="default" label="faq">
         <SectionHeader
           eyebrow="FAQ"
           title="Perguntas frequentes"

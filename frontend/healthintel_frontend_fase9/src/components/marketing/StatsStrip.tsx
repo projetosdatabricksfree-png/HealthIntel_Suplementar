@@ -1,8 +1,24 @@
+import { datasets } from '../../data/datasets';
+
+/* Métricas do catálogo, computadas do mesmo data/datasets.ts que alimenta as Docs. */
+const totalDatasets = datasets.length;
+const totalDominios = new Set(datasets.map((d) => d.dominio)).size;
+const totalRegistros = datasets.reduce(
+  (acc, d) => acc + (parseInt(d.linhas.replace(/\./g, ''), 10) || 0),
+  0,
+);
+
+function compactInt(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(0)}M+`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}k+`;
+  return String(n);
+}
+
 const STATS = [
-  { value: '743', label: 'Operadoras (CADOP)', sub: 'Cadastro ANS · set/2025' },
-  { value: '50,8M', label: 'Vidas (SIB)', sub: 'Beneficiários agregados' },
-  { value: '351k', label: 'Estabelecimentos (CNES)', sub: 'Rede por município/UF' },
-  { value: '/v1', label: 'API versionada', sub: 'Janela de deprecação anunciada' },
+  { value: String(totalDatasets), label: 'Datasets no catálogo', sub: 'consumo_ans + premium · versionados' },
+  { value: String(totalDominios), label: 'Domínios cobertos', sub: 'operadoras · financeiro · rede · regulatório…' },
+  { value: compactInt(totalRegistros), label: 'Registros servidos', sub: 'linhas entregues via /v1' },
+  { value: '/v1', label: 'Contrato estável', sub: 'deprecação anunciada (Sunset)' },
 ];
 
 export function StatsStrip() {

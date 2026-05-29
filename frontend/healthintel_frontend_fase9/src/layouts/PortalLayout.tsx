@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Navigate, Link } from 'react-router-dom';
-import { Activity, BarChart3, BookOpen, CreditCard, Database, KeyRound, LayoutDashboard, LogOut, Shield, Users, UserCircle, Wrench } from 'lucide-react';
+import { BarChart3, BookOpen, CreditCard, Database, KeyRound, LayoutDashboard, LogOut, Shield, Users, UserCircle, Wrench } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useIdleTimeout } from '../hooks/useIdleTimeout';
 import { IdleWarningModal } from '../components/IdleWarningModal';
@@ -49,7 +49,7 @@ export function PortalLayout() {
     <div className="portal-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="brand-mark"><Activity size={22} /></span>
+          <img src="/logo-mark.png" alt="HealthIntel" width={40} height={40} />
           <div>
             <strong>HealthIntel</strong>
             <small>Core ANS</small>

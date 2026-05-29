@@ -44,9 +44,17 @@ async def test_criar_sessao_checkout_usa_price_e_metadata(monkeypatch: pytest.Mo
     assert result["dados"]["checkout_url"] == "https://checkout.stripe.test/session"
     assert captured["mode"] == "subscription"
     assert captured["line_items"] == [{"price": "price_starter", "quantity": 1}]
-    assert captured["metadata"] == {"plano": "starter", "plano_bd": "starter"}
+    assert captured["metadata"] == {
+        "plano": "starter",
+        "plano_bd": "starter",
+        "ciclo": "mensal",
+    }
     assert captured["subscription_data"] == {
-        "metadata": {"plano": "starter", "plano_bd": "starter"}
+        "metadata": {
+            "plano": "starter",
+            "plano_bd": "starter",
+            "ciclo": "mensal",
+        }
     }
     assert captured["success_url"].startswith("https://app.healthintel.test/checkout/sucesso")
     assert captured["cancel_url"] == "https://app.healthintel.test/precos"

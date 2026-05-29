@@ -9,8 +9,8 @@ export function PricingPage() {
       <Section id="planos-top" surface="default" label="planos">
         <SectionHeader
           eyebrow="Planos"
-          title="Comece grátis. Suba quando o uso crescer."
-          description="Quatro planos self-service via Stripe — do FREE com 100 req/dia ao MAX com 500 mil/dia. Volume além disso, vai para Enterprise."
+          title="14 dias grátis no PRO. Suba quando o uso crescer."
+          description="Quatro planos self-service via Stripe — do FREE (100 req/mês após trial PRO de 14 dias) ao MAX (25 mil req/dia). Volume além disso, Enterprise pay-as-you-go."
           align="center"
         />
         <div className="section__body">

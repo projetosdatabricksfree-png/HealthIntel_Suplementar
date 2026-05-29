@@ -163,7 +163,7 @@ export function DocumentacaoPage() {
 
           <section id="rate-limits">
             <h2>Rate limits por plano</h2>
-            <table className="docs-table">
+            <div className="docs-table-wrap"><table className="docs-table">
               <thead>
                 <tr>
                   <th>Plano</th>
@@ -184,7 +184,7 @@ export function DocumentacaoPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <p className="docs-note">
               Excedeu o limite? Retorna HTTP 429 com header <code>Retry-After</code>. Para upgrade
               em tempo real: <Link to="/precos">/precos</Link>.
@@ -205,7 +205,7 @@ export function DocumentacaoPage() {
 
           <section id="erros">
             <h2>Erros comuns</h2>
-            <table className="docs-table">
+            <div className="docs-table-wrap"><table className="docs-table">
               <thead>
                 <tr>
                   <th>Status</th>
@@ -224,7 +224,7 @@ export function DocumentacaoPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <p className="docs-note">
               Todas as respostas de erro seguem{' '}
               <code>{`{ "detail": { "codigo": "...", "mensagem": "..." } }`}</code>.

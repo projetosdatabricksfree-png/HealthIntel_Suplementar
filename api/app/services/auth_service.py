@@ -70,6 +70,16 @@ async def _provisionar_plano_free(db, usuario_id: str, email: str, nome: str) ->
         """),
         {"cid": cliente_id, "uid": usuario_id},
     )
+
+    # Trial PRO de 14 dias — 1 por cliente (PK previne 2º trial).
+    await db.execute(
+        text("""
+            INSERT INTO plataforma.trial_pro (cliente_id, inicio_em, expira_em, consumido)
+            VALUES (cast(:cid as uuid), now(), now() + interval '14 days', false)
+            ON CONFLICT (cliente_id) DO NOTHING
+        """),
+        {"cid": cliente_id},
+    )
     return cliente_id
 
 

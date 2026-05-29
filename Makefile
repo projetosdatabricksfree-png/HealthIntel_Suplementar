@@ -396,6 +396,9 @@ smoke-ingestao-real:
 hardgate-sem-ano-hardcoded-janelacarga:
 	bash tests/hardgates/assert_sem_ano_hardcoded_janela.sh
 
+hardgate-cobertura-api-ans:
+	$(PYTEST_BIN) tests/hardgates/test_cobertura_api_ans_minima.py -v
+
 # --- Capacidade e Carga Fase 8 ---
 
 capacidade-snapshot:
