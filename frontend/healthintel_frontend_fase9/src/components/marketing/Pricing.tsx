@@ -32,6 +32,7 @@ interface Plan {
   kind: 'free' | 'buy' | 'contact';
   cta: string;
   href: string;
+  hrefAnual?: string;
   recommended?: boolean;
   badge?: string;
   rateDetail: string;
@@ -80,6 +81,7 @@ const PLANS: Plan[] = [
     kind: 'buy',
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.starter,
+    hrefAnual: commercialLinks.stripe.starterAnual,
     rateDetail: '500 req/dia · sem cap mensal · burst limitado. Excedente devolve HTTP 429 até virar o dia (00:00 UTC-3).',
   },
   {
@@ -102,6 +104,7 @@ const PLANS: Plan[] = [
     kind: 'buy',
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.pro,
+    hrefAnual: commercialLinks.stripe.proAnual,
     recommended: true,
     rateDetail: '2.500 req/dia · adequado para BI corporativo e produtos digitais. Rate limit elevado para bronze/prata.',
   },
@@ -125,6 +128,7 @@ const PLANS: Plan[] = [
     kind: 'buy',
     cta: 'Adquirir plano',
     href: commercialLinks.stripe.max,
+    hrefAnual: commercialLinks.stripe.maxAnual,
     rateDetail: '25.000 req/dia · ~1 req cada 3,5s sustentado. Ideal para dashboards corporativos e ingestão batch.',
   },
 ];
@@ -178,7 +182,9 @@ function PlanCTA({
     );
   }
   if (isBuy) {
-    const href = ciclo === 'anual' ? `${plan.href}?ciclo=anual` : plan.href;
+    // Payment Links sao amarrados a um preco fixo: o anual tem URL propria.
+    // Sem link anual configurado, cai no mensal em vez de mostrar preco errado.
+    const href = ciclo === 'anual' ? (plan.hrefAnual || plan.href) : plan.href;
     return (
       <a href={href} className={btnClass} title={`Checkout via Stripe — cobrança ${ciclo}`}>
         <Zap size={14} />

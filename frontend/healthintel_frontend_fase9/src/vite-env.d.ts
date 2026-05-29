@@ -8,6 +8,9 @@ interface ImportMetaEnv {
   readonly VITE_STRIPE_CHECKOUT_STARTER_URL?: string;
   readonly VITE_STRIPE_CHECKOUT_PRO_URL?: string;
   readonly VITE_STRIPE_CHECKOUT_MAX_URL?: string;
+  readonly VITE_STRIPE_CHECKOUT_STARTER_ANUAL_URL?: string;
+  readonly VITE_STRIPE_CHECKOUT_PRO_ANUAL_URL?: string;
+  readonly VITE_STRIPE_CHECKOUT_MAX_ANUAL_URL?: string;
   readonly MODE: string;
 }
 
