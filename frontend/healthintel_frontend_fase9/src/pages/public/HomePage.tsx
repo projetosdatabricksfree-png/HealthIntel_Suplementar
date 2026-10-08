@@ -8,7 +8,6 @@ import { ProductSection } from '../../components/marketing/ProductSection';
 import { CustomerJourney } from '../../components/marketing/CustomerJourney';
 import { DataCatalog } from '../../components/marketing/DataCatalog';
 import { SecurityStrip } from '../../components/marketing/SecurityStrip';
-import { Pricing } from '../../components/marketing/Pricing';
 import { Coverage } from '../../components/marketing/Coverage';
 import { FAQ } from '../../components/marketing/FAQ';
 import { CTA } from '../../components/marketing/CTA';
@@ -83,17 +82,7 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section id="planos" surface="soft" label="planos">
-        <SectionHeader
-          eyebrow="Acesso"
-          title="Planos de acesso ao catálogo"
-          description="Quatro planos self-service via Stripe — do FREE com 100 req/mês ao MAX com 25 mil/dia. Volume além disso, Enterprise sob contrato. Você paga pelo acesso ao dado, não por consultoria."
-          align="center"
-        />
-        <div className="section__body">
-          <Pricing />
-        </div>
-      </Section>
+      {/* Seção de planos desabilitada para posicionamento B2B */}
 
       <Section id="faq" surface="default" label="faq">
         <SectionHeader
